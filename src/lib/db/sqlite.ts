@@ -18,7 +18,9 @@ export type Database = DatabaseSync;
 const DEFAULT_PATH = ".data/ninety.db";
 
 export function databasePath(): string {
-  return resolve(process.env.RAG_DB_PATH ?? DEFAULT_PATH);
+  // The db file is runtime state, not a bundled module, so Turbopack must not
+  // treat this as a reason to trace the whole project into the server output.
+  return resolve(/* turbopackIgnore: true */ process.env.RAG_DB_PATH ?? DEFAULT_PATH);
 }
 
 const cache = globalThis as unknown as { __ninetyDb?: DatabaseSync };
