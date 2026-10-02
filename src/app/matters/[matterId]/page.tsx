@@ -93,10 +93,14 @@ export default async function MatterPage({
         </p>
       ) : null}
 
-      <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
-        {/* Each column scrolls on its own, so a long digest does not push the
-            chat composer off the bottom of the screen. */}
-        <div className="min-w-0 space-y-6 overflow-y-auto">
+      {/*
+        Two columns side by side, each scrolling on its own, so a long digest
+        cannot push the chat composer off the bottom of the screen. Stacked on
+        a narrow viewport there is no room for that, so the whole grid scrolls
+        as one and the chat becomes a fixed-height box instead.
+      */}
+      <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:overflow-hidden">
+        <div className="min-w-0 space-y-6 lg:overflow-y-auto">
           {/* Streamed in: the panel syncs Clio and may call a model, and the
               shell should not wait on either. `key` forces a fresh boundary per
               window so switching shows the fallback rather than stale prose. */}
@@ -110,8 +114,10 @@ export default async function MatterPage({
           </section>
         </div>
 
-        <aside className="flex min-h-0 flex-col rounded-lg border border-border bg-card">
-          <header className="border-b border-border px-4 py-3">
+        {/* `overflow-hidden` plus a definite height is what lets the thread's
+            own `h-full` scroller resolve instead of running past the card. */}
+        <aside className="flex h-[32rem] min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card lg:h-auto">
+          <header className="shrink-0 border-b border-border px-4 py-3">
             <h2 className="text-sm font-semibold tracking-tight">Ask the file</h2>
             <p className="text-xs text-muted-foreground">
               Grounded in the same records, with citations.
