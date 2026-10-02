@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Attorney on a phone · design mock</title>
+<style>
+  /* Design tokens. Same set as the other mocks in design/. */
+  :root {
+    --paper: #f5f1e4; --paper-card: #fffef9; --paper-line: #e3dcc6;
+    --paper-text: #10231f; --paper-text-2: #4d5e58; --paper-text-3: #86948e;
+    --ink: #0e3b35; --ink-raised: #165048; --ink-line: #22635a;
+    --ink-text: #f5f1e4; --ink-text-2: #c2d8cf; --ink-text-3: #8fb3a7;
+    --lane-client: #62aefc; --lane-firm: #6fe0b3; --lane-provider: #c4b5ff; --lane-defense: #f0629a; --lane-court: #f5f1e4; --lane-file: #8fb3a7;
+    --lane-client-p: #2a78d6; --lane-firm-p: #12855d; --lane-provider-p: #4a3aa7; --lane-defense-p: #c9457a; --lane-court-p: #10231f; --lane-file-p: #86948e;
+    --contradiction: #fab219; --critical: #d03b3b; --accent: #0e6b57;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --col: 430px; --bar-h: 62px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #d9d3c0; color: var(--paper-text); font-family: var(--sans); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  h1, h2, h3, p, dl, dd, ol, ul { margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 2px solid var(--contradiction); outline-offset: 2px; }
+
+  /* On a desktop the app sits in a phone-wide column; on a phone it fills the screen. */
+  .phone { width: min(100%, var(--col)); min-height: 100vh; margin: 0 auto; background: var(--paper); padding-bottom: calc(var(--bar-h) + env(safe-area-inset-bottom)); box-shadow: 0 0 60px rgba(16,35,31,.25); }
+  .fixed { position: fixed; left: 50%; transform: translateX(-50%); width: min(100%, var(--col)); z-index: 20; }
+
+  .appbar { position: sticky; top: 0; z-index: 15; background: var(--ink); color: var(--ink-text); padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--ink-line); }
+  .appbar h1 { font-family: var(--serif); font-size: 17px; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .appbar span { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); background: var(--lane-firm); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+
+  .tabs { bottom: 0; height: calc(var(--bar-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--paper-card); border-top: 1px solid var(--paper-line); display: grid; grid-template-columns: repeat(3, 1fr); }
+  .tabs button { border: 0; background: none; display: grid; place-items: center; align-content: center; gap: 2px; font-size: 11.5px; font-weight: 600; color: var(--paper-text-3); position: relative; }
+  .tabs button[aria-pressed="true"] { color: var(--accent); }
+  .tabs button[aria-pressed="true"]::before { content: ""; position: absolute; top: 0; left: 28%; right: 28%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
+  .tabs b { position: absolute; top: 8px; left: calc(50% + 8px); min-width: 17px; height: 17px; border-radius: 9px; background: var(--contradiction); color: #2b1d00; font-size: 11px; line-height: 17px; padding: 0 4px; }
+
+  /* ---------- Case ---------- */
+  .hero { background: var(--ink); color: var(--ink-text); padding: 28px 22px 24px; text-align: center; }
+  .kicker { display: block; margin-top: 14px; font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-text-3); }
+  .headline { margin-top: 8px; font-family: var(--serif); font-size: 23px; line-height: 1.3; overflow-wrap: anywhere; text-wrap: balance; }
+  .who { display: flex; gap: 12px; align-items: center; }
+  .face { margin: 0 auto; width: 76px; height: 76px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--lane-client); }
+  .face svg { display: block; width: 100%; height: 100%; }
+  .who p { font-family: var(--serif); font-size: 19px; line-height: 1.3; overflow-wrap: anywhere; }
+  /* The 30-second brief: read it, or have it read to you. */
+  .listen { margin-top: 22px; width: 100%; min-height: 54px; border: 0; border-radius: 14px; background: var(--lane-firm); color: var(--ink); display: flex; align-items: center; gap: 12px; padding: 8px 16px 8px 10px; text-align: left; }
+  .listen:disabled { background: var(--ink-raised); color: var(--ink-text-3); }
+  .listen .play { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--ink); color: var(--lane-firm); display: grid; place-items: center; }
+  .listen b { display: block; font-size: 16px; line-height: 1.2; }
+  .listen small { display: block; font-size: 12.5px; opacity: .8; }
+  .caption { margin-top: 16px; min-height: 96px; }
+  .caption small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--lane-firm); }
+  .caption p { margin-top: 6px; font-size: 18px; line-height: 1.4; overflow-wrap: anywhere; }
+  .dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+  .dots i { width: 22px; height: 4px; border-radius: 2px; background: var(--ink-line); }
+  .dots i.on { background: var(--lane-firm); } .dots i.done { background: var(--ink-text-3); }
+  .readit { margin-top: 6px; min-height: 44px; border: 0; background: none; color: var(--ink-text-2); font-size: 14px; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--ink-text-3); }
+  .brief { margin-top: 4px; display: grid; gap: 6px; text-align: left; }
+  .brief button { display: grid; grid-template-columns: 4px minmax(0, 1fr); gap: 10px; text-align: left; border: 0; background: none; color: var(--ink-text-2); padding: 7px 8px 7px 0; border-radius: 8px; }
+  .brief button::before { content: ""; border-radius: 2px; background: var(--ink-line); }
+  .brief small { display: block; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .brief span { display: block; font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
+  .brief button.on { background: var(--ink-raised); color: var(--ink-text); }
+  .brief button.on::before { background: var(--lane-firm); }
+  .brief button.done span { color: var(--ink-text-3); }
+  .stage { margin-top: 2px; }
+  .stage small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-2); margin-bottom: 6px; }
+  .stage div { display: flex; gap: 3px; }
+  .stage i { flex: 1; height: 6px; border-radius: 3px; background: var(--paper-line); }
+  .stage i.done { background: var(--paper-text-3); }
+  .stage i.now { background: var(--accent); }
+  .stage ol { list-style: none; display: grid; gap: 4px; margin-top: 12px; font-size: 13.5px; color: var(--paper-text-2); }
+  .stage li { display: flex; justify-content: space-between; gap: 12px; }
+  .stage li.now { color: var(--paper-text); font-weight: 600; }
+  .stage i.gap { flex: 0 0 8px; background: none; }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 22px; text-align: left; }
+  .tile { text-align: left; background: var(--ink-raised); border: 1px solid var(--ink-line); border-top: 3px solid var(--ink-text-3); border-radius: 10px; padding: 8px 10px; min-width: 0; min-height: 76px; color: inherit; }
+  .tile.good { border-top-color: var(--lane-firm); } .tile.warn { border-top-color: var(--contradiction); } .tile.late { border-top-color: var(--critical); }
+  .tile span { display: block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-text-3); }
+  .tile b { display: block; font-family: var(--serif); font-size: 19px; line-height: 1.15; margin-top: 3px; overflow-wrap: anywhere; }
+  .tile small { display: block; font-size: 11.5px; color: var(--ink-text-2); line-height: 1.25; margin-top: 2px; }
+
+  .block { padding: 22px 16px 6px; }
+  .more { border: 0; background: none; color: var(--accent); font-size: 14px; font-weight: 600; min-height: 44px; padding: 0; }
+  .block > h2 { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); margin-bottom: 8px; }
+  .alert { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; width: 100%; text-align: left; border: 0; background: none; padding: 10px 0; border-top: 1px solid var(--paper-line); min-height: 44px; }
+  .alert:first-of-type { border-top: 0; padding-top: 2px; }
+  .alert i { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; background: #fff4d6; color: #7a5200; }
+  .alert.crit i { background: #fdecec; color: #a02020; }
+  .alert b { display: block; font-size: 14.5px; line-height: 1.3; font-weight: 600; overflow-wrap: anywhere; }
+  .alert span { display: block; font-size: 13px; color: var(--paper-text-2); line-height: 1.35; }
+
+  .fold { margin: 10px 16px 0; background: var(--paper-card); border: 1px solid var(--paper-line); border-radius: 12px; overflow: hidden; }
+  .fold summary { list-style: none; display: grid; grid-template-columns: minmax(0, 1fr) auto 14px; gap: 10px; align-items: center; padding: 12px 14px; min-height: 52px; cursor: pointer; }
+  .fold summary::-webkit-details-marker { display: none; }
+  .fold summary b { font-size: 15px; font-weight: 600; }
+  .fold summary small { display: block; font-size: 12.5px; color: var(--paper-text-2); font-weight: 400; overflow-wrap: anywhere; }
+  .fold summary em { font-style: normal; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 1px 8px; background: var(--paper); color: var(--paper-text-2); white-space: nowrap; }
+  .fold summary em.warn { background: #fff4d6; color: #5c3d00; box-shadow: inset 0 0 0 1px var(--contradiction); }
+  .fold summary::after { content: "›"; font-size: 20px; color: var(--paper-text-3); transition: transform .15s; }
+  .fold[open] summary::after { transform: rotate(90deg); }
+  .fold .in { padding: 2px 14px 14px; }
+  @media (prefers-reduced-motion: reduce) { .fold summary::after { transition: none; } }
+
+  .story { list-style: none; display: grid; gap: 10px; font-family: var(--serif); font-size: 16.5px; line-height: 1.45; }
+  .src { display: inline-flex; align-items: center; gap: 4px; margin: 2px 2px 0 0; border: 1px solid var(--paper-line); background: var(--paper); border-radius: 999px; padding: 2px 9px 2px 7px; font-family: var(--sans); font-size: 12px; color: var(--paper-text-2); white-space: nowrap; }
+  .src i { width: 7px; height: 7px; border-radius: 50%; }
+  .what { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; font-size: 14px; }
+  .what dt { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); padding-top: 3px; }
+  .what dd { overflow-wrap: anywhere; }
+  .link { position: relative; background: var(--paper); border-radius: 10px; padding: 10px 12px; margin-bottom: 22px; }
+  .link:last-child { margin-bottom: 0; }
+  .link:not(:last-child)::after { content: "↓"; position: absolute; left: 14px; bottom: -21px; color: var(--paper-text-3); }
+  .link.root { background: #fff4d6; box-shadow: inset 0 0 0 1px var(--contradiction); }
+  .link b { display: block; font-size: 14.5px; line-height: 1.3; }
+  .link span { display: block; font-size: 12.5px; color: var(--paper-text-2); margin: 2px 0 4px; }
+  .sub { font-family: var(--serif); font-size: 16px; font-weight: 600; margin: 12px 0 6px; }
+  .sub:first-child { margin-top: 0; }
+  .item { display: block; width: 100%; text-align: left; border: 0; border-left: 3px solid var(--paper-line); background: none; padding: 7px 0 7px 10px; margin-bottom: 4px; min-height: 44px; }
+  .item.late { border-left-color: var(--critical); } .item.wait { border-left-color: var(--contradiction); }
+  .item b { display: block; font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; }
+  .item span { display: block; font-size: 12.5px; color: var(--paper-text-2); }
+  .clash { display: block; width: 100%; text-align: left; border: 1px solid var(--paper-line); border-left: 4px solid var(--contradiction); background: var(--paper); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  .clash b { display: block; font-size: 14px; line-height: 1.35; }
+  .clash q { display: block; quotes: "“" "”"; font-family: var(--serif); font-size: 15px; line-height: 1.35; margin-top: 6px; overflow-wrap: anywhere; }
+  .clash span { display: block; font-size: 12px; color: var(--paper-text-3); }
+  .lor { display: grid; gap: 10px; font-size: 13.5px; }
+  .lor div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; }
+  .lor .ok { color: #0b5c40; font-weight: 600; } .lor .no { color: #a02020; font-weight: 600; }
+  .lor small { color: var(--paper-text-3); grid-column: 1 / -1; }
+  .big { font-family: var(--serif); font-size: 28px; line-height: 1.1; font-weight: 600; }
+  .fall { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 13px; margin-top: 10px; }
+  .fall dt { color: var(--paper-text-2); } .fall dd { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .fall .sum { border-top: 1px solid var(--paper-line); padding-top: 4px; color: var(--paper-text); }
+  .knobs { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 13px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--paper-line); }
+  .knobs output { font-weight: 600; }
+  .knobs input, .knobs select { grid-column: 1 / -1; width: 100%; min-height: 36px; margin-bottom: 6px; accent-color: var(--accent); }
+  .knobs select { border: 1px solid var(--paper-line); background: var(--paper); border-radius: 8px; padding: 6px 8px; }
+  .note { font-size: 12.5px; color: var(--paper-text-2); margin-top: 6px; }
+
+  /* ---------- Timeline ---------- */
+  .scrub { position: sticky; top: 43px; z-index: 12; background: var(--ink); color: var(--ink-text); padding: 8px 0 0; }
+  .scrub svg { display: block; width: 100%; touch-action: none; cursor: pointer; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px 10px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chips button { flex: none; border: 1px solid var(--ink-line); background: var(--ink-raised); color: var(--ink-text-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; min-height: 34px; display: inline-flex; align-items: center; gap: 6px; }
+  .chips button i { width: 8px; height: 8px; border-radius: 50%; }
+  .chips button[aria-pressed="true"] { background: var(--ink-text); color: var(--ink); border-color: var(--ink-text); font-weight: 600; }
+  .month { scroll-margin-top: 150px; }
+  .month > h3 { position: sticky; top: 147px; z-index: 5; background: var(--paper); padding: 10px 16px 6px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); display: flex; justify-content: space-between; }
+  .month.future > h3 { color: var(--accent); }
+  .rec { display: grid; grid-template-columns: 4px 30px minmax(0, 1fr); gap: 10px; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--paper-line); background: var(--paper-card); padding: 10px 16px 10px 0; min-height: 56px; align-items: start; }
+  .rec > i { align-self: stretch; border-radius: 0 3px 3px 0; }
+  .rec svg { display: block; margin-top: 1px; }
+  .rec b { display: block; font-size: 14.5px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+  .rec span { display: block; font-size: 12.5px; color: var(--paper-text-2); }
+  .rec p { font-size: 13px; color: var(--paper-text-2); margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .flags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .flag { display: inline-flex; align-items: center; border-radius: 999px; padding: 1px 8px; font-size: 11.5px; font-weight: 600; border: 1px solid var(--paper-text-3); color: var(--paper-text-2); }
+  .flag.warn { border-color: var(--contradiction); background: #fff4d6; color: #5c3d00; }
+  .flag.late { border-color: var(--critical); background: #fdecec; color: #a02020; }
+  .flag.open { border-style: dashed; }
+  .quiet { text-align: center; font-size: 12.5px; color: var(--paper-text-3); padding: 10px 16px; border-top: 1px dashed var(--paper-line); }
+  .empty { padding: 28px 16px; color: var(--paper-text-2); }
+
+  /* ---------- Ask ---------- */
+  .ask-wrap { padding: 16px; }
+  .ask-wrap h2 { font-family: var(--serif); font-size: 22px; font-weight: 600; }
+  .ask-wrap > p { color: var(--paper-text-2); font-size: 14px; margin: 4px 0 14px; }
+  .askform { display: flex; gap: 8px; }
+  .askform input { flex: 1; min-width: 0; min-height: 46px; border: 1px solid var(--paper-line); background: var(--paper-card); border-radius: 10px; padding: 0 12px; font-size: 16px; }
+  .askform button, .primary { border: 0; background: var(--accent); color: #fff; border-radius: 10px; padding: 0 16px; font-weight: 600; min-height: 46px; }
+  .sugg { display: grid; gap: 8px; margin-top: 12px; }
+  .sugg button { text-align: left; border: 1px solid var(--paper-line); background: var(--paper-card); border-radius: 10px; padding: 11px 12px; min-height: 44px; font-size: 14.5px; }
+  .answer { margin-top: 14px; background: var(--paper-card); border: 1px solid var(--paper-line); border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+  .answer em { display: block; font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); margin-bottom: 4px; }
+
+  /* ---------- Sheet ---------- */
+  .scrim { position: fixed; inset: 0; background: rgba(16,35,31,.45); z-index: 30; }
+  .sheet { bottom: 0; z-index: 31; max-height: 88vh; overflow-y: auto; background: var(--paper-card); border-radius: 18px 18px 0 0; padding: 8px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -18px 48px rgba(0,0,0,.3); border-top: 5px solid var(--tint, var(--paper-line)); }
+  .grab { width: 40px; height: 4px; border-radius: 2px; background: var(--paper-line); margin: 0 auto 10px; }
+  .sheet-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .kind { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--paper-text-2); display: inline-flex; align-items: center; gap: 7px; }
+  .kind i { width: 9px; height: 9px; border-radius: 50%; }
+  .x { border: 0; background: var(--paper); width: 36px; height: 36px; border-radius: 50%; font-size: 18px; color: var(--paper-text-2); flex: none; }
+  .sheet h3 { font-family: var(--serif); font-size: 22px; line-height: 1.2; font-weight: 600; margin: 6px 0 8px; overflow-wrap: anywhere; }
+  .facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 12px; font-size: 13px; margin: 8px 0 12px; }
+  .facts dt { color: var(--paper-text-3); } .facts dd { overflow-wrap: anywhere; }
+  .body { padding-top: 12px; border-top: 1px solid var(--paper-line); white-space: pre-line; overflow-wrap: anywhere; }
+  .side { background: var(--paper); border-radius: 10px; padding: 12px; margin-top: 10px; }
+  .side h4 { margin: 0 0 4px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); }
+  .side q { display: block; quotes: "“" "”"; font-family: var(--serif); font-size: 17px; line-height: 1.35; overflow-wrap: anywhere; }
+  .side p { font-size: 12.5px; color: var(--paper-text-2); margin-top: 4px; }
+  .nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .nav button, .ghost { border: 1px solid var(--paper-line); background: var(--paper); border-radius: 10px; min-height: 44px; font-size: 14px; color: var(--paper-text-2); padding: 0 12px; }
+  .nav button:disabled { opacity: .4; }
+  .sheet .askform { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--paper-line); }
+</style>
+</head>
+<body>
+<div class="phone">
+  <header class="appbar"><h1>Whitlock v. Harbor Transit</h1><span id="phasePill"></span></header>
+
+  <main id="vCase">
+    <section class="hero">
+      <div class="face" id="face"></div>
+      <small class="kicker" id="kicker"></small>
+      <p class="headline" id="headline"></p>
+      <button class="listen" id="listen" aria-pressed="false"><span class="play" id="playIcon"></span><span><b id="listenLabel"></b><small id="listenSub"></small></span></button>
+      <div class="caption" id="caption" aria-live="polite" hidden></div>
+      <button class="readit" id="readit" aria-expanded="false" aria-controls="brief"></button>
+      <div class="brief" id="brief" hidden></div>
+      <div class="tiles" id="tiles"></div>
+    </section>
+    <section class="block"><h2>Need to know</h2><div id="alerts"></div></section>
+    <div id="folds"></div>
+  </main>
+
+  <main id="vTime" hidden>
+    <div class="scrub">
+      <svg id="strip" height="46" role="img" aria-label="Activity by month. Tap to jump to a month."></svg>
+      <div class="chips" id="chips" role="group" aria-label="Show records for"></div>
+    </div>
+    <div id="feed"></div>
+  </main>
+
+  <main id="vAsk" hidden>
+    <div class="ask-wrap">
+      <h2>Ask about this case</h2>
+      <p>Answers cite the records they come from.</p>
+      <form class="askform" id="askAll"><input id="askAllInput" placeholder="Ask anything about the file" aria-label="Question" autocomplete="off"><button>Ask</button></form>
+      <div class="sugg" id="sugg"></div>
+      <div id="askAllOut"></div>
+    </div>
+  </main>
+</div>
+
+<nav class="tabs fixed" aria-label="Views">
+  <button data-tab="vCase"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="15" height="15" rx="3"/><path d="M7 8.500h8M7 12h8M7 15.500h5"/></svg>Case<b id="tabAlerts"></b></button>
+  <button data-tab="vTime"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3 11h16"/><circle cx="7" cy="11" r="2" fill="currentColor"/><circle cx="14" cy="11" r="2" fill="currentColor"/><path d="M7 5v3M14 14v3"/></svg>Timeline</button>
+  <button data-tab="vAsk"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.500h14v9.500H10l-4 3v-3H4z"/></svg>Ask</button>
+</nav>
+
+<div class="scrim" id="scrim" hidden></div>
+<section class="sheet fixed" id="sheet" role="dialog" aria-modal="true" aria-label="Record" hidden></section>
+
+<script>
+/* ------------------------------------------------------------------
+   Mock data. Copied from design/timeline.html so both mocks tell the same story;
+   replaced by the Clio bundle at integration.
+   ------------------------------------------------------------------ */
+const DAY = 864e5;
+const d = (s) => new Date(s + "T12:00:00").getTime();
+const TODAY = d("2026-10-02");
+
+const LANES = [
+  { id: "client",  name: "Dana Whitlock",            role: "Client",                 ink: "--lane-client",   paper: "--lane-client-p" },
+  { id: "firm",    name: "Our firm",                 role: "Attorneys and staff",    ink: "--lane-firm",     paper: "--lane-firm-p" },
+  { id: "ortho",   name: "Ridgeline Orthopedics",    role: "Treating provider",      ink: "--lane-provider", paper: "--lane-provider-p" },
+  { id: "pt",      name: "Northside Physical Therapy", role: "Treating provider",    ink: "--lane-provider", paper: "--lane-provider-p" },
+  { id: "defense", name: "Harbor Transit",           role: "Defense and its counsel", ink: "--lane-defense",  paper: "--lane-defense-p" },
+  { id: "court",   name: "Court",                    role: "Orders and hearings",    ink: "--lane-court",    paper: "--lane-court-p" },
+  { id: "file",    name: "File",                     role: "When records were added", ink: "--lane-file",     paper: "--lane-file-p" },
+];
+const laneById = Object.fromEntries(LANES.map((l, i) => [l.id, { ...l, index: i }]));
+
+const KIND = { email: "Email", call: "Phone call", note: "Note", task: "Task", event: "Calendar entry", doc: "Document", expense: "Expense" };
+
+// Small seeded generator so the filler is the same on every load.
+let seed = 20261002;
+const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const pick = (a) => a[Math.floor(rnd() * a.length)];
+
+const events = [];
+const add = (e) => { e.id = "e" + events.length; events.push(e); return e.id; };
+
+function fill(from, to, n, make) {
+  const a = d(from), b = d(to);
+  for (let i = 0; i < n; i++) add({ t: Math.round((a + rnd() * (b - a)) / DAY) * DAY, ...make() });
+}
+
+fill("2023-05-10", "2026-09-20", 16, () => pick([
+  { lane: "client", kind: "email", party: "client", title: "Update on my treatment", body: "Quick update after this week's appointment. The shoulder is still stiff in the mornings and I am keeping every visit.\n\nLet me know if you need anything from me." },
+  { lane: "client", kind: "call",  party: "client", title: "Call from client about work", body: "Client called to say they are still unable to return to full duties. Asked whether the wage records had been requested yet." },
+  { lane: "client", kind: "email", party: "client", title: "Photos and paperwork", body: "Attaching the paperwork I was handed at the last visit, plus two more photos of the car." },
+]));
+fill("2023-05-08", "2026-09-28", 30, () => pick([
+  { lane: "firm", kind: "note",  title: "File review", body: "Reviewed the file ahead of the next conference. Outstanding: updated records from both treating providers and the wage documentation." },
+  { lane: "firm", kind: "email", party: "client",  title: "Checking in before the conference", body: "Dana, a short note to confirm we are on track. Please send any new bills you have received." },
+  { lane: "firm", kind: "email", party: "ortho",   title: "Request for updated records", body: "Please send the chart notes and billing for all visits since our last request. An authorization is enclosed." },
+  { lane: "firm", kind: "email", party: "defense", title: "Follow-up on outstanding discovery", body: "Counsel, we have not received responses to the demands served last quarter. Please advise when we can expect them." },
+  { lane: "firm", kind: "task",  title: "Calendar next compliance date", body: "Confirm the compliance conference date and diary the discovery deadlines that run from it.", done: true },
+]));
+fill("2023-05-20", "2026-03-30", 9, () => pick([
+  { lane: "ortho", kind: "email", party: "ortho", title: "Visit summary and billing", body: "Attached are the visit summary and the statement for this month's appointments." },
+  { lane: "ortho", kind: "call",  party: "ortho", title: "Front office returned call", body: "Front office confirmed the patient attended the follow-up and that the surgeon recommends a second procedure." },
+]));
+fill("2023-05-25", "2023-11-15", 6, () => pick([
+  { lane: "pt", kind: "email", party: "pt", title: "Attendance and progress notes", body: "Progress notes for the last four sessions are attached. Patient attended all scheduled visits." },
+  { lane: "pt", kind: "email", party: "pt", title: "Statement of account", body: "Current statement of account for services to date." },
+]));
+fill("2024-01-15", "2026-08-30", 11, () => pick([
+  { lane: "defense", kind: "email", party: "defense", title: "Response to discovery demands", body: "Enclosed please find defendant's responses and objections to plaintiff's demands." },
+  { lane: "defense", kind: "email", party: "defense", title: "Request to adjourn deposition", body: "We ask to adjourn the deposition by three weeks because of a scheduling conflict." },
+]));
+fill("2024-02-01", "2026-06-30", 6, () => pick([
+  { lane: "court", kind: "event", with: ["defense"], title: "Compliance conference", body: "Compliance conference held. Discovery deadlines extended; next conference set." },
+  { lane: "court", kind: "event", title: "Preliminary conference order", body: "Order entered setting the discovery schedule." },
+]));
+fill("2023-05-14", "2026-08-01", 12, () => pick([
+  { lane: "file", kind: "doc",     title: "Records bundle added", body: "Scanned records received from a treating provider and added to the medical records folder." },
+  { lane: "file", kind: "doc",     title: "Discovery response filed to folder", body: "Copy of the served response saved to the discovery folder." },
+  { lane: "file", kind: "expense", title: "Records reproduction fee", body: "Fee paid by the firm for reproduction of a provider chart." },
+]));
+
+/* Hand-written events that carry the story the design needs to show. */
+// A provider that went silent, and the requests that went unanswered.
+const ptAsk = ["2024-03-12", "2024-11-06", "2025-07-22", "2026-05-05"].map((day, i) => add({
+  t: d(day), lane: "firm", kind: "email", party: "pt", open: true,
+  title: `Records request to physical therapy (${["first", "second", "third", "fourth"][i]})`,
+  body: "We represent your patient and are still missing treatment notes and billing after November 2023. Please send them, or tell us if treatment ended.",
+}));
+
+// The surgeon who has not scheduled the surgery.
+const surgeryAsks = ["2026-05-05", "2026-06-17", "2026-07-29", "2026-09-02"].map((day, i) => add({
+  t: d(day), lane: "firm", kind: i % 2 ? "call" : "email", party: "ortho", open: true,
+  title: "Asked for a date for the second shoulder surgery",
+  body: "The second procedure has been recommended but not scheduled. We cannot value the case or certify readiness until we have a date. Please confirm one.",
+}));
+const surgeryReply = add({ t: d("2026-09-24"), lane: "ortho", kind: "email", party: "ortho", title: "Re: surgery date", body: "The surgeon's calendar for the fall is not final. We will be in touch once the schedule opens." });
+const lateTask = add({ t: d("2026-08-25"), lane: "firm", kind: "task", overdue: true, title: "Obtain updated orthopedic records", body: "Due 25 August 2026. Still open: the provider has not sent records since the spring request." });
+
+// Contradiction 1: a note says nobody contacted the witness; a subpoena says otherwise.
+const subpoena = add({ t: d("2025-11-02"), lane: "court", kind: "doc", title: "Subpoena served on eyewitness", body: "Subpoena filed and served on the eyewitness, setting a deposition for 8 December 2025." });
+const witnessNote = add({ t: d("2026-09-15"), lane: "firm", kind: "note", title: "Witness status", body: "Checked the file for the eyewitness. Nobody has contacted him since the accident. We should reach out before the next conference." });
+
+// Contradiction 2: limitations marked satisfied; the answer pleads it as a defense.
+const answer = add({ t: d("2024-12-18"), lane: "defense", kind: "doc", title: "Verified answer with affirmative defenses", body: "Defendant's verified answer. Among the affirmative defenses: the action is barred by the applicable statute of limitations, and plaintiff failed to wear a seat belt." });
+const solTask = add({ t: d("2026-04-22"), lane: "firm", kind: "task", done: true, title: "Limitations date", body: "Marked complete. Limitations satisfied: notice of claim served and suit commenced within time." });
+
+// Contradiction 3 and a long file connector: a report filed months after the exam it describes.
+const exam = add({ t: d("2026-03-31"), lane: "defense", kind: "event", with: ["client"], title: "Defense medical examination", body: "Orthopedic examination of the plaintiff by the defense's examining physician." });
+const report = add({ t: d("2026-09-14"), lane: "file", kind: "doc", describes: exam, title: "Defense examination report added", body: "Report of the 31 March 2026 examination. Records reduced range of motion in the right shoulder; rotation testing marked as refused. Concludes the patient has plateaued." });
+const reportNote = add({ t: d("2026-09-13"), lane: "firm", kind: "note", title: "Summary of defense examination", body: "Read the defense examiner's report. He records normal range of motion and no restrictions. Helpful to them on damages." });
+
+// How it started, and the treatment the summary cites.
+const intake = add({ t: d("2023-05-09"), lane: "firm", kind: "note", title: "Intake summary", body: "Met with Dana Whitlock. On 23 April 2023 a Harbor Transit service vehicle turned across the client's lane and struck the driver's side. Complaints: both shoulders and neck. Retainer and authorizations signed." });
+const surgery1 = add({ t: d("2023-08-02"), lane: "ortho", kind: "event", with: ["client"], title: "Left shoulder surgery", body: "Arthroscopic repair of the left shoulder at Ridgeline Orthopedics. Operative report received 31 August 2023." });
+const recommended = add({ t: d("2024-05-14"), lane: "ortho", kind: "email", party: "ortho", title: "Second surgery recommended", body: "After the latest imaging the surgeon recommends an arthroscopic repair of the right shoulder. Scheduling to follow." });
+
+// Letters of representation: who was told the firm represents the client, and who acknowledged it.
+const lorSend = (day, party, who) => add({ t: d(day), lane: "firm", kind: "email", party, title: `Letter of representation to ${who}`, body: `Please be advised that this firm represents Dana Whitlock for injuries sustained on 23 April 2023. Direct all further communication to this office and confirm receipt.` });
+const lorAck = (day, lane, who) => add({ t: d(day), lane, kind: "email", party: lane, title: "Acknowledgment of representation", body: `${who} acknowledges your letter of representation and has noted the file.` });
+const LOR = [
+  ["Harbor Transit claims office", "Defendant's claims administrator", lorSend("2023-05-12", "defense", "Harbor Transit claims"), lorAck("2023-05-30", "defense", "The claims office")],
+  ["Ridgeline Orthopedics", "Treating provider", lorSend("2023-05-15", "ortho", "Ridgeline Orthopedics"), lorAck("2023-05-22", "ortho", "Ridgeline Orthopedics")],
+  ["Northside Physical Therapy", "Treating provider", lorSend("2023-05-26", "pt", "Northside Physical Therapy"), null],
+];
+const suitFiled = add({ t: d("2024-06-18"), lane: "court", kind: "doc", title: "Summons and complaint filed", body: "Action commenced against Harbor Transit. Index number assigned." });
+const noteOfIssue = add({ t: d("2026-12-15"), lane: "court", kind: "task", title: "Note of issue due", body: "Court-ordered deadline to file the note of issue and certify that discovery is complete." });
+
+// Last client contact, and what is coming.
+const lastCall = add({ t: d("2026-09-27"), lane: "client", kind: "call", party: "client", title: "Call with client", body: "Spoke with Dana for twenty minutes. Still in pain at night, still attending every appointment, anxious about the surgery date." });
+add({ t: d("2026-10-20"), lane: "firm", kind: "task", title: "Prepare client for deposition", body: "Due 20 October 2026. Preparation session ahead of the continued deposition." });
+const nextConf = add({ t: d("2026-11-12"), lane: "court", kind: "event", with: ["firm", "defense"], title: "Compliance conference", body: "Scheduled for 12 November 2026. The court expects a report on outstanding discovery." });
+add({ t: d("2026-12-08"), lane: "defense", kind: "event", with: ["client", "firm"], title: "Continued deposition of plaintiff", body: "Scheduled for 8 December 2026 at defense counsel's office." });
+
+const CONFLICTS = [
+  { id: "c0", a: witnessNote, b: subpoena, why: "A note says the witness was never contacted, but a subpoena was served on him ten months earlier.",
+    qa: "Nobody has contacted him since the accident.", qb: "Subpoena filed and served on the eyewitness, setting a deposition for 8 December 2025." },
+  { id: "c1", a: solTask, b: answer, why: "The limitations task is marked satisfied, but the defense pleaded limitations as a defense.",
+    qa: "Limitations satisfied: notice of claim served and suit commenced within time.", qb: "The action is barred by the applicable statute of limitations." },
+  { id: "c2", a: reportNote, b: report, why: "The note's summary of the report does not match what the report says.",
+    qa: "He records normal range of motion and no restrictions.", qb: "Records reduced range of motion in the right shoulder; rotation testing marked as refused." },
+];
+
+// The summary layer. In the real build the story and blocker chain are composed from extracted facts,
+// each citing record ids; the tiles, now/next/waiting and activity are computed from the records.
+const CASE = {
+  opened: d("2023-05-07"), costs: 1265, expenses: 5,
+  statute: d("2026-04-23"), suitFiled,
+  // Stage history. `from` is when the matter entered the stage; stages without one have not been reached.
+  stages: [
+    { phase: "Pre-litigation", name: "Intake", from: d("2023-05-07") },
+    { phase: "Pre-litigation", name: "Treatment", from: d("2023-06-01") },
+    { phase: "Pre-litigation", name: "Demand", from: d("2024-02-10") },
+    { phase: "Litigation", name: "Suit filed", from: d("2024-06-18") },
+    { phase: "Litigation", name: "Discovery", from: d("2025-01-20") },
+    { phase: "Litigation", name: "Mediation" },
+    { phase: "Litigation", name: "Trial or settlement" },
+  ],
+  headline: "In discovery, and stuck on one thing: the right shoulder surgery has no date.",
+  story: [
+    ["Dana Whitlock was struck by a Harbor Transit service vehicle on 23 April 2023 and retained the firm two weeks later.", [intake]],
+    ["The injuries are to both shoulders and the neck. The left shoulder was operated on in August 2023.", [surgery1]],
+    ["A second surgery, on the right shoulder, was recommended in May 2024. It still has no date, after four requests to the surgeon since May 2026.", [recommended, surgeryAsks[3], surgeryReply]],
+    ["Suit is filed and discovery is ongoing. The defense answered in December 2024 and its doctor examined the client in March 2026.", [answer, exam]],
+    ["The physical therapy office has not replied since November 2023, across four records requests.", [ptAsk[3]]],
+    ["Next is a compliance conference on 12 November 2026, where the court will ask what is still outstanding.", [nextConf]],
+  ],
+  chain: [
+    ["The right shoulder surgery has no date", "Waiting on Ridgeline Orthopedics for 5 months", [surgeryAsks[0], surgeryReply]],
+    ["Treatment cannot be called complete", "No end point for the medical records or the bills", [recommended]],
+    ["The case cannot be valued or certified ready", "Updated orthopedic records are also overdue", [lateTask]],
+    ["Compliance conference, 12 November", "The court will ask what is outstanding", [nextConf]],
+  ],
+  happened: {
+    summary: "A Harbor Transit service vehicle turned left across the client's lane and struck the driver's side of the client's car. The client drove home and went to the emergency room the next morning.",
+    when: "Sunday, 23 April 2023, about 8:30 in the morning",
+    where: "Mill Street at Harbor Avenue, Eastport, outside the Harbor Transit depot",
+    who: "Dana Whitlock, driving alone · a Harbor Transit employee driving a service vehicle · one eyewitness on foot",
+    first: "Neck, upper back and left shoulder pain reported at the emergency room on 24 April 2023",
+    disputed: "The defense says the client was not wearing a seat belt; its own examiner recorded a belted driver.",
+  },
+  // Inputs to the estimator. The amounts come from the file; the multiplier, fault share and fee are the attorney's assumptions.
+  value: { estimate: 340000, source: "Estimated Case Value field", specials: 96400, wages: 148000, liens: 22000,
+    caps: [["Self-insured, no stated limit", 0, "Insurance Carrier field and the intake notes"], ["$100,000 per person", 100000, "Policy Limits field, marked confirmed"]] },
+  injuries: [
+    ["Left shoulder", "arthroscopic repair, 2 August 2023", surgery1],
+    ["Right shoulder", "surgery recommended May 2024, not scheduled", recommended],
+    ["Neck", "conservative treatment; physical therapy records stop in November 2023", ptAsk[0]],
+  ],
+};
+
+events.sort((a, b) => a.t - b.t);
+const byId = Object.fromEntries(events.map((e) => [e.id, e]));
+const conflictsOf = (id) => CONFLICTS.filter((c) => c.a === id || c.b === id);
+
+
+/* ------------------------------------------------------------------
+   Helpers
+   ------------------------------------------------------------------ */
+const $ = (id) => document.getElementById(id);
+const fmt = (t, o = { month: "short", day: "numeric", year: "numeric" }) => new Date(t).toLocaleDateString("en-US", o);
+const span = (a, b) => { const m = Math.round((b - a) / (30.44 * DAY)); return m < 1 ? `${Math.round((b - a) / DAY)} days` : m < 12 ? `${m} mo` : `${Math.floor(m / 12)} yr ${m % 12} mo`; };
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const money = (n) => (n < 0 ? "−$" : "$") + Math.abs(n).toLocaleString("en-US");
+const short = (t) => fmt(t, { month: "short", day: "numeric", year: "2-digit" }).replace(", ", " ’");
+const chip = (id) => { const e = byId[id]; return `<button class="src" data-id="${id}"><i style="background:var(${laneById[e.lane].paper})"></i>${KIND[e.kind]} · ${short(e.t)}</button>`; };
+const lastHeard = (laneId) => { const h = events.filter((e) => e.lane === laneId && e.t <= TODAY); return h.length ? h[h.length - 1] : null; };
+const partyOf = (e) => e.party || e.lane;
+const whoFrom = (e) => e.lane === "firm" ? "Our firm" : laneById[e.lane].name;
+const whoTo = (e) => e.lane === "firm" ? (e.party ? laneById[e.party].name : null) : (e.party ? "Our firm" : null);
+
+const ICON = {
+  email: `<rect x="-4.5" y="-3.2" width="9" height="6.4" rx="1"/><path d="M-4.5 -2.4 0 1 4.5 -2.4"/>`,
+  call: `<path d="M-3.9 -4.200h2.300l1 2.6-1.4 1c.6 1.3 1.6 2.3 2.9 2.900l1-1.4 2.6 1v2.300c-4.6.3-8.7-3.8-8.4-8.400z" fill="currentColor" stroke="none"/>`,
+  note: `<path d="M-3.6 -3h7.200M-3.6 0h7.200M-3.6 3h4.4"/>`,
+  task: `<path d="M-4 .2-1.3 2.9 4-2.9"/>`,
+  event: `<rect x="-4.2" y="-3.4" width="8.4" height="7.6" rx="1"/><path d="M-4.2 -.9h8.400M-2 -5v2.200M2 -5v2.2"/>`,
+  doc: `<path d="M-3.2 -4.600h3.900l2.5 2.500v6.700h-6.400zM.7 -4.600v2.500h2.5"/>`,
+  expense: `<path d="M2.4 -2.400c-.5-.9-1.4-1.3-2.4-1.3-1.4 0-2.4.7-2.4 1.8 0 2.6 4.9 1.1 4.9 3.7 0 1.1-1 1.9-2.5 1.9-1.1 0-2.1-.5-2.6-1.400M0 -5v10"/>`,
+};
+const disc = (e) => { const c = `var(${laneById[e.lane].paper})`, hollow = e.open;
+  return `<svg width="30" height="30" viewBox="-15 -15 30 30" aria-hidden="true"><circle r="12.5" fill="${hollow ? "var(--paper-card)" : c}" stroke="${c}" stroke-width="2"/><g transform="scale(1.250)" color="${hollow ? c : "#fff"}" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICON[e.kind]}</g></svg>`; };
+
+const state = { tab: "vCase", party: "all", sheet: null };
+const upcoming = events.filter((e) => e.t > TODAY), overdue = events.filter((e) => e.overdue);
+const reached = CASE.stages.filter((g) => g.from), stageNow = reached[reached.length - 1];
+const sol = CONFLICTS.find((k) => /limitations/i.test(k.why));
+const filed = CASE.suitFiled ? byId[CASE.suitFiled] : null, toStatute = Math.round((CASE.statute - TODAY) / DAY);
+
+/* ------------------------------------------------------------------
+   Case
+   ------------------------------------------------------------------ */
+// Placeholder illustration. The real build shows the face cropped from the client's photo ID.
+const PORTRAIT = `<svg viewBox="0 0 96 96" role="img" aria-label="Client portrait (placeholder illustration)"><rect width="96" height="96" fill="#cfe6d9"/><path d="M10 96c1-19 15-27 38-27s37 8 38 27z" fill="#0e6b57"/><path d="M39 70c3 6 15 6 18 0l-2-12H41z" fill="#e2ad8c"/><ellipse cx="48" cy="42" rx="17.5" ry="20.5" fill="#f0c4a4"/><path d="M29.5 44c-3-19 6-31 19-31s22 10 18.5 31c-2-9-6-15-12-17-8 4-17 5-22 6-2 3-3 6-3.5 11z" fill="#3a2a22"/><circle cx="41" cy="44" r="1.8" fill="#3a2a22"/><circle cx="55" cy="44" r="1.8" fill="#3a2a22"/><path d="M42 53c3 3 9 3 12 0" fill="none" stroke="#a8644a" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+
+function renderCase() {
+  const call = lastHeard("client");
+  $("phasePill").textContent = stageNow.phase;
+  $("face").innerHTML = PORTRAIT;
+  $("headline").textContent = CASE.headline;
+  $("kicker").textContent = `${laneById.client.name} · ${stageNow.phase} · ${stageNow.name}`;
+  const stageBar = CASE.stages.map((g, i) => (i && CASE.stages[i - 1].phase !== g.phase ? `<i class="gap"></i>` : "") + `<i class="${g === stageNow ? "now" : g.from ? "done" : ""}"></i>`).join("");
+
+  const tile = (cls, attr, label, value, sub) => `<button class="tile ${cls}" ${attr}><span>${label}</span><b>${value}</b><small>${sub}</small></button>`;
+  const statute = sol ? ["warn", `data-conflict="${sol.id}"`, "Review", "pleaded as a defense"]
+    : filed ? ["good", `data-id="${filed.id}"`, "Filed", "suit filed in time"]
+    : [toStatute <= 30 ? "late" : toStatute <= 90 ? "warn" : "good", "", `${toStatute} days`, `runs ${fmt(CASE.statute, { month: "short", day: "numeric" })}`];
+  $("tiles").innerHTML =
+    tile("good", `data-id="${call.id}"`, "Client contact", `${Math.round((TODAY - call.t) / DAY)} days`, `${KIND[call.kind].toLowerCase()}, ${fmt(call.t, { month: "short", day: "numeric" })}`) +
+    tile(statute[0], statute[1], "Statute", statute[2], statute[3]) +
+    tile("", upcoming.length ? `data-id="${upcoming[0].id}"` : "", "Next date", upcoming.length ? fmt(upcoming[0].t, { month: "short", day: "numeric" }) : "None", upcoming.length ? `in ${Math.round((upcoming[0].t - TODAY) / DAY)} days` : "");
+
+  // Need to know: rules over dates and records. Each one only appears when it applies.
+  const alerts = [], soon = upcoming.filter((e) => e.t - TODAY <= 90 * DAY), noAck = LOR.filter((r) => !r[3]);
+  const alert = (cls, attr, title, text) => alerts.push(`<button class="alert ${cls}" ${attr}><i>!</i><div><b>${title}</b><span>${text}</span></div></button>`);
+  if (!filed && toStatute <= 90) alert("crit", "", `${toStatute} days to the statute of limitations`, `It runs on ${fmt(CASE.statute)} and no suit is filed.`);
+  for (const e of overdue) alert("crit", `data-id="${e.id}"`, `Overdue: ${esc(e.title)}`, `${span(e.t, TODAY)} late`);
+  if (sol) alert("warn", `data-conflict="${sol.id}"`, "Limitations is pleaded as a defense", "The file marks it satisfied. An attorney should confirm.");
+  if (soon.length) alert("warn", `data-id="${soon[0].id}"`, `${soon.length} dates in the next 90 days`, `First: ${esc(soon[0].title)}, ${fmt(soon[0].t, { month: "short", day: "numeric" })}`);
+  for (const r of noAck) alert("warn", `data-id="${r[2]}"`, `No acknowledgment of our letter from ${esc(r[0])}`, `Sent ${span(byId[r[2]].t, TODAY)} ago`);
+  // Three at most on first view; the rest are one tap away.
+  $("alerts").innerHTML = alerts.slice(0, 3).join("") + (alerts.length > 3 ? `<div id="moreAlerts" hidden>${alerts.slice(3).join("")}</div><button class="more" data-more>Show ${alerts.length - 3} more</button>` : "");
+  $("tabAlerts").textContent = alerts.length || ""; $("tabAlerts").hidden = !alerts.length;
+
+  const waiting = LANES.map((l) => { const asks = events.filter((e) => e.open && e.party === l.id); if (!asks.length) return ""; const h = lastHeard(l.id);
+    return `<button class="item wait" data-id="${asks[asks.length - 1].id}"><b>${esc(l.name)}</b><span>${asks.length} requests open · last heard ${h ? fmt(h.t) : "never"}</span></button>`; }).filter(Boolean);
+  const h = CASE.happened, v = CASE.value;
+  const fold = (title, teaser, badge, body, cls = "") => `<details class="fold"><summary><div><b>${title}</b><small>${teaser}</small></div>${badge ? `<em class="${cls}">${badge}</em>` : "<span></span>"}</summary><div class="in">${body}</div></details>`;
+  $("folds").innerHTML =
+    fold("Stage of the matter", `${stageNow.phase} · ${stageNow.name} since ${fmt(stageNow.from, { month: "short", year: "numeric" })}`, "",
+      `<div class="stage"><div role="img" aria-label="Stage ${reached.length} of ${CASE.stages.length}">${stageBar}</div><ol>${CASE.stages.map((g) => `<li class="${g === stageNow ? "now" : ""}"><span>${g.phase} · ${g.name}</span><span>${g.from ? fmt(g.from, { month: "short", year: "numeric" }) : "not reached"}</span></li>`).join("")}</ol></div>`) +
+    fold("What happened", esc(h.when), "", `<dl class="what"><dt>What</dt><dd>${esc(h.summary)} ${chip(intake)}</dd><dt>Where</dt><dd>${esc(h.where)}</dd><dt>Who</dt><dd>${esc(h.who)}</dd><dt>First care</dt><dd>${esc(h.first)}</dd><dt>Disputed</dt><dd>${esc(h.disputed)} ${chip(answer)}${chip(report)}</dd></dl>`) +
+    fold("The story so far", "Six sentences, each with its source", "", `<ol class="story">${CASE.story.map(([text, src]) => `<li>${esc(text)}<br>${src.map(chip).join("")}</li>`).join("")}</ol>`) +
+    fold("What is holding the case", esc(CASE.chain[0][0]), "", CASE.chain.map(([title, sub, src], i) => `<div class="link ${i ? "" : "root"}"><b>${esc(title)}</b><span>${esc(sub)}</span>${src.map(chip).join("")}</div>`).join("")) +
+    fold("Now, next, waiting", `${overdue.length} overdue · ${upcoming.length} coming up · ${waiting.length} waiting`, overdue.length ? `${overdue.length} late` : "",
+      `<p class="sub">Overdue</p>${overdue.map((e) => `<button class="item late" data-id="${e.id}"><b>${esc(e.title)}</b><span>${span(e.t, TODAY)} late</span></button>`).join("") || `<p class="note">Nothing overdue.</p>`}
+       <p class="sub">Coming up</p>${upcoming.map((e) => `<button class="item" data-id="${e.id}"><b>${esc(e.title)}</b><span>${fmt(e.t, { weekday: "short", month: "short", day: "numeric" })} · in ${Math.round((e.t - TODAY) / DAY)} days</span></button>`).join("")}
+       <p class="sub">Waiting on others</p>${waiting.join("")}`, "warn") +
+    fold("Where the file disagrees with itself", "Both sources shown side by side", `${CONFLICTS.length} to review`, CONFLICTS.map((k) => `<button class="clash" data-conflict="${k.id}"><b>⚠ ${esc(k.why)}</b><q>${esc(k.qa)}</q><q>${esc(k.qb)}</q></button>`).join(""), "warn") +
+    fold("Letters of representation", `${LOR.length - noAck.length} of ${LOR.length} acknowledged`, noAck.length ? `${noAck.length} open` : "", `<div class="lor">${LOR.map(([who, role, sent, ack]) => `<div><b>${esc(who)}</b>${ack ? `<span class="ok">✓ Acknowledged</span>` : `<span class="no">No reply</span>`}<small>${esc(role)}</small><span>${chip(sent)}${ack ? chip(ack) : ""}</span></div>`).join("")}</div>`, "warn") +
+    fold("Value estimator", "Arithmetic on the file's numbers, not a prediction", `<span id="estBadge"></span>`,
+      `<b class="big" id="estOut"></b><p class="note" id="estCap"></p><dl class="fall" id="estFall"></dl>
+       <div class="knobs"><label for="kMult">Pain and suffering, × medical bills</label><output id="oMult"></output><input id="kMult" type="range" min="0" max="5" step="0.25" value="1.5">
+       <label for="kFault">Client's share of fault</label><output id="oFault"></output><input id="kFault" type="range" min="0" max="100" step="5" value="0">
+       <label for="kFee">Firm's fee</label><output id="oFee"></output><input id="kFee" type="range" min="0" max="45" step="1" value="33">
+       <label for="kCap">Coverage: the file gives two answers ⚠</label><span></span><select id="kCap">${v.caps.map(([name], i) => `<option value="${i}">${esc(name)}</option>`).join("")}</select></div>`) +
+    fold("Injuries and treatment", CASE.injuries.map((r) => r[0]).join(" · "), "", CASE.injuries.map(([part, what, id]) => `<p style="margin-bottom:8px"><b>${esc(part)}:</b> ${esc(what)}<br>${chip(id)}</p>`).join(""));
+
+  const calc = () => {
+    const mult = +$("kMult").value, fault = +$("kFault").value / 100, fee = +$("kFee").value / 100, cap = v.caps[+$("kCap").value][1];
+    const pain = Math.round(v.specials * mult), gross = v.specials + v.wages + pain, after = Math.round(gross * (1 - fault));
+    const recover = cap ? Math.min(after, cap) : after, lost = after - recover, feeAmt = Math.round(recover * fee), net = recover - feeAmt - v.liens - CASE.costs;
+    $("oMult").textContent = mult.toFixed(2) + "×"; $("oFault").textContent = Math.round(fault * 100) + "%"; $("oFee").textContent = Math.round(fee * 100) + "%";
+    $("estOut").textContent = money(recover); $("estBadge").textContent = money(recover);
+    $("estCap").textContent = lost ? `⚠ ${money(lost)} sits above this coverage limit. The file's own estimate is ${money(v.estimate)}.` : `Recoverable on these assumptions. The file's own estimate is ${money(v.estimate)}.`;
+    const rows = [["Medical bills", v.specials], ["Lost wages claimed", v.wages], ["Pain and suffering", pain]];
+    if (fault) rows.push(["Client's fault", after - gross]); if (lost) rows.push(["Above coverage limit", -lost]);
+    rows.push(["Firm's fee", -feeAmt], ["Known liens", -v.liens], ["Firm costs", -CASE.costs]);
+    $("estFall").innerHTML = rows.map(([l, n]) => `<dt>${l}</dt><dd>${money(n)}</dd>`).join("") + `<dt class="sum">To the client</dt><dd class="sum">${money(net)}</dd>`;
+  };
+  ["kMult", "kFault", "kFee", "kCap"].forEach((id) => $(id).addEventListener("input", calc)); calc();
+}
+
+/* ------------------------------------------------------------------
+   The 30-second brief, and its narration.
+   "What happened" and "Where it stands" are hand-written here; in the real build a model composes
+   them from the file. The other lines are filled in from the records.
+   The mock speaks with the browser's built-in voice; the real build can use a better one.
+   ------------------------------------------------------------------ */
+const nth = (n) => ["no", "one", "two", "three", "four", "five", "six"][n] || String(n);
+const others = CONFLICTS.length - (sol ? 1 : 0), firstUp = upcoming[0], lastTalk = lastHeard("client");
+const BRIEF = [
+  ["Who", `${laneById.client.name} against ${laneById.defense.name}. In ${stageNow.phase.toLowerCase()}, at the ${stageNow.name.toLowerCase()} stage.`],
+  ["What happened", "In April 2023 a Harbor Transit vehicle struck the client's car, injuring both shoulders and the neck. The left shoulder has been operated on."],
+  ["Where it stands", "It is stuck on one thing: the right shoulder surgery has no date, after four requests."],
+  ["Watch out", `${nth(overdue.length)[0].toUpperCase() + nth(overdue.length).slice(1)} task${overdue.length === 1 ? " is" : "s are"} overdue.${sol ? " The defense pleads the statute of limitations," : ""} ${sol ? "and the" : "The"} file contradicts itself in ${nth(others)} ${sol ? "other " : ""}place${others === 1 ? "" : "s"}.`],
+  ["Next", `The client was last contacted ${nth(Math.round((TODAY - lastTalk.t) / DAY))} days ago. Next up: ${firstUp.title.toLowerCase()}, on ${fmt(firstUp.t, { month: "long", day: "numeric" })}.`],
+];
+const briefSeconds = Math.round(BRIEF.reduce((n, l) => n + l[1].split(/\s+/).length, 0) / 2.7 / 5) * 5;
+const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+let speaking = -1, readOpen = false;
+
+function renderBrief() {
+  const on = speaking >= 0;
+  $("brief").innerHTML = BRIEF.map(([label, text], i) => `<button data-line="${i}" class="${i === speaking ? "on" : on && i < speaking ? "done" : ""}"${i === speaking ? ' aria-current="true"' : ""}><div><small>${label}</small><span>${esc(text)}</span></div></button>`).join("");
+  // While it plays, only the line being spoken is on screen. The full text is behind "Read the brief".
+  $("caption").hidden = !on;
+  $("caption").innerHTML = on ? `<small>${BRIEF[speaking][0]}</small><p>${esc(BRIEF[speaking][1])}</p><div class="dots">${BRIEF.map((_, i) => `<i class="${i === speaking ? "on" : i < speaking ? "done" : ""}"></i>`).join("")}</div>` : "";
+  $("brief").hidden = !readOpen || on;
+  $("readit").hidden = on;
+  $("readit").textContent = readOpen ? "Hide the brief" : "Read the brief instead";
+  $("readit").setAttribute("aria-expanded", readOpen);
+  $("listen").disabled = !canSpeak;
+  $("listen").setAttribute("aria-pressed", on);
+  $("playIcon").innerHTML = on ? `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="2" fill="currentColor"/></svg>` : `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3.5 1.5v11l9-5.5z" fill="currentColor"/></svg>`;
+  $("listenLabel").textContent = !canSpeak ? "Voice is not available in this browser" : on ? "Stop" : "Listen to the brief";
+  $("listenSub").textContent = !canSpeak ? "The brief is written out below." : on ? `Part ${speaking + 1} of ${BRIEF.length}: ${BRIEF[speaking][0].toLowerCase()}` : `About ${briefSeconds} seconds`;
+}
+function stopBrief() { if (speaking < 0) return; speaking = -1; if (canSpeak) speechSynthesis.cancel(); renderBrief(); }
+function speakFrom(i) {
+  if (!canSpeak) return;
+  if (i >= BRIEF.length) return stopBrief();
+  speechSynthesis.cancel(); speaking = i; renderBrief();
+  const u = new SpeechSynthesisUtterance(BRIEF[i][1]); u.rate = 1.05; u.lang = "en-US";
+  u.onend = () => { if (speaking === i) speakFrom(i + 1); };
+  u.onerror = () => { if (speaking === i) stopBrief(); };
+  speechSynthesis.speak(u);
+}
+
+/* ------------------------------------------------------------------
+   Timeline: an overview strip to scrub, party chips, and a feed
+   ------------------------------------------------------------------ */
+const PARTIES = [["all", "Everyone", null, []], ["client", "Client", "--lane-client", ["client"]], ["firm", "Firm", "--lane-firm", ["firm"]],
+  ["medical", "Medical providers", "--lane-provider", ["ortho", "pt"]], ["legal", "Defense and court", "--lane-defense", ["defense", "court"]], ["file", "File", "--lane-file", ["file"]]];
+const monthOf = (t) => { const c = new Date(t); return c.getFullYear() * 12 + c.getMonth(); };
+const M0 = monthOf(events[0].t), M1 = monthOf(events[events.length - 1].t);
+const inParty = (e) => { const lanes = PARTIES.find((p) => p[0] === state.party)[3]; return !lanes.length || [e.lane, e.party, ...(e.with || [])].some((l) => lanes.includes(l)); };
+
+function renderStrip(current) {
+  const svg = $("strip"), W = svg.clientWidth || 400, n = M1 - M0 + 1, bw = (W - 32) / n, x = (m) => 16 + (m - M0) * bw;
+  const counts = Array(n).fill(0); events.filter(inParty).forEach((e) => counts[monthOf(e.t) - M0]++);
+  const max = Math.max(1, ...counts), color = PARTIES.find((p) => p[0] === state.party)[2] || "--ink-text-2";
+  let s = current != null ? `<rect x="${x(current) - 3}" y="2" width="${bw + 6}" height="34" rx="4" fill="var(--ink-raised)" stroke="var(--ink-text-3)"/>` : "";
+  counts.forEach((c, i) => { const h = c ? Math.max(3, c / max * 24) : 1; s += `<rect x="${(x(M0 + i) + .5).toFixed(1)}" y="${32 - h}" width="${Math.max(1, bw - 1).toFixed(1)}" height="${h}" rx="1" fill="var(${c ? color : "--ink-line"})"/>`; });
+  for (const k of CONFLICTS) { const m = monthOf(Math.max(byId[k.a].t, byId[k.b].t)); s += `<circle cx="${x(m) + bw / 2}" cy="6" r="3.5" fill="var(--contradiction)"/>`; }
+  const tm = monthOf(TODAY); s += `<line x1="${x(tm) + bw / 2}" x2="${x(tm) + bw / 2}" y1="2" y2="36" stroke="var(--ink-text)" stroke-width="1.5"/>`;
+  for (let m = M0; m <= M1; m++) if (m % 12 === 0) s += `<text x="${x(m)}" y="45" font-size="10" fill="var(--ink-text-3)" font-family="system-ui, sans-serif">${Math.floor(m / 12)}</text>`;
+  svg.setAttribute("viewBox", `0 0 ${W} 46`); svg.innerHTML = s;
+  svg.dataset.bw = bw;
+}
+
+function renderTimeline() {
+  $("chips").innerHTML = PARTIES.map(([id, name, color]) => `<button data-party="${id}" aria-pressed="${state.party === id}">${color ? `<i style="background:var(${color})"></i>` : ""}${name}</button>`).join("");
+  const list = events.filter(inParty), fut = list.filter((e) => e.t > TODAY), past = list.filter((e) => e.t <= TODAY).reverse();
+  const row = (e) => { const flags = [conflictsOf(e.id).length ? `<span class="flag warn">⚠ Contradicted</span>` : "", e.overdue ? `<span class="flag late">Overdue ${span(e.t, TODAY)}</span>` : "", e.open ? `<span class="flag open">No reply yet</span>` : ""].join("");
+    return `<button class="rec" data-id="${e.id}"><i style="background:var(${laneById[e.lane].paper})"></i>${disc(e)}<div><b>${esc(e.title)}</b><span>${esc(whoFrom(e))}${whoTo(e) ? " → " + esc(whoTo(e)) : ""} · ${fmt(e.t, { month: "short", day: "numeric" })}</span><p>${esc(e.body)}</p>${flags ? `<div class="flags">${flags}</div>` : ""}</div></button>`; };
+  let html = fut.length ? `<section class="month future" data-m="${monthOf(fut[0].t)}"><h3><span>Coming up</span><span>${fut.length}</span></h3>${fut.map(row).join("")}</section>` : "";
+  let prev = null;
+  for (let i = 0; i < past.length;) {
+    const m = monthOf(past[i].t), group = []; while (i < past.length && monthOf(past[i].t) === m) group.push(past[i++]);
+    if (prev != null && prev - m > 4) html += `<p class="quiet">${prev - m - 1} months with nothing here</p>`;
+    html += `<section class="month" data-m="${m}"><h3><span>${fmt(group[0].t, { month: "long", year: "numeric" })}</span><span>${group.length}</span></h3>${group.map(row).join("")}</section>`;
+    prev = m;
+  }
+  $("feed").innerHTML = html || `<p class="empty">No records for this party.</p>`;
+  syncStrip();
+}
+
+// The strip's marker follows whichever month is at the top of the feed.
+function syncStrip() {
+  if (state.tab !== "vTime") return;
+  const top = $("feed").querySelectorAll(".month"); let cur = null;
+  for (const el of top) { if (el.getBoundingClientRect().bottom > 160) { cur = +el.dataset.m; break; } }
+  renderStrip(cur);
+}
+function jumpTo(clientX) {
+  const svg = $("strip"), r = svg.getBoundingClientRect(), m = Math.round(M0 + (clientX - r.left - 16) / +svg.dataset.bw);
+  const secs = [...$("feed").querySelectorAll(".month")]; if (!secs.length) return;
+  secs.reduce((a, b) => Math.abs(+b.dataset.m - m) < Math.abs(+a.dataset.m - m) ? b : a).scrollIntoView({ block: "start" });
+}
+
+/* ------------------------------------------------------------------
+   Sheet: one record, or both sides of a contradiction
+   ------------------------------------------------------------------ */
+function openSheet(html, tint) {
+  stopBrief();
+  const sh = $("sheet"); sh.style.setProperty("--tint", tint); sh.innerHTML = `<div class="grab"></div>` + html; sh.hidden = false; $("scrim").hidden = false; sh.scrollTop = 0;
+  document.body.style.overflow = "hidden"; sh.querySelector(".x").focus();
+}
+function closeSheet() { $("sheet").hidden = true; $("scrim").hidden = true; document.body.style.overflow = ""; state.sheet = null; }
+
+function showRecord(id) {
+  const e = byId[id], lane = laneById[e.lane], to = whoTo(e); state.sheet = id;
+  const thread = events.filter((o) => partyOf(o) === partyOf(e)), i = thread.indexOf(e);
+  const flags = [...conflictsOf(id).map((k) => `<button class="flag warn" data-conflict="${k.id}">⚠ Contradicted elsewhere</button>`), e.overdue ? `<span class="flag late">Overdue by ${span(e.t, TODAY)}</span>` : "", e.open ? `<span class="flag open">No reply yet</span>` : "", e.t > TODAY ? `<span class="flag">In ${Math.round((e.t - TODAY) / DAY)} days</span>` : ""].join("");
+  openSheet(`<div class="sheet-top"><span class="kind"><i style="background:var(${lane.paper})"></i>${KIND[e.kind]} · ${esc(lane.name)}</span><button class="x" data-close aria-label="Close">×</button></div>
+    <h3>${esc(e.title)}</h3>${flags ? `<div class="flags">${flags}</div>` : ""}
+    <dl class="facts"><dt>Date</dt><dd>${fmt(e.t, { weekday: "short", month: "long", day: "numeric", year: "numeric" })}</dd><dt>From</dt><dd>${esc(whoFrom(e))}</dd>${to ? `<dt>To</dt><dd>${esc(to)}</dd>` : ""}</dl>
+    <p class="body">${esc(e.body)}</p>
+    <form class="askform" data-ask-record><input placeholder="Ask about this record" aria-label="Ask about this record" autocomplete="off"><button>Ask</button></form><div id="recAnswer"></div>
+    <div class="nav"><button data-id="${i > 0 ? thread[i - 1].id : ""}" ${i > 0 ? "" : "disabled"}>‹ Earlier in thread</button><button data-id="${i < thread.length - 1 ? thread[i + 1].id : ""}" ${i < thread.length - 1 ? "" : "disabled"}>Later in thread ›</button></div>`, `var(${lane.paper})`);
+}
+function showConflict(id) {
+  const k = CONFLICTS.find((c) => c.id === id), side = (eid, q, label) => { const e = byId[eid]; return `<div class="side"><h4>${label}</h4><q>${esc(q)}</q><p>${KIND[e.kind]} · ${esc(laneById[e.lane].name)} · ${fmt(e.t)}</p><button class="ghost" data-id="${eid}" style="margin-top:8px">Open this record</button></div>`; };
+  openSheet(`<div class="sheet-top"><span class="kind"><i style="background:var(--contradiction)"></i>Contradiction · needs attorney review</span><button class="x" data-close aria-label="Close">×</button></div>
+    <h3>${esc(k.why)}</h3>${side(k.a, k.qa, "The file says")}${side(k.b, k.qb, "But this shows")}
+    <p class="note" style="margin-top:12px">Both sources are shown as written. Which one is right is the attorney's call.</p>`, "var(--contradiction)");
+}
+
+/* ------------------------------------------------------------------
+   Ask. Three questions are answered from the mock records; anything typed gets a labelled placeholder.
+   ------------------------------------------------------------------ */
+const ASK = [
+  ["What is holding this case?", () => `${esc(CASE.chain[0][0])}: ${esc(CASE.chain[0][1].toLowerCase())}.<br>${CASE.chain[0][2].map(chip).join("")}`],
+  ["When did we last speak to the client?", () => { const c = lastHeard("client"); return `${fmt(c.t, { weekday: "long", month: "long", day: "numeric" })}, by ${KIND[c.kind].toLowerCase()}. ${esc(c.body)}<br>${chip(c.id)}`; }],
+  ["What is overdue or due soon?", () => [...overdue, ...upcoming.slice(0, 2)].map((e) => `${esc(e.title)} (${e.t < TODAY ? span(e.t, TODAY) + " late" : fmt(e.t, { month: "short", day: "numeric" })}) ${chip(e.id)}`).join("<br>")],
+];
+const placeholder = `<em>Sample answer · design mock</em>The real answer comes from searching the case file and cites each record it used.`;
+function answerAll(q) { const hit = ASK.find((a) => a[0] === q); $("askAllOut").innerHTML = `<div class="answer">${hit ? `<em>${esc(q)}</em>${hit[1]()}` : placeholder}</div>`; }
+
+/* ------------------------------------------------------------------
+   Wiring
+   ------------------------------------------------------------------ */
+function setTab(name) {
+  stopBrief();
+  state.tab = name;
+  ["vCase", "vTime", "vAsk"].forEach((id) => { $(id).hidden = id !== name; });
+  document.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tab === name));
+  window.scrollTo(0, 0);
+  if (name === "vTime") renderTimeline();
+}
+document.addEventListener("click", (ev) => {
+  const t = (sel) => ev.target.closest(sel);
+  if (t("[data-close]") || ev.target.id === "scrim") return closeSheet();
+  if (t("#listen")) return speaking >= 0 ? stopBrief() : speakFrom(0);
+  if (t("#readit")) { readOpen = !readOpen; return renderBrief(); }
+  if (t("[data-more]")) { $("moreAlerts").hidden = false; return t("[data-more]").remove(); }
+  if (t("[data-line]")) return speakFrom(+t("[data-line]").dataset.line);
+  if (t("[data-tab]")) return setTab(t("[data-tab]").dataset.tab);
+  if (t("[data-party]")) { state.party = t("[data-party]").dataset.party; window.scrollTo(0, 0); return renderTimeline(); }
+  if (t("[data-conflict]")) return showConflict(t("[data-conflict]").dataset.conflict);
+  if (t("[data-id]") && t("[data-id]").dataset.id) return showRecord(t("[data-id]").dataset.id);
+  if (t("[data-q]")) { $("askAllInput").value = t("[data-q]").dataset.q; return answerAll(t("[data-q]").dataset.q); }
+});
+document.addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  if (ev.target.id === "askAll") { const q = $("askAllInput").value.trim(); if (q) answerAll(q); }
+  if (ev.target.matches("[data-ask-record]") && ev.target.querySelector("input").value.trim()) $("recAnswer").innerHTML = `<div class="answer">${placeholder}</div>`;
+});
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !$("sheet").hidden) closeSheet(); });
+$("strip").addEventListener("pointerdown", (ev) => { jumpTo(ev.clientX); $("strip").setPointerCapture(ev.pointerId); });
+$("strip").addEventListener("pointermove", (ev) => { if (ev.buttons) jumpTo(ev.clientX); });
+window.addEventListener("scroll", syncStrip, { passive: true });
+window.addEventListener("resize", syncStrip);
+
+$("sugg").innerHTML = ASK.map(([q]) => `<button data-q="${esc(q)}">${esc(q)}</button>`).join("");
+readOpen = !canSpeak;
+renderCase(); renderBrief();
+window.addEventListener("pagehide", stopBrief);
+// mobile.html#timeline or #ask opens on that tab; #record opens a record sheet, for reviewing the design.
+const opts = location.hash.slice(1).split(",");
+setTab(opts.includes("timeline") || opts.includes("record") ? "vTime" : opts.includes("ask") ? "vAsk" : "vCase");
+if (opts.includes("record")) showRecord(CONFLICTS[0].a);
+</script>
+</body>
+</html>

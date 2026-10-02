@@ -11,6 +11,7 @@ Each page is one self-contained file: inline CSS, inline JS, no build step, no d
 | File | Audience | What it is |
 | --- | --- | --- |
 | `timeline.html` | Lawyer | Lane timeline of every record in a matter, with a reading area and an Ask field |
+| `mobile.html` | Lawyer, on a phone | A 30-second brief that can be read aloud, need-to-know alerts, collapsed case panels, a feed timeline with a scrub strip, and Ask |
 | `provider.html` | Provider | One patient's case as shared with one provider's office |
 | `provider-home.html` | Provider | All of a provider's patients across shared cases |
 
@@ -90,6 +91,17 @@ Layout follows Gong's account page: a compact strip of lanes on top, a reading a
 - **Value estimator:** an interactive calculator. Amounts come from the file (medical bills, lost wages, liens, costs); sliders set the pain-and-suffering multiple, the client's share of fault and the fee; a dropdown picks between the two conflicting coverage readings and shows how much falls above the limit. Labelled as arithmetic, not a prediction, because the PRD lists predicting settlement value as a non-goal.
 - **Injuries and treatment**, and **who we have heard from** (activity by quarter per party, with silence flagged).
 - The story, headline, blocker chain, value and injuries are hand-written in a `CASE` object; in the real build a model composes them from extracted facts, each citing record ids.
+
+## `mobile.html` (lawyer on a phone)
+
+The scenario: an attorney inherits an ongoing case and gets up to speed while walking. Shown in a phone-width column on a desktop; fills the screen on a phone.
+
+- **Case tab, first screen:** portrait, headline, a "Listen to the brief" button, and the brief itself in five labelled lines (who, what happened, where it stands, watch out, next). About 35 seconds read aloud. Narration uses the browser's built-in speech (`speechSynthesis`); the current line highlights, tapping a line starts there, and the button becomes Stop. If the browser has no speech support the button is disabled and says so.
+- **Below the brief:** stage bar, three tiles (client contact, statute, next date), Need to know, then the remaining case-state panels collapsed to one line each.
+- **Timeline tab:** not lanes. A strip of activity per month to scrub (contradictions and today marked), party filter chips, and a newest-first feed grouped by month with "N months with nothing here" gaps. Tapping a record opens a bottom sheet with the record, its flags, an Ask field and earlier/later in the thread. Contradictions open as a two-sided sheet.
+- **Ask tab:** three suggested questions answered from the mock records with source chips; anything typed gets a labelled placeholder.
+- **Mock data is copied from `timeline.html`** (the block between "Mock data" and "Lane strip"). If you change the data there, copy it again.
+- **URL options:** `#timeline`, `#ask`, `#record`.
 
 ## `provider.html` (one patient)
 
