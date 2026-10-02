@@ -27,15 +27,20 @@ import type {
 
 const AUDIT = "created_at,updated_at";
 
+// Clio's `fields` parser only supports one level of nesting, and refuses any
+// nesting at all inside `custom_field_values`. Every spec below is flat
+// within its sub-object; verified against the live API.
 const MATTER_FIELDS = [
   "id,etag,number,display_number,description,status",
-  "open_date,close_date,pending_date,statute_of_limitations",
+  "open_date,close_date,pending_date",
+  // Clio models a matter's limitations date as an associated Task, not a date.
+  "statute_of_limitations{id,name,due_at,status}",
   "client{id,name,type,primary_email_address,primary_phone_number}",
   "practice_area{id,name}",
   "matter_stage{id,name}",
   "responsible_attorney{id,name,email}",
   "originating_attorney{id,name,email}",
-  "custom_field_values{id,field_type,field_name,value,picklist_option{id,name},custom_field{id,name}}",
+  "custom_field_values{id,field_type,field_name,value}",
   AUDIT,
 ].join(",");
 
@@ -46,6 +51,12 @@ const CONTACT_FIELDS = [
   "phone_numbers{name,number,default_number}",
   "addresses{name,street,city,province,postal_code,country}",
   AUDIT,
+].join(",");
+
+/** Flat subset, for embedding inside another record's sub-object. */
+const CONTACT_SUMMARY_FIELDS = [
+  "id,etag,name,type,first_name,last_name,prefix,title",
+  "primary_email_address,primary_phone_number",
 ].join(",");
 
 const NOTE_FIELDS = `id,etag,subject,detail,date,type,matter{id,display_number},${AUDIT}`;
@@ -59,7 +70,7 @@ const COMMUNICATION_FIELDS = [
 ].join(",");
 
 const TASK_FIELDS = [
-  "id,etag,name,description,due_at,status,priority,complete,completed_at",
+  "id,etag,name,description,due_at,status,priority,completed_at",
   "statute_of_limitations",
   "assignee{id,name,type}",
   "matter{id,display_number}",
@@ -172,7 +183,7 @@ export function listMatterContacts(
   return clioGetAll<ClioRelationship>("/relationships.json", {
     params: listParams(options, {
       matter_id: matterId,
-      fields: `id,etag,description,contact{${CONTACT_FIELDS}},matter{id}`,
+      fields: `id,etag,description,contact{${CONTACT_SUMMARY_FIELDS}},matter{id}`,
     }),
     signal: options.signal,
   });
@@ -196,6 +207,8 @@ export function listNotes(
 ): Promise<ClioNote[]> {
   return clioGetAll<ClioNote>("/notes.json", {
     params: listParams(options, {
+      // /notes.json rejects the request without an explicit parent type.
+      type: "Matter",
       matter_id: matterId,
       fields: NOTE_FIELDS,
       order: "date(asc)",
