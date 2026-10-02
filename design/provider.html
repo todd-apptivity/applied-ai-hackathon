@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Provider portal · design mock</title>
+<style>
+  /* Design tokens. Same set as design/timeline.html; these port to src/app/globals.css (@theme) at integration. */
+  :root {
+    --paper: #f5f1e4;
+    --paper-card: #fffef9;
+    --paper-line: #e3dcc6;
+    --paper-text: #10231f;
+    --paper-text-2: #4d5e58;
+    --paper-text-3: #86948e;
+
+    --ink: #0e3b35;
+    --ink-raised: #165048;
+    --ink-line: #22635a;
+    --ink-text: #f5f1e4;
+    --ink-text-2: #c2d8cf;
+    --ink-text-3: #8fb3a7;
+
+    --lane-firm-p: #12855d;
+    --lane-provider: #c4b5ff;
+    --lane-provider-p: #4a3aa7;
+
+    /* Status. Reserved; always shown with an icon or label. */
+    --contradiction: #fab219;
+    --critical: #d03b3b;
+
+    --accent: #0e6b57;
+
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--paper);
+    color: var(--paper-text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--contradiction); outline-offset: 2px; }
+  h1, h2, h3, p { margin: 0; }
+
+  /* ---------- Ink: who this page is for ---------- */
+  .instrument { background: var(--ink); color: var(--ink-text); }
+  .topbar {
+    display: flex; align-items: center; gap: 16px 24px; flex-wrap: wrap;
+    padding: 16px 24px; max-width: 1320px; margin: 0 auto;
+  }
+  .who { min-width: 0; flex: 1 1 320px; }
+  .who small { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .who h1 { font-family: var(--serif); font-weight: 600; font-size: 24px; letter-spacing: -0.01em; line-height: 1.2; overflow-wrap: anywhere; }
+  .who p { font-size: 13px; color: var(--ink-text-2); margin-top: 2px; }
+  .who p b { color: var(--ink-text); font-weight: 600; }
+  .stamp { font-size: 12px; color: var(--ink-text-3); text-align: right; line-height: 1.4; }
+  .stamp b { display: block; color: var(--ink-text-2); font-weight: 600; }
+
+  /* Mock-only control: the real portal is one link per provider and has no switcher. */
+  .mockbar {
+    border-top: 1px dashed var(--ink-line); font-size: 12px; color: var(--ink-text-3);
+  }
+  .mockbar > div { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 24px; max-width: 1320px; margin: 0 auto; }
+  .views { display: flex; gap: 2px; background: var(--ink-raised); padding: 3px; border-radius: 8px; }
+  .views button { border: 0; background: none; color: var(--ink-text-2); padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .views button[aria-pressed="true"] { background: var(--ink-text); color: var(--ink); }
+
+  /* ---------- Paper ---------- */
+  main { max-width: 1320px; margin: 0 auto; padding: 24px; display: grid; gap: 24px; }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .section-head h2 { font-family: var(--serif); font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .section-head span { font-size: 13px; color: var(--paper-text-2); }
+  .card {
+    background: var(--paper-card); border: 1px solid var(--paper-line); border-radius: 14px; padding: 20px 22px;
+    box-shadow: 0 1px 0 rgba(16,35,31,.04), 0 12px 32px -18px rgba(16,35,31,.25);
+  }
+
+  /* Status */
+  .status { display: block; }
+  .status h2 { font-family: var(--serif); font-size: 22px; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; margin-top: 6px; }
+  .status .lede { color: var(--paper-text-2); margin-top: 6px; font-size: 14px; }
+  .stages { display: flex; list-style: none; margin: 18px 0 0; padding: 0; }
+  .stages li { flex: 1; min-width: 0; position: relative; padding-top: 18px; font-size: 12px; color: var(--paper-text-3); text-align: center; line-height: 1.25; }
+  .stages li::before { content: ""; position: absolute; top: 5px; left: 0; right: 0; height: 2px; background: var(--paper-line); }
+  .stages li:first-child::before { left: 50%; }
+  .stages li:last-child::before { right: 50%; }
+  .stages li::after { content: ""; position: absolute; top: 0; left: 50%; margin-left: -6px; width: 12px; height: 12px; border-radius: 50%; background: var(--paper-card); border: 2px solid var(--paper-line); }
+  .stages li.done { color: var(--paper-text-2); }
+  .stages li.done::before, .stages li.now::before { background: var(--paper-text); }
+  .stages li.done::after { background: var(--paper-text); border-color: var(--paper-text); }
+  .stages li.now { color: var(--paper-text); font-weight: 600; }
+  .stages li.now::before { background: linear-gradient(to right, var(--paper-text) 50%, var(--paper-line) 50%); }
+  .stages li.now::after { border-color: var(--paper-text); box-shadow: 0 0 0 4px rgba(16,35,31,.1); }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .tile { background: var(--paper); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+  .tile dt { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--paper-text-3); }
+  .tile dd { margin: 2px 0 0; font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+  .tile small { display: block; font-weight: 400; font-size: 12px; color: var(--paper-text-2); }
+  dl { margin: 0; }
+
+  /* Requests */
+  .requests { display: grid; gap: 14px; }
+  .req { border-left: 4px solid var(--lane-firm-p); }
+  .req.late { border-left-color: var(--critical); }
+  .req.answered { border-left-color: var(--paper-text-3); }
+  .req-top { display: flex; gap: 12px 20px; align-items: flex-start; flex-wrap: wrap; }
+  .req-top > div:first-child { flex: 1 1 320px; min-width: 0; }
+  .req h3 { font-family: var(--serif); font-size: 20px; line-height: 1.25; font-weight: 600; overflow-wrap: anywhere; }
+  .req .why { color: var(--paper-text-2); font-size: 14px; margin-top: 4px; }
+  .flags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .flag { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 600; border: 1px solid var(--paper-text-3); color: var(--paper-text-2); white-space: nowrap; }
+  .flag.late { border-color: var(--critical); color: #a02020; background: #fdecec; }
+  .flag.sent { border-color: var(--contradiction); background: #fff4d6; color: #5c3d00; }
+  .asked { flex: none; text-align: right; }
+  .asked b { display: block; font-family: var(--serif); font-size: 30px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .asked span { font-size: 12px; color: var(--paper-text-2); }
+
+  .history { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--paper-line); }
+  .strip { padding: 0 7px; }
+  .track { position: relative; height: 28px; }
+  .track::before { content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 2px; background: var(--paper-line); }
+  .track i { position: absolute; top: 7px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; box-shadow: 0 0 0 2px var(--paper-card); }
+  .track i.ask { background: var(--lane-firm-p); }
+  .track i.reply { background: var(--paper-card); border: 3px solid var(--lane-provider-p); }
+  .track i.today { left: 100%; top: 3px; width: 2px; height: 22px; margin-left: -1px; border-radius: 0; background: var(--paper-text); box-shadow: none; }
+  .ends { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; color: var(--paper-text-3); margin: 0 -7px; }
+  .history details { margin-top: 6px; font-size: 13px; }
+  .history summary { cursor: pointer; color: var(--paper-text-2); width: fit-content; }
+  .history summary:hover { color: var(--paper-text); }
+  .history ol { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+  .history li { display: grid; grid-template-columns: 96px 110px minmax(0, 1fr); gap: 10px; color: var(--paper-text-2); }
+  .history li time { color: var(--paper-text-3); font-variant-numeric: tabular-nums; }
+  .history li b { color: var(--paper-text); font-weight: 600; }
+  .key { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--paper-text-3); margin-top: 2px; }
+  .key i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; border: 2px solid; }
+
+  .respond { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .respond label { font-size: 13px; color: var(--paper-text-2); flex: 1 1 100%; }
+  .respond input[type="date"], .respond input[type="text"], .respond select {
+    flex: 1 1 200px; min-width: 0; border: 1px solid var(--paper-line); background: var(--paper); border-radius: 8px; padding: 8px 12px;
+  }
+  .respond input:focus, .respond select:focus { outline: 2px solid var(--paper-text); outline-offset: 0; }
+  .btn { border: 0; background: var(--accent); color: var(--paper); border-radius: 8px; padding: 9px 16px; font-weight: 600; }
+  .btn.quiet { background: none; color: var(--paper-text-2); border: 1px solid var(--paper-line); font-weight: 500; }
+  .btn.quiet:hover { color: var(--paper-text); border-color: var(--paper-text-3); }
+  .file { flex: 1 1 200px; min-width: 0; border: 1px dashed var(--paper-text-3); border-radius: 8px; padding: 8px 12px; font-size: 13px; color: var(--paper-text-2); background: var(--paper); text-align: left; }
+  .sentbox { margin-top: 14px; padding: 12px 14px; background: var(--paper); border-radius: 10px; font-size: 14px; display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .sentbox p span { color: var(--paper-text-2); }
+
+  /* Lower grid */
+  .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+  .holding { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: h; }
+  .holding li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; font-size: 14px; color: var(--paper-text-2); }
+  .holding li::before { counter-increment: h; content: counter(h); width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--paper-text-3); display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--paper-text); }
+  .holding b { display: block; color: var(--paper-text); font-weight: 600; font-size: 15px; }
+  .rows { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .rows th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--paper-text-3); padding: 0 8px 6px 0; }
+  .rows td { padding: 8px 8px 8px 0; border-top: 1px solid var(--paper-line); vertical-align: top; overflow-wrap: anywhere; }
+  .rows td:last-child, .rows th:last-child { padding-right: 0; text-align: right; white-space: nowrap; }
+  .rows td small { display: block; color: var(--paper-text-3); font-size: 12px; }
+  .got { color: var(--lane-firm-p); font-weight: 600; }
+  .missing { color: #a02020; font-weight: 600; }
+  .sub { margin: 18px 0 8px; }
+
+  .visits { display: grid; gap: 10px; }
+  .visit { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--paper); border-radius: 10px; font-size: 14px; }
+  .visit b { font-weight: 600; }
+  .visit span { color: var(--paper-text-2); }
+  .visit .acts { display: flex; gap: 6px; }
+  .visit .btn { padding: 5px 12px; font-size: 13px; }
+
+  .changes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; color: var(--paper-text-2); }
+  .changes time { color: var(--paper-text-3); font-variant-numeric: tabular-nums; margin-right: 8px; }
+
+  /* Dashboard: patient, numbers at a glance, then a board of panels. */
+  .patient { display: flex; align-items: center; gap: 18px; min-width: 0; flex: 1 1 360px; }
+  .face { flex: none; width: 92px; height: 92px; border-radius: 50%; overflow: hidden; background: var(--ink-raised);
+    box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--lane-provider); }
+  .face svg { display: block; width: 100%; height: 100%; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; padding: 4px 24px 20px; max-width: 1320px; margin: 0 auto; }
+  .kpi { background: var(--ink-raised); border: 1px solid var(--ink-line); border-radius: 12px; padding: 12px 14px; min-width: 0; border-top: 3px solid var(--ink-text-3); }
+  .kpi.good { border-top-color: #6fe0b3; }
+  .kpi.late { border-top-color: var(--critical); }
+  .kpi.wait { border-top-color: var(--contradiction); }
+  .kpi dt { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .kpi dd { margin: 4px 0 0; font-family: var(--serif); font-size: 32px; line-height: 1.1; font-weight: 600; color: var(--ink-text); overflow-wrap: anywhere; }
+  .kpi small { display: block; margin-top: 4px; font-family: var(--sans); font-size: 12.5px; font-weight: 400; line-height: 1.35; color: var(--ink-text-2); }
+  .board { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+  .side { display: grid; gap: 16px; }
+  .side .card { padding: 16px 18px; }
+  .facts { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 14px; font-size: 13px; color: var(--paper-text-2); }
+  .facts b { color: var(--paper-text); font-weight: 600; }
+  .req h3 { font-size: 18px; }
+  .req.card { padding: 16px 18px; }
+  .respond.closed { justify-content: flex-end; }
+
+  /* Notifications */
+  .notif { position: relative; flex: none; }
+  .bell { position: relative; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--ink-line); background: var(--ink-raised); color: var(--ink-text); display: grid; place-items: center; }
+  .bell:hover, .bell[aria-expanded="true"] { border-color: var(--ink-text-3); }
+  .bell .n { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--contradiction); color: #2b1d00;
+    font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; box-shadow: 0 0 0 2px var(--ink); }
+  .tray { position: absolute; z-index: 10; top: 54px; right: 0; width: min(400px, calc(100vw - 32px)); background: var(--paper-card); color: var(--paper-text);
+    border: 1px solid var(--paper-line); border-radius: 14px; box-shadow: 0 18px 48px -12px rgba(0,0,0,.45); overflow: hidden; }
+  .tray[hidden] { display: none; }
+  .tray-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--paper-line); }
+  .tray-head b { font-family: var(--serif); font-size: 18px; }
+  .tray-head button { border: 0; background: none; padding: 0; font-size: 13px; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .tray ul { list-style: none; margin: 0; padding: 0; max-height: min(60vh, 440px); overflow-y: auto; }
+  .tray li + li { border-top: 1px solid var(--paper-line); }
+  .note { display: grid; grid-template-columns: 30px minmax(0, 1fr) 10px; gap: 10px; align-items: start; width: 100%; text-align: left; border: 0; background: none; padding: 12px 16px; }
+  .note:hover { background: var(--paper); }
+  .note .ic { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 14%, var(--paper-card)); color: var(--accent); }
+  .note.late .ic { background: #fdecec; color: #a02020; }
+  .note.act .ic { background: #fff4d6; color: #7a5200; }
+  .note b { display: block; font-size: 14px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+  .note span { display: block; font-size: 13px; color: var(--paper-text-2); line-height: 1.35; margin-top: 2px; overflow-wrap: anywhere; }
+  .note time { display: block; font-size: 12px; color: var(--paper-text-3); margin-top: 3px; }
+  .note .dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 6px; background: var(--accent); }
+  .note.read b { font-weight: 500; color: var(--paper-text-2); }
+  .note.read .dot { visibility: hidden; }
+  .tray p.none { padding: 20px 16px; font-size: 14px; color: var(--paper-text-2); }
+  .flash { animation: flash 1.6s ease-out; }
+  @keyframes flash { from { box-shadow: 0 0 0 4px var(--contradiction); } to { box-shadow: 0 0 0 4px transparent; } }
+  @media (prefers-reduced-motion: reduce) { .flash { animation: none; outline: 2px solid var(--contradiction); } }
+
+  footer { max-width: 1320px; margin: 0 auto; padding: 0 24px 40px; font-size: 13px; color: var(--paper-text-2); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 32px; }
+  footer b { color: var(--paper-text); }
+
+  @media (max-width: 1040px) { .board { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 860px) {
+    .topbar, .mockbar > div { padding-left: 16px; padding-right: 16px; }
+    .stamp { text-align: left; }
+    main { padding: 16px; gap: 20px; }
+    .card { padding: 16px; }
+    .status, .pair, footer { grid-template-columns: minmax(0, 1fr); }
+    .kpis { padding: 0 16px 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .kpi dd { font-size: 26px; }
+    .face { width: 68px; height: 68px; }
+    .topbar { position: relative; }
+    .notif { position: absolute; top: 16px; right: 16px; }
+    .patient { padding-right: 56px; }
+    .patient { gap: 14px; }
+    footer { padding: 0 16px 32px; }
+    .status h2 { font-size: 24px; }
+    .tiles { grid-template-columns: minmax(0, 1fr); }
+    .stages li { font-size: 0; }
+    .stages li.now { font-size: 12px; white-space: nowrap; }
+    .history li { grid-template-columns: 88px minmax(0, 1fr); }
+    .history li b { grid-column: 2; }
+    .history li span { grid-column: 2; }
+    .asked { text-align: left; display: flex; align-items: baseline; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<section class="instrument" aria-label="Shared case view">
+  <header class="topbar">
+    <div class="patient">
+      <div class="face" id="face"></div>
+      <div class="who">
+        <small><a href="provider-home.html" style="color:inherit;text-decoration:underline;text-underline-offset:3px">← All patients</a> · Your patient</small>
+        <h1 id="patientName"></h1>
+        <p id="patientLine"></p>
+      </div>
+    </div>
+    <div class="stamp" id="stamp"></div>
+    <div class="notif">
+      <button class="bell" id="bell" aria-haspopup="true" aria-expanded="false" aria-controls="tray">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8a5 5 0 0 1 10 0c0 4 1.5 5 2 6H3c.500-1 2-2 2-6zM8 16.500a2 2 0 0 0 4 0"/></svg>
+        <span class="n" id="bellCount"></span>
+      </button>
+      <div class="tray" id="tray" role="region" aria-label="Notifications" hidden></div>
+    </div>
+  </header>
+  <dl class="kpis" id="kpis" aria-label="At a glance"></dl>
+  <div class="mockbar"><div>
+    <span>Design mock only: preview as</span>
+    <div class="views" role="group" aria-label="Preview as provider" id="switcher"></div>
+    <span>Each provider gets one private link and sees only its own page.</span>
+  </div></div>
+</section>
+
+<main>
+  <div class="board">
+    <section aria-label="What we need from your office">
+      <div class="section-head">
+        <h2>What we need from your office</h2>
+        <span id="reqCount"></span>
+      </div>
+      <div class="requests" id="requests"></div>
+    </section>
+
+    <aside class="side">
+      <section class="card status" aria-label="Where the case stands" id="status"></section>
+      <section class="card" aria-label="Patient attendance">
+        <p class="eyebrow">Patient attendance</p>
+        <p style="font-size:13px;color:var(--paper-text-2);margin:4px 0 12px">From the firm's calendar. Tell us if any of it is wrong.</p>
+        <div class="visits" id="visits"></div>
+      </section>
+      <section class="card" aria-label="What is holding the case">
+        <p class="eyebrow">What is holding the case</p>
+        <ol class="holding" id="holding" style="margin-top:14px"></ol>
+      </section>
+      <section class="card" aria-label="Your records and bills">
+        <p class="eyebrow">Your records and bills</p>
+        <div id="records" style="margin-top:12px"></div>
+      </section>
+      <section class="card" aria-label="What changed since your last visit">
+        <p class="eyebrow" id="changesTitle"></p>
+        <ul class="changes" id="changes" style="margin-top:12px"></ul>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<footer id="footer"></footer>
+
+<script>
+/* ------------------------------------------------------------------
+   Mock data. Invented matter (same one as design/timeline.html);
+   replaced by the attorney-approved snapshot at integration.
+   Nothing here is on the default-deny list: no coverage amount, case
+   value, liability analysis, attorney notes or other providers' data.
+   ------------------------------------------------------------------ */
+const DAY = 864e5;
+const d = (s) => new Date(s + "T12:00:00").getTime();
+const TODAY = d("2026-10-02");
+
+const CASE = {
+  patient: "Dana Whitlock",
+  firm: "Marlow & Finch LLP",
+  contact: { name: "Priya Anand, paralegal", phone: "(555) 010-0142", email: "records@marlowfinch.example" },
+  stages: ["Claim opened", "Treatment", "Lawsuit filed", "Discovery", "Resolution"],
+  stage: 3,
+  headline: "In litigation, discovery ongoing",
+  lede: "The lawsuit is active. Both sides are still exchanging records and taking testimony; no trial date has been set.",
+  lastActivity: "2026-09-27",
+  coverage: "Coverage exists",
+  nextDate: { day: "2026-11-12", what: "Court conference" },
+};
+
+const PROVIDERS = {
+  ortho: {
+    name: "Ridgeline Orthopedics",
+    role: "Treating provider, orthopedic surgery",
+    published: "2026-09-29", lastVisit: "2026-09-10",
+    requests: [
+      { id: "r1", kind: "date", title: "A date for the second shoulder surgery",
+        why: "The procedure was recommended in May 2024 and has not been scheduled. If it is no longer planned, tell us that instead.",
+        asks: [["2026-05-05", "Email"], ["2026-06-17", "Phone call"], ["2026-07-29", "Email"], ["2026-09-02", "Phone call"]],
+        replies: [["2026-09-24", "Email", "The surgeon's calendar for the fall is not final. We will be in touch once the schedule opens."]] },
+      { id: "r2", kind: "file", due: "2026-08-25", title: "Office notes since March 2026",
+        why: "Chart notes for every visit after the last set you sent us.",
+        asks: [["2026-06-17", "Phone call"], ["2026-07-29", "Email"]], replies: [] },
+      { id: "r3", kind: "file", title: "Itemized bill to date",
+        why: "A ledger with procedure codes and payments received, so the balance on your account can be confirmed.",
+        asks: [["2026-09-02", "Phone call"]], replies: [] },
+    ],
+    holding: [
+      ["The second surgery has no date", "Until it is scheduled or ruled out, the patient's treatment cannot be described as complete."],
+      ["Your recent records are outstanding", "The firm cannot finish exchanging medical records with the other side without them."],
+      ["Court conference on November 12, 2026", "The court will ask what records are still outstanding."],
+    ],
+    received: [
+      ["Operative report, first surgery", "Jul 2023", "2023-08-31"],
+      ["Chart notes", "May 2023 to Mar 2026", "2026-03-30"],
+      ["Billing statement", "Through Dec 2025", "2026-01-14"],
+    ],
+    outstanding: [["Chart notes", "Apr 2026 onward"], ["Itemized bill", "Jan 2026 onward"]],
+    visits: [
+      { day: "2026-09-11", what: "Follow-up visit", past: true },
+      { day: "2026-10-09", what: "Follow-up visit" },
+    ],
+    notices: [
+      { id: "n1", t: "2026-10-01", kind: "late", to: "requests", title: "Office notes are now 38 days overdue", text: "Chart notes since March 2026 were due on August 25." },
+      { id: "n2", t: "2026-09-30", kind: "act", to: "visits", title: "Confirm the visit on October 9", text: "The firm's calendar shows a follow-up visit. Tell us if that is right." },
+      { id: "n3", t: "2026-09-29", kind: "info", to: "status", title: "The firm updated this page", text: "What you see here was refreshed and re-shared with your office." },
+      { id: "n4", t: "2026-09-27", kind: "info", to: "changes", title: "The case moved", text: "The firm spoke with the patient." },
+      { id: "n5", t: "2026-09-25", kind: "info", to: "requests", title: "The firm read your reply", text: "Your note about the surgery calendar was reviewed by staff. A date is still needed." },
+      { id: "n6", t: "2026-09-02", kind: "act", to: "requests", title: "Asked again for a surgery date", text: "Fourth request, by phone.", read: true },
+      { id: "n7", t: "2026-08-25", kind: "act", to: "requests", title: "Office notes came due", text: "Chart notes since March 2026.", read: true },
+    ],
+    changes: [
+      ["2026-09-27", "The firm spoke with the patient."],
+      ["2026-09-24", "Your reply about the surgery calendar was received."],
+      ["2026-09-14", "A medical examination report from the other side was added to the file."],
+    ],
+  },
+  pt: {
+    name: "Northside Physical Therapy",
+    role: "Treating provider, physical therapy",
+    published: "2026-09-29", lastVisit: null,
+    requests: [
+      { id: "r4", kind: "choice", due: "2026-10-14", title: "Treatment notes after November 2023, or confirmation that treatment ended",
+        why: "The last notes we hold are from November 2023. The firm's calendar still shows sessions at your office.",
+        choices: ["Treatment is ongoing; notes to follow", "Treatment ended", "Patient transferred elsewhere"],
+        asks: [["2024-03-12", "Email"], ["2024-11-06", "Email"], ["2025-07-22", "Email"], ["2026-05-05", "Email"]], replies: [] },
+      { id: "r5", kind: "file", title: "Statement of account to date",
+        why: "Charges and payments for all sessions, with procedure codes.",
+        asks: [["2026-05-05", "Email"]], replies: [] },
+    ],
+    holding: [
+      ["Nothing received from your office since November 2023", "The firm cannot tell whether the patient is still in treatment with you."],
+      ["Court conference on November 12, 2026", "The court will ask what records are still outstanding."],
+    ],
+    received: [
+      ["Progress notes", "May to Nov 2023", "2023-11-19"],
+      ["Statement of account", "Through Oct 2023", "2023-11-02"],
+    ],
+    outstanding: [["Progress notes", "Dec 2023 onward"], ["Statement of account", "Nov 2023 onward"]],
+    visits: [
+      { day: "2026-10-10", what: "Physical therapy session" },
+      { day: "2026-10-17", what: "Physical therapy session" },
+    ],
+    notices: [
+      { id: "n8", t: "2026-09-30", kind: "act", to: "requests", title: "An answer is needed by October 14", text: "Treatment notes after November 2023, or confirmation that treatment ended." },
+      { id: "n9", t: "2026-09-30", kind: "act", to: "visits", title: "Two sessions need confirming", text: "The firm's calendar shows sessions on October 10 and 17." },
+      { id: "n10", t: "2026-09-29", kind: "info", to: "status", title: "This page was shared with your office", text: "Marlow & Finch LLP opened a private view of this case for you." },
+    ],
+    changes: [],
+  },
+};
+
+/* ------------------------------------------------------------------
+   Rendering
+   ------------------------------------------------------------------ */
+const state = { provider: "ortho", reply: "r1", sent: {}, attendance: {}, seen: {}, tray: false };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (t, o = { month: "short", day: "numeric", year: "numeric" }) => new Date(typeof t === "string" ? d(t) : t).toLocaleDateString("en-US", o);
+const days = (a, b) => Math.round((b - a) / DAY);
+const span = (a, b) => { const n = days(a, b), m = Math.round(n / 30.44); return n < 60 ? `${n} day${n === 1 ? "" : "s"}` : m < 24 ? `${m} months` : `${Math.floor(m / 12)} yr ${m % 12} mo`; };
+const times = (n) => n === 1 ? "time" : "times";
+
+// Placeholder illustration. The real portal shows the face cropped from the client's photo ID, never the ID itself.
+const PORTRAIT = `<svg viewBox="0 0 96 96" role="img" aria-label="Patient portrait (placeholder illustration)">
+  <rect width="96" height="96" fill="#cfe6d9"/>
+  <path d="M10 96c1-19 15-27 38-27s37 8 38 27z" fill="#0e6b57"/>
+  <path d="M39 70c3 6 15 6 18 0l-2-12H41z" fill="#e2ad8c"/>
+  <ellipse cx="48" cy="42" rx="17.5" ry="20.5" fill="#f0c4a4"/>
+  <path d="M29.5 44c-3-19 6-31 19-31s22 10 18.5 31c-2-9-6-15-12-17-8 4-17 5-22 6-2 3-3 6-3.5 11z" fill="#3a2a22"/>
+  <circle cx="41" cy="44" r="1.8" fill="#3a2a22"/><circle cx="55" cy="44" r="1.8" fill="#3a2a22"/>
+  <path d="M42 53c3 3 9 3 12 0" fill="none" stroke="#a8644a" stroke-width="1.8" stroke-linecap="round"/>
+</svg>`;
+
+function renderHeader(p) {
+  $("face").innerHTML = PORTRAIT;
+  $("patientName").textContent = CASE.patient;
+  $("patientLine").innerHTML = `Shared with <b>${esc(p.name)}</b> by ${esc(CASE.firm)}`;
+  $("stamp").innerHTML = `<b>As of ${fmt(p.published)}</b>This page shows what the firm chose to share on that date.`;
+  $("switcher").innerHTML = Object.entries(PROVIDERS).map(([id, o]) =>
+    `<button data-provider="${id}" aria-pressed="${id === state.provider}">${esc(o.name)}</button>`).join("");
+}
+
+// Notifications: what needs the office's attention and what moved, newest first. Unread until opened.
+const NOTE_ICON = {
+  late: `<path d="M8 4.500v4M8 11.200v.100"/><circle cx="8" cy="8" r="6.2"/>`,
+  act:  `<path d="M3.5 8.3 6.5 11.2 12.5 4.8"/>`,
+  info: `<path d="M8 7.500v3.800M8 4.700v.100"/><circle cx="8" cy="8" r="6.2"/>`,
+};
+const ago = (t) => { const n = days(d(t), TODAY); return n === 0 ? "Today" : n === 1 ? "Yesterday" : n < 14 ? `${n} days ago` : fmt(t, { month: "short", day: "numeric" }); };
+function renderNotices(p) {
+  const unread = p.notices.filter((n) => !n.read && !state.seen[n.id]).length;
+  $("bell").setAttribute("aria-expanded", state.tray);
+  $("bell").setAttribute("aria-label", unread ? `Notifications, ${unread} unread` : "Notifications");
+  $("bellCount").textContent = unread || "";
+  $("bellCount").hidden = !unread;
+  $("tray").hidden = !state.tray;
+  $("tray").innerHTML = `<div class="tray-head"><b>Notifications</b>${unread ? `<button data-seen-all>Mark all as read</button>` : `<span style="font-size:13px;color:var(--paper-text-3)">All caught up</span>`}</div>` +
+    (p.notices.length ? `<ul>${p.notices.map((n) => {
+      const read = n.read || state.seen[n.id];
+      return `<li><button class="note ${n.kind} ${read ? "read" : ""}" data-notice="${n.id}">
+        <i class="ic"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${NOTE_ICON[n.kind]}</svg></i>
+        <div><b>${esc(n.title)}</b><span>${esc(n.text)}</span><time>${ago(n.t)}</time></div><i class="dot" ${read ? "" : 'aria-label="Unread"'}></i></button></li>`;
+    }).join("")}</ul>` : `<p class="none">Nothing yet. You will see it here when the firm asks for something or the case moves.</p>`);
+}
+
+// The numbers a front office wants before reading anything.
+function renderKpis(p) {
+  const open = p.requests.filter((r) => !state.sent[r.id]);
+  const late = open.filter((r) => r.due && d(r.due) < TODAY).length;
+  const oldest = open.length ? Math.min(...open.map((r) => d(r.asks[0][0]))) : null;
+  const asks = open.reduce((n, r) => n + r.asks.length, 0);
+  const next = p.visits.find((v) => !v.past);
+  const until = days(TODAY, d(CASE.nextDate.day));
+  const tile = (cls, label, value, sub) => `<div class="kpi ${cls}"><dt>${label}</dt><dd>${value}<small>${sub}</small></dd></div>`;
+  $("kpis").innerHTML =
+    tile(late ? "late" : open.length ? "wait" : "good", "Open requests", open.length, late ? `${late} overdue` : open.length ? "none overdue" : "nothing waiting on you") +
+    tile(open.length ? "wait" : "good", "Longest wait", oldest ? span(oldest, TODAY) : "None", oldest ? `asked ${asks} ${times(asks)} in total` : "all requests answered") +
+    tile(p.outstanding.length ? "wait" : "good", "Records outstanding", p.outstanding.length, esc(p.outstanding.map((o) => o[0]).join(", ").toLowerCase()) || "the firm has everything") +
+    tile("", "Next visit", next ? fmt(next.day, { month: "short", day: "numeric" }) : "None", next ? esc(next.what) + ", on the firm's calendar" : "nothing scheduled") +
+    tile("good", "Case status", "Active", `${esc(CASE.coverage.toLowerCase())} · court date in ${until} days`);
+}
+
+function renderStatus() {
+  const since = days(d(CASE.lastActivity), TODAY), until = days(TODAY, d(CASE.nextDate.day));
+  $("status").innerHTML = `
+    <p class="eyebrow">Where the case stands</p>
+    <h2>${esc(CASE.headline)}</h2>
+    <p class="lede">${esc(CASE.lede)}</p>
+    <ol class="stages" aria-label="Case stage">${CASE.stages.map((s, i) =>
+      `<li class="${i < CASE.stage ? "done" : i === CASE.stage ? "now" : ""}"${i === CASE.stage ? ' aria-current="step"' : ""}>${esc(s)}</li>`).join("")}</ol>
+    <p class="facts"><span>Last activity <b>${fmt(CASE.lastActivity, { month: "short", day: "numeric" })}</b>, ${since} days ago</span>
+      <span>Next date <b>${fmt(CASE.nextDate.day, { month: "short", day: "numeric" })}</b>, ${esc(CASE.nextDate.what.toLowerCase())} in ${until} days</span>
+      <span>Insurance <b>${esc(CASE.coverage.toLowerCase())}</b>, amount not shared</span></p>`;
+}
+
+// Each ask and reply on one line of time: filled for the firm asking, ringed for the office replying.
+function historyStrip(r) {
+  const pts = [...r.asks.map((a) => ({ t: d(a[0]), ask: true })), ...r.replies.map((a) => ({ t: d(a[0]) }))].sort((a, b) => a.t - b.t);
+  const t0 = pts[0].t, pct = (t) => (t - t0) / Math.max(DAY, TODAY - t0) * 100;
+  return `<div class="strip" role="img" aria-label="Asked ${r.asks.length} ${times(r.asks.length)}, ${r.replies.length} repl${r.replies.length === 1 ? "y" : "ies"}, over ${span(t0, TODAY)}">
+    <div class="track">${pts.map((p) => `<i class="${p.ask ? "ask" : "reply"}" style="left:${pct(p.t).toFixed(2)}%"></i>`).join("")}<i class="today"></i></div>
+    <div class="ends"><span>First asked ${fmt(t0)}</span><span>Today</span></div></div>`;
+}
+
+function historyList(r) {
+  const rows = [...r.asks.map((a) => ({ t: a[0], who: "Firm asked", how: a[1] })), ...r.replies.map((a) => ({ t: a[0], who: "Your office replied", how: a[1], text: a[2] }))]
+    .sort((a, b) => d(a.t) - d(b.t));
+  return `<ol>${rows.map((o) => `<li><time>${fmt(o.t)}</time><b>${o.who}</b><span>${esc(o.how)}${o.text ? `: “${esc(o.text)}”` : ""}</span></li>`).join("")}</ol>`;
+}
+
+function responder(r) {
+  const sent = state.sent[r.id];
+  if (sent) return `<div class="sentbox"><p><b>Sent to the firm.</b> <span>${esc(sent)} · waiting for staff to review.</span></p><button class="btn quiet" data-undo="${r.id}">Undo</button></div>`;
+  if (state.reply !== r.id) return `<div class="respond closed"><button class="btn" data-reply="${r.id}">Respond</button></div>`;
+  const field = r.kind === "date" ? `<input type="date" name="v" min="2026-10-02" aria-label="Date">`
+    : r.kind === "choice" ? `<select name="v" aria-label="Answer"><option value="">Choose an answer</option>${r.choices.map((c) => `<option>${esc(c)}</option>`).join("")}</select>`
+    : `<button type="button" class="file" data-pick="${r.id}">Choose files to attach</button><input type="hidden" name="v" value="">`;
+  const prompt = r.kind === "date" ? "Post the date, or tell us it is not planned." : r.kind === "choice" ? "Answer here and the firm stops asking." : "Attach the records here, or leave a note.";
+  return `<form class="respond" data-req="${r.id}">
+    <label>${prompt}</label>${field}
+    <input type="text" name="note" placeholder="Add a note (optional)" aria-label="Note">
+    <button class="btn">Send to the firm</button></form>`;
+}
+
+function renderRequests(p) {
+  const open = p.requests.filter((r) => !state.sent[r.id]).length;
+  $("reqCount").textContent = open ? `${open} open request${open === 1 ? "" : "s"}` : "Nothing open. Thank you.";
+  $("requests").innerHTML = p.requests.map((r) => {
+    const first = d(r.asks[0][0]), late = r.due && d(r.due) < TODAY, sent = state.sent[r.id];
+    const lastReply = r.replies.length ? r.replies[r.replies.length - 1][0] : null;
+    const flags = [
+      sent ? `<span class="flag sent">Your answer is with the firm</span>` : "",
+      late && !sent ? `<span class="flag late">Overdue by ${span(d(r.due), TODAY)}</span>` : "",
+      r.due && !late && !sent ? `<span class="flag">Needed by ${fmt(r.due, { month: "short", day: "numeric" })}</span>` : "",
+      `<span class="flag">Open for ${span(first, TODAY)}</span>`,
+      !lastReply ? `<span class="flag">No reply on file</span>` : `<span class="flag">Last reply ${fmt(lastReply, { month: "short", day: "numeric" })}</span>`,
+    ].join("");
+    return `<article class="card req ${sent ? "answered" : late ? "late" : ""}">
+      <div class="req-top">
+        <div><div class="flags">${flags}</div><h3>${esc(r.title)}</h3><p class="why">${esc(r.why)}</p></div>
+        <div class="asked"><b>${r.asks.length}</b><span>${times(r.asks.length)} asked</span></div>
+      </div>
+      <div class="history">${historyStrip(r)}
+        <div class="key"><span><i style="background:var(--lane-firm-p);border-color:var(--lane-firm-p)"></i>Firm asked</span><span><i style="border-color:var(--lane-provider-p)"></i>Your office replied</span></div>
+        <details><summary>Request history</summary>${historyList(r)}</details>
+      </div>
+      ${responder(r)}
+    </article>`;
+  }).join("");
+}
+
+function renderLower(p) {
+  $("holding").innerHTML = p.holding.map(([t, s]) => `<li><div><b>${esc(t)}</b>${esc(s)}</div></li>`).join("");
+  $("records").innerHTML = `
+    <table class="rows"><thead><tr><th>Received from you</th><th>On</th></tr></thead><tbody>
+      ${p.received.map(([n, c, on]) => `<tr><td>${esc(n)}<small>${esc(c)}</small></td><td><span class="got">✓</span> ${fmt(on)}</td></tr>`).join("")}
+    </tbody></table>
+    <p class="eyebrow sub">Still outstanding</p>
+    <table class="rows"><tbody>
+      ${p.outstanding.map(([n, c]) => `<tr><td>${esc(n)}<small>${esc(c)}</small></td><td><span class="missing">Not received</span></td></tr>`).join("")}
+    </tbody></table>`;
+  $("visits").innerHTML = p.visits.map((v, i) => {
+    const key = state.provider + i, a = state.attendance[key];
+    const acts = a ? `<span>${esc(a)} · sent to the firm</span>`
+      : v.past ? `<div class="acts"><button class="btn quiet" data-att="${key}" data-val="Marked attended">Attended</button><button class="btn quiet" data-att="${key}" data-val="Marked missed">Missed</button></div>`
+      : `<div class="acts"><button class="btn quiet" data-att="${key}" data-val="Confirmed as scheduled">Confirm</button><button class="btn quiet" data-att="${key}" data-val="Flagged as incorrect">Not on our schedule</button></div>`;
+    return `<div class="visit"><p><b>${fmt(v.day, { weekday: "short", month: "short", day: "numeric" })}</b> <span>· ${esc(v.what)} · ${v.past ? "did the patient attend?" : "upcoming"}</span></p>${acts}</div>`;
+  }).join("");
+  $("changesTitle").textContent = p.lastVisit ? `Since you last opened this page, ${fmt(p.lastVisit, { month: "short", day: "numeric" })}` : "This is your first visit";
+  $("changes").innerHTML = p.changes.length
+    ? p.changes.map(([t, s]) => `<li><time>${fmt(t, { month: "short", day: "numeric" })}</time>${esc(s)}</li>`).join("")
+    : `<li>Changes to the case will be listed here each time the firm updates this page.</li>`;
+  $("footer").innerHTML = `
+    <p><b>Questions?</b> ${esc(CASE.contact.name)} at ${esc(CASE.firm)} · ${esc(CASE.contact.phone)} · ${esc(CASE.contact.email)}</p>
+    <p><b>What this page leaves out.</b> Settlement amounts and timing, insurance limits and information about other providers are not shared here. Anything you send is reviewed by firm staff before it is added to the file.</p>`;
+}
+
+function render() {
+  const p = PROVIDERS[state.provider];
+  renderHeader(p); renderNotices(p); renderKpis(p); renderStatus(); renderRequests(p); renderLower(p);
+}
+
+/* ------------------------------------------------------------------
+   Interaction. Responses stay on this page; the real ones are stored
+   as pending review and never written to Clio.
+   ------------------------------------------------------------------ */
+document.addEventListener("click", (ev) => {
+  const p = PROVIDERS[state.provider];
+  if (ev.target.closest("#bell")) { state.tray = !state.tray; return renderNotices(p); }
+  if (ev.target.closest("[data-seen-all]")) { p.notices.forEach((n) => { state.seen[n.id] = true; }); return renderNotices(p); }
+  const nt = ev.target.closest("[data-notice]");
+  if (nt) {
+    const n = p.notices.find((o) => o.id === nt.dataset.notice);
+    state.seen[n.id] = true; state.tray = false; renderNotices(p);
+    const el = $(n.to).closest(".card") || $(n.to);
+    el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+    return;
+  }
+  if (state.tray && !ev.target.closest("#tray")) { state.tray = false; renderNotices(p); }
+  const sw = ev.target.closest("[data-provider]"); if (sw) { state.provider = sw.dataset.provider; state.reply = PROVIDERS[state.provider].requests[0].id; return render(); }
+  const rp = ev.target.closest("[data-reply]"); if (rp) { state.reply = rp.dataset.reply; return render(); }
+  const un = ev.target.closest("[data-undo]"); if (un) { delete state.sent[un.dataset.undo]; return render(); }
+  const at = ev.target.closest("[data-att]"); if (at) { state.attendance[at.dataset.att] = at.dataset.val; return render(); }
+  const pk = ev.target.closest("[data-pick]");
+  if (pk) { pk.textContent = "2 files attached (sample)"; pk.nextElementSibling.value = "2 files attached"; }
+});
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape" && state.tray) { state.tray = false; renderNotices(PROVIDERS[state.provider]); $("bell").focus(); }
+});
+// provider.html#notifications opens the tray, for reviewing the design.
+if (location.hash === "#notifications") state.tray = true;
+
+document.addEventListener("submit", (ev) => {
+  const f = ev.target.closest("[data-req]"); if (!f) return;
+  ev.preventDefault();
+  const r = PROVIDERS[state.provider].requests.find((o) => o.id === f.dataset.req);
+  const v = f.elements.v.value, note = f.elements.note.value.trim();
+  if (!v && !note) { f.elements.note.focus(); return; }
+  const what = r.kind === "date" && v ? `Date posted: ${fmt(v)}` : v || "Note sent";
+  state.sent[r.id] = note && v ? `${what}, with a note` : what;
+  state.reply = null;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
