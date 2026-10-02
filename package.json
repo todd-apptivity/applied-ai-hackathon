@@ -14,7 +14,11 @@
     "rag:status": "tsx scripts/rag.ts status",
     "rag:query": "tsx scripts/rag.ts query",
     "rag:audit": "tsx scripts/audit-rag.ts",
-    "rag:ocr": "tsx scripts/ocr.ts"
+    "rag:ocr": "tsx scripts/ocr.ts",
+    "digest:changes": "tsx scripts/digest.ts changes",
+    "digest:compose": "tsx scripts/digest.ts compose",
+    "digest:viewers": "tsx scripts/digest.ts viewers",
+    "digest:review": "tsx scripts/digest.ts review"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.71",
