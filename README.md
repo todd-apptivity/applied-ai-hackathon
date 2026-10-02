@@ -1,5 +1,14 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Case-file search (RAG)
+
+Each Clio matter is indexed into a local SQLite database for a chat agent to search. Clio is read-only: the app sends GET requests only. See [docs/rag.md](docs/rag.md) for setup, commands, and how a chat agent uses it.
+
+```bash
+npm run rag:ingest -- --clio-matter <matter id> [--ocr]
+npm run rag:search -- --matter-id <matter id> "what injuries were claimed?"
+```
+
 ## Getting Started
 
 First, run the development server:
