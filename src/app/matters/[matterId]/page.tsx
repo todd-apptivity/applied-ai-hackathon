@@ -116,7 +116,7 @@ export default async function MatterPage({
 
         {/* `overflow-hidden` plus a definite height is what lets the thread's
             own `h-full` scroller resolve instead of running past the card. */}
-        <aside className="flex h-[32rem] min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card lg:h-auto">
+        <aside className="flex h-[32rem] max-h-[70dvh] min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card lg:h-auto lg:max-h-none">
           <header className="shrink-0 border-b border-border px-4 py-3">
             <h2 className="text-sm font-semibold tracking-tight">Ask the file</h2>
             <p className="text-xs text-muted-foreground">
