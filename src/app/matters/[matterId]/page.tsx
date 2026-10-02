@@ -62,7 +62,13 @@ export default async function MatterPage({
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-8 font-sans">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{label}</h1>
+          <Link
+            href="/matters"
+            className="text-xs text-muted-foreground underline hover:text-foreground"
+          >
+            All matters
+          </Link>
+          <h1 className="mt-1 text-xl font-semibold tracking-tight">{label}</h1>
           <p className="text-sm text-muted-foreground">
             Matter {id} · viewing as {viewer.name}
           </p>

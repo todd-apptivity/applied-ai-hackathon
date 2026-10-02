@@ -16,7 +16,8 @@ import { canAccessMatter } from "@/lib/permissions/policy";
  * way past.
  */
 
-export async function setViewerCookie(viewerId: string, matterId: number) {
+/** `matterId` is omitted on the matter list, which has no one matter. */
+export async function setViewerCookie(viewerId: string, matterId?: number) {
   // Only an id that resolves to a row: a cookie naming nothing would silently
   // fall back to the default viewer and look like the switch did nothing.
   if (!getViewer(viewerId)) return;
@@ -29,7 +30,7 @@ export async function setViewerCookie(viewerId: string, matterId: number) {
     maxAge: 60 * 60 * 24 * 30,
   });
 
-  revalidatePath(`/matters/${matterId}`);
+  revalidatePath(matterId === undefined ? "/matters" : `/matters/${matterId}`);
 }
 
 export async function markMatterReviewed(matterId: number) {

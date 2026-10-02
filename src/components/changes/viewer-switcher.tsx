@@ -29,7 +29,8 @@ export function ViewerSwitcher({
 }: {
   viewers: ViewerOption[];
   currentId: string;
-  matterId: number;
+  /** Omitted on the matter list, which has no one matter to revalidate. */
+  matterId?: number;
 }) {
   const [pending, startTransition] = useTransition();
 
