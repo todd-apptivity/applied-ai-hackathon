@@ -40,7 +40,7 @@ export default async function MattersPage() {
   }).filter((matter) => canAccessMatter(principalFor(matter.matterId), matter.matterId));
 
   return (
-    <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8 font-sans">
+    <main className="mx-auto w-full max-w-4xl flex-1 overflow-y-auto px-6 py-8 font-sans">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Matters</h1>

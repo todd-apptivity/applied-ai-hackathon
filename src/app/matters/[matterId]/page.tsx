@@ -59,8 +59,8 @@ export default async function MatterPage({
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-8 font-sans">
-      <header className="flex flex-wrap items-start justify-between gap-3">
+    <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col gap-6 overflow-hidden px-6 py-8 font-sans">
+      <header className="flex shrink-0 flex-wrap items-start justify-between gap-3">
         <div>
           <Link
             href="/matters"
@@ -85,7 +85,7 @@ export default async function MatterPage({
       </header>
 
       {viewer.role === "provider" ? (
-        <p className="rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+        <p className="shrink-0 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
           <strong className="font-semibold">Outside provider view.</strong>{" "}
           Attorney notes, internal communications, time and expenses, coverage,
           and case value are removed before anything is summarised. Permission
@@ -94,7 +94,9 @@ export default async function MatterPage({
       ) : null}
 
       <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
-        <div className="min-w-0 space-y-6">
+        {/* Each column scrolls on its own, so a long digest does not push the
+            chat composer off the bottom of the screen. */}
+        <div className="min-w-0 space-y-6 overflow-y-auto">
           {/* Streamed in: the panel syncs Clio and may call a model, and the
               shell should not wait on either. `key` forces a fresh boundary per
               window so switching shows the fallback rather than stale prose. */}

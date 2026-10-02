@@ -24,8 +24,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <nav className="flex gap-4 border-b border-border px-6 py-3 font-sans text-sm">
+      {/*
+        A fixed-height shell rather than a growing one. `min-h-full` let the
+        body grow past the viewport, which meant a panel asking for `h-full` or
+        `flex-1` had no definite height to resolve against and simply ran off
+        the bottom of the screen. Bounding it here is what lets a page scroll
+        its own regions — each one owns an `overflow-y-auto`, so the document
+        itself never scrolls.
+      */}
+      <body className="flex h-dvh flex-col overflow-hidden">
+        <nav className="flex shrink-0 gap-4 border-b border-border px-6 py-3 font-sans text-sm">
           <Link href="/" className="text-muted-foreground hover:text-foreground">
             Home
           </Link>

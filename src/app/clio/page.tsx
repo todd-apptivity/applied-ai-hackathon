@@ -54,7 +54,7 @@ export default async function ClioPage({ searchParams }: PageProps<"/clio">) {
   const host = state.configured ? getClioConfig().host : null;
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-16 font-sans">
+    <main className="mx-auto w-full max-w-3xl flex-1 overflow-y-auto px-6 py-16 font-sans">
       <h1 className="text-2xl font-semibold tracking-tight">Clio connection</h1>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
         Clio is input only. This app reads matters, contacts, notes,
