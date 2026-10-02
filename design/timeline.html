@@ -221,6 +221,146 @@
   .side blockquote { margin: 0 0 10px; font-family: var(--serif); font-size: 17px; line-height: 1.35; overflow-wrap: anywhere; }
   .side p { margin: 0 0 8px; font-size: 12.5px; color: var(--paper-text-2); }
 
+  /* ---------- Case state: the 90-second view ---------- */
+  [hidden] { display: none !important; }
+  .hero { display: flex; align-items: center; gap: 18px; padding: 18px 24px 16px; }
+  .hero .face { flex: none; width: 84px; height: 84px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--lane-client); }
+  .hero .face svg { display: block; width: 100%; height: 100%; }
+  .hero small { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .hero p { margin: 2px 0 0; font-family: var(--serif); font-size: 24px; line-height: 1.3; max-width: 60ch; overflow-wrap: anywhere; }
+  .phases { display: flex; gap: 18px; padding: 0 24px 16px; align-items: flex-end; }
+  .phase { min-width: 0; }
+  .phase > small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-text-3); margin-bottom: 6px; }
+  .phase.on > small { color: var(--ink-text); }
+  .phase ol { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+  .phase li { flex: 1 1 0; min-width: 0; border-top: 4px solid var(--ink-line); padding-top: 6px; font-size: 12.5px; line-height: 1.25; color: var(--ink-text-3); }
+  .phase li b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .phase li span { display: block; font-size: 11.5px; }
+  .phase li.done { border-top-color: var(--ink-text-3); color: var(--ink-text-2); }
+  .phase li.now { border-top-color: var(--lane-firm); color: var(--ink-text); }
+  .phase li.now b::after { content: " · now"; font-weight: 400; color: var(--lane-firm); }
+  .stage-label { height: 26px; border-top: 1px solid var(--ink-line); display: flex; align-items: center; padding-left: 24px; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .alert { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; align-items: start; width: 100%; text-align: left; border: 0; background: none; padding: 9px 0; border-top: 1px solid var(--paper-line); }
+  .alert:first-child { border-top: 0; padding-top: 0; }
+  .alert:last-child { padding-bottom: 0; }
+  .alert i { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: 14px; background: #fff4d6; color: #7a5200; }
+  .alert.crit i { background: #fdecec; color: #a02020; }
+  .alert.ok i { background: #e6f4ec; color: #0b5c40; }
+  .alert b { display: block; font-size: 14.5px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+  .alert span { display: block; font-size: 13px; color: var(--paper-text-2); line-height: 1.4; }
+  button.alert:hover b { color: var(--accent); }
+  .lor { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .lor td { padding: 7px 8px 7px 0; border-top: 1px solid var(--paper-line); vertical-align: top; overflow-wrap: anywhere; }
+  .lor tr:first-child td { border-top: 0; padding-top: 0; }
+  .lor td:last-child { padding-right: 0; text-align: right; }
+  .lor small { display: block; color: var(--paper-text-3); font-size: 12px; }
+  .lor .ok { color: #0b5c40; font-weight: 600; }
+  .lor .no { color: #a02020; font-weight: 600; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; padding: 0 24px 22px; }
+  .tile { text-align: left; background: var(--ink-raised); border: 1px solid var(--ink-line); border-top: 3px solid var(--ink-text-3); border-radius: 12px; padding: 12px 14px; min-width: 0; color: inherit; }
+  button.tile:hover { border-color: var(--ink-text-2); }
+  .tile.good { border-top-color: var(--lane-firm); }
+  .tile.late { border-top-color: var(--critical); }
+  .tile.warn { border-top-color: var(--contradiction); }
+  .tile span { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .tile b { display: block; margin-top: 4px; font-family: var(--serif); font-size: 28px; line-height: 1.15; font-weight: 600; overflow-wrap: anywhere; }
+  .tile small { display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.35; color: var(--ink-text-2); }
+
+  .state { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: start; padding: 24px; max-width: 1400px; margin: 0 auto; }
+  .state > div { display: grid; gap: 20px; min-width: 0; }
+  .panel { background: var(--paper-card); border: 1px solid var(--paper-line); border-radius: 14px; padding: 18px 20px; box-shadow: 0 12px 32px -20px rgba(16,35,31,.3); min-width: 0; }
+  .panel > h2 { margin: 0 0 12px; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .panel > h2 em { font-style: normal; letter-spacing: 0; text-transform: none; font-weight: 400; }
+  .story { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; font-family: var(--serif); font-size: 18px; line-height: 1.45; }
+  .src { display: inline-flex; align-items: center; gap: 4px; vertical-align: 2px; margin-left: 4px; border: 1px solid var(--paper-line); background: var(--paper); border-radius: 999px;
+    padding: 0 8px 0 6px; font-family: var(--sans); font-size: 11.5px; line-height: 20px; color: var(--paper-text-2); white-space: nowrap; }
+  .src:hover { border-color: var(--accent); color: var(--accent); }
+  .src i { width: 7px; height: 7px; border-radius: 50%; }
+
+  .chain { display: flex; align-items: stretch; gap: 0; }
+  .link { flex: 1; min-width: 0; position: relative; background: var(--paper); border-radius: 10px; padding: 12px 14px; margin-right: 26px; }
+  .link:last-child { margin-right: 0; }
+  .link:not(:last-child)::after { content: "→"; position: absolute; right: -22px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--paper-text-3); }
+  .link.root { background: #fff4d6; box-shadow: inset 0 0 0 1px var(--contradiction); }
+  .link b { display: block; font-size: 14.5px; line-height: 1.3; font-weight: 600; overflow-wrap: anywhere; }
+  .link .src { display: block; margin: 4px 0 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .link span { display: block; font-size: 12.5px; color: var(--paper-text-2); margin-top: 4px; line-height: 1.35; }
+
+  .nnw { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .nnw h3 { margin: 0 0 8px; font-family: var(--serif); font-size: 18px; font-weight: 600; display: flex; align-items: baseline; gap: 8px; }
+  .nnw h3 i { font-style: normal; font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--paper-text-3); }
+  .item { display: block; width: 100%; text-align: left; border: 0; border-left: 3px solid var(--paper-line); background: none; padding: 6px 0 6px 10px; margin-bottom: 6px; }
+  .item:hover { border-left-color: var(--accent); }
+  .item.late { border-left-color: var(--critical); }
+  .item.wait { border-left-color: var(--contradiction); }
+  .item b { display: block; font-size: 14px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+  .item span { display: block; font-size: 12.5px; color: var(--paper-text-2); line-height: 1.35; }
+  .none { font-size: 13px; color: var(--paper-text-3); }
+
+  .clash { display: block; width: 100%; text-align: left; border: 1px solid var(--paper-line); border-left: 4px solid var(--contradiction); background: var(--paper); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .clash:last-child { margin-bottom: 0; }
+  .clash:hover { border-color: var(--contradiction); }
+  .clash b { display: block; font-size: 14.5px; line-height: 1.35; font-weight: 600; }
+  .clash q { display: block; quotes: "“" "”"; font-family: var(--serif); font-size: 15px; line-height: 1.35; margin-top: 8px; color: var(--paper-text); overflow-wrap: anywhere; }
+  .clash span { display: block; font-size: 12px; color: var(--paper-text-3); margin-top: 1px; }
+
+  .pulse { display: grid; grid-template-columns: minmax(0, 1.2fr) 120px minmax(0, 1fr); gap: 4px 12px; align-items: center; font-size: 13px; }
+  .pulse b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pulse b i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; }
+  .pulse svg { display: block; }
+  .pulse span { color: var(--paper-text-2); text-align: right; }
+  .pulse span.quiet { color: #a02020; font-weight: 600; }
+
+  .what { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 16px; margin: 0; font-size: 14.5px; }
+  .what dt { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); padding-top: 3px; }
+  .what dd { margin: 0; overflow-wrap: anywhere; }
+  .what dd.lead { font-family: var(--serif); font-size: 18px; line-height: 1.4; }
+  .est-out { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+  .est-out span { font-size: 12.5px; color: var(--paper-text-2); }
+  .bar { position: relative; height: 14px; border-radius: 7px; background: var(--paper-line); margin: 10px 0 4px; overflow: hidden; }
+  .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 7px; }
+  .bar i.lost { background: repeating-linear-gradient(135deg, var(--contradiction) 0 4px, #fde3a0 4px 8px); border-radius: 0; }
+  .knobs { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--paper-line); font-size: 13px; }
+  .knobs label { color: var(--paper-text-2); min-width: 0; }
+  .knobs label b { color: var(--paper-text); font-weight: 600; }
+  .knobs output { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+  .knobs input[type="range"] { grid-column: 1 / -1; width: 100%; margin: 0 0 6px; accent-color: var(--accent); }
+  .knobs select { grid-column: 1 / -1; width: 100%; margin: 0 0 6px; border: 1px solid var(--paper-line); background: var(--paper); border-radius: 8px; padding: 6px 10px; font: inherit; color: inherit; }
+  .money b.big { display: block; font-family: var(--serif); font-size: 30px; line-height: 1.1; font-weight: 600; }
+  .money p { margin: 2px 0 12px; font-size: 12.5px; color: var(--paper-text-2); }
+  .scen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .scen div { background: #fff4d6; box-shadow: inset 0 0 0 1px var(--contradiction); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+  .scen b { display: block; font-family: var(--serif); font-size: 18px; line-height: 1.2; overflow-wrap: anywhere; }
+  .scen span { display: block; font-size: 12px; color: var(--paper-text-2); margin-top: 3px; line-height: 1.35; }
+  .fall { margin: 12px 0 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 13px; }
+  .fall dt { color: var(--paper-text-2); }
+  .fall dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .fall .sum { border-top: 1px solid var(--paper-line); padding-top: 4px; color: var(--paper-text); }
+  .body-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 14px; }
+  .body-list b { font-weight: 600; }
+  .body-list span { color: var(--paper-text-2); }
+
+  @media (max-width: 1040px) { .state { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 860px) {
+    .hero { padding: 16px 16px 14px; gap: 14px; }
+    .hero .face { width: 64px; height: 64px; }
+    .hero p { font-size: 19px; }
+    .phases { padding: 0 16px 14px; flex-direction: column; align-items: stretch; gap: 12px; }
+    .phase li span { display: none; }
+    .stage-label { padding-left: 16px; }
+    .tiles { padding: 0 16px 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .tile b { font-size: 22px; }
+    .state { padding: 16px; }
+    .panel { padding: 16px; }
+    .story { font-size: 16.5px; }
+    .chain { flex-direction: column; }
+    .link { margin: 0 0 24px; }
+    .link:last-child { margin-bottom: 0; }
+    .link:not(:last-child)::after { content: "↓"; right: auto; left: 16px; top: auto; bottom: -24px; transform: none; }
+    .nnw { grid-template-columns: minmax(0, 1fr); }
+    .pulse { grid-template-columns: minmax(0, 1fr) 96px; }
+    .pulse span { grid-column: 1 / -1; text-align: left; margin: -2px 0 6px 15px; }
+  }
   @media (max-width: 860px) {
     :root { --label-w: 112px; }
     .topbar, .controls, .legend { padding-left: 16px; padding-right: 16px; }
@@ -247,12 +387,22 @@
     </div>
     <div class="tools">
       <div class="views" role="group" aria-label="View">
-        <button aria-pressed="false">Case state</button>
-        <button aria-pressed="true">Timeline</button>
+        <button data-view="state">Case state</button>
+        <button data-view="timeline">Timeline</button>
       </div>
     </div>
   </header>
 
+  <div id="stateTop">
+    <div class="hero">
+      <div class="face" id="face"></div>
+      <div><small id="heroKicker"></small><p id="headline"></p></div>
+    </div>
+    <div class="phases" id="phases" aria-label="Stage of the matter"></div>
+    <div class="tiles" id="tiles"></div>
+  </div>
+
+  <div id="timelineTop">
   <div class="controls">
     <label class="search">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14" stroke-linecap="round"/></svg>
@@ -280,9 +430,27 @@
   </div>
 
   <div class="legend" id="legend" aria-label="Legend"></div>
+  </div>
 </section>
 
-<main class="reading">
+<main class="state" id="stateMain">
+  <div>
+    <section class="panel"><h2>Need to know <em>worked out from dates and records</em></h2><div id="alerts"></div></section>
+    <section class="panel"><h2>What happened <em>from the intake and the pleadings</em></h2><dl class="what" id="what"></dl></section>
+    <section class="panel"><h2>The story so far <em>every sentence links to its source</em></h2><ol class="story" id="story"></ol></section>
+    <section class="panel"><h2>What is holding the case</h2><div class="chain" id="chain"></div></section>
+    <section class="panel"><h2>Now, next, waiting</h2><div class="nnw" id="nnw"></div></section>
+    <section class="panel"><h2>Injuries and treatment <em>from the medical records</em></h2><ul class="body-list" id="injuries"></ul></section>
+  </div>
+  <div>
+    <section class="panel"><h2>Where the file disagrees with itself <em id="clashCount"></em></h2><div id="clashes"></div></section>
+    <section class="panel"><h2>Letters of representation <em id="lorCount"></em></h2><table class="lor" id="lor"></table></section>
+    <section class="panel money"><h2>Value estimator <em>arithmetic on the file's numbers, not a prediction</em></h2><div id="money"></div></section>
+    <section class="panel"><h2>Who we have heard from <em>activity by quarter</em></h2><div class="pulse" id="pulse"></div></section>
+  </div>
+</main>
+
+<main class="reading" id="timelineMain">
   <section aria-label="Thread">
     <div class="pane-head">
       <h2 id="threadTitle">Thread</h2>
@@ -373,12 +541,12 @@ const ptAsk = ["2024-03-12", "2024-11-06", "2025-07-22", "2026-05-05"].map((day,
 }));
 
 // The surgeon who has not scheduled the surgery.
-["2026-05-05", "2026-06-17", "2026-07-29", "2026-09-02"].forEach((day, i) => add({
+const surgeryAsks = ["2026-05-05", "2026-06-17", "2026-07-29", "2026-09-02"].map((day, i) => add({
   t: d(day), lane: "firm", kind: i % 2 ? "call" : "email", party: "ortho", open: true,
   title: "Asked for a date for the second shoulder surgery",
   body: "The second procedure has been recommended but not scheduled. We cannot value the case or certify readiness until we have a date. Please confirm one.",
 }));
-add({ t: d("2026-09-24"), lane: "ortho", kind: "email", party: "ortho", title: "Re: surgery date", body: "The surgeon's calendar for the fall is not final. We will be in touch once the schedule opens." });
+const surgeryReply = add({ t: d("2026-09-24"), lane: "ortho", kind: "email", party: "ortho", title: "Re: surgery date", body: "The surgeon's calendar for the fall is not final. We will be in touch once the schedule opens." });
 const lateTask = add({ t: d("2026-08-25"), lane: "firm", kind: "task", overdue: true, title: "Obtain updated orthopedic records", body: "Due 25 August 2026. Still open: the provider has not sent records since the spring request." });
 
 // Contradiction 1: a note says nobody contacted the witness; a subpoena says otherwise.
@@ -394,10 +562,26 @@ const exam = add({ t: d("2026-03-31"), lane: "defense", kind: "event", with: ["c
 const report = add({ t: d("2026-09-14"), lane: "file", kind: "doc", describes: exam, title: "Defense examination report added", body: "Report of the 31 March 2026 examination. Records reduced range of motion in the right shoulder; rotation testing marked as refused. Concludes the patient has plateaued." });
 const reportNote = add({ t: d("2026-09-13"), lane: "firm", kind: "note", title: "Summary of defense examination", body: "Read the defense examiner's report. He records normal range of motion and no restrictions. Helpful to them on damages." });
 
+// How it started, and the treatment the summary cites.
+const intake = add({ t: d("2023-05-09"), lane: "firm", kind: "note", title: "Intake summary", body: "Met with Dana Whitlock. On 23 April 2023 a Harbor Transit service vehicle turned across the client's lane and struck the driver's side. Complaints: both shoulders and neck. Retainer and authorizations signed." });
+const surgery1 = add({ t: d("2023-08-02"), lane: "ortho", kind: "event", with: ["client"], title: "Left shoulder surgery", body: "Arthroscopic repair of the left shoulder at Ridgeline Orthopedics. Operative report received 31 August 2023." });
+const recommended = add({ t: d("2024-05-14"), lane: "ortho", kind: "email", party: "ortho", title: "Second surgery recommended", body: "After the latest imaging the surgeon recommends an arthroscopic repair of the right shoulder. Scheduling to follow." });
+
+// Letters of representation: who was told the firm represents the client, and who acknowledged it.
+const lorSend = (day, party, who) => add({ t: d(day), lane: "firm", kind: "email", party, title: `Letter of representation to ${who}`, body: `Please be advised that this firm represents Dana Whitlock for injuries sustained on 23 April 2023. Direct all further communication to this office and confirm receipt.` });
+const lorAck = (day, lane, who) => add({ t: d(day), lane, kind: "email", party: lane, title: "Acknowledgment of representation", body: `${who} acknowledges your letter of representation and has noted the file.` });
+const LOR = [
+  ["Harbor Transit claims office", "Defendant's claims administrator", lorSend("2023-05-12", "defense", "Harbor Transit claims"), lorAck("2023-05-30", "defense", "The claims office")],
+  ["Ridgeline Orthopedics", "Treating provider", lorSend("2023-05-15", "ortho", "Ridgeline Orthopedics"), lorAck("2023-05-22", "ortho", "Ridgeline Orthopedics")],
+  ["Northside Physical Therapy", "Treating provider", lorSend("2023-05-26", "pt", "Northside Physical Therapy"), null],
+];
+const suitFiled = add({ t: d("2024-06-18"), lane: "court", kind: "doc", title: "Summons and complaint filed", body: "Action commenced against Harbor Transit. Index number assigned." });
+const noteOfIssue = add({ t: d("2026-12-15"), lane: "court", kind: "task", title: "Note of issue due", body: "Court-ordered deadline to file the note of issue and certify that discovery is complete." });
+
 // Last client contact, and what is coming.
-add({ t: d("2026-09-27"), lane: "client", kind: "call", party: "client", title: "Call with client", body: "Spoke with Dana for twenty minutes. Still in pain at night, still attending every appointment, anxious about the surgery date." });
+const lastCall = add({ t: d("2026-09-27"), lane: "client", kind: "call", party: "client", title: "Call with client", body: "Spoke with Dana for twenty minutes. Still in pain at night, still attending every appointment, anxious about the surgery date." });
 add({ t: d("2026-10-20"), lane: "firm", kind: "task", title: "Prepare client for deposition", body: "Due 20 October 2026. Preparation session ahead of the continued deposition." });
-add({ t: d("2026-11-12"), lane: "court", kind: "event", with: ["firm", "defense"], title: "Compliance conference", body: "Scheduled for 12 November 2026. The court expects a report on outstanding discovery." });
+const nextConf = add({ t: d("2026-11-12"), lane: "court", kind: "event", with: ["firm", "defense"], title: "Compliance conference", body: "Scheduled for 12 November 2026. The court expects a report on outstanding discovery." });
 add({ t: d("2026-12-08"), lane: "defense", kind: "event", with: ["client", "firm"], title: "Continued deposition of plaintiff", body: "Scheduled for 8 December 2026 at defense counsel's office." });
 
 const CONFLICTS = [
@@ -409,6 +593,54 @@ const CONFLICTS = [
     qa: "He records normal range of motion and no restrictions.", qb: "Records reduced range of motion in the right shoulder; rotation testing marked as refused." },
 ];
 
+// The summary layer. In the real build the story and blocker chain are composed from extracted facts,
+// each citing record ids; the tiles, now/next/waiting and activity are computed from the records.
+const CASE = {
+  opened: d("2023-05-07"), costs: 1265, expenses: 5,
+  statute: d("2026-04-23"), suitFiled,
+  // Stage history. `from` is when the matter entered the stage; stages without one have not been reached.
+  stages: [
+    { phase: "Pre-litigation", name: "Intake", from: d("2023-05-07") },
+    { phase: "Pre-litigation", name: "Treatment", from: d("2023-06-01") },
+    { phase: "Pre-litigation", name: "Demand", from: d("2024-02-10") },
+    { phase: "Litigation", name: "Suit filed", from: d("2024-06-18") },
+    { phase: "Litigation", name: "Discovery", from: d("2025-01-20") },
+    { phase: "Litigation", name: "Mediation" },
+    { phase: "Litigation", name: "Trial or settlement" },
+  ],
+  headline: "In discovery, and stuck on one thing: the right shoulder surgery has no date.",
+  story: [
+    ["Dana Whitlock was struck by a Harbor Transit service vehicle on 23 April 2023 and retained the firm two weeks later.", [intake]],
+    ["The injuries are to both shoulders and the neck. The left shoulder was operated on in August 2023.", [surgery1]],
+    ["A second surgery, on the right shoulder, was recommended in May 2024. It still has no date, after four requests to the surgeon since May 2026.", [recommended, surgeryAsks[3], surgeryReply]],
+    ["Suit is filed and discovery is ongoing. The defense answered in December 2024 and its doctor examined the client in March 2026.", [answer, exam]],
+    ["The physical therapy office has not replied since November 2023, across four records requests.", [ptAsk[3]]],
+    ["Next is a compliance conference on 12 November 2026, where the court will ask what is still outstanding.", [nextConf]],
+  ],
+  chain: [
+    ["The right shoulder surgery has no date", "Waiting on Ridgeline Orthopedics for 5 months", [surgeryAsks[0], surgeryReply]],
+    ["Treatment cannot be called complete", "No end point for the medical records or the bills", [recommended]],
+    ["The case cannot be valued or certified ready", "Updated orthopedic records are also overdue", [lateTask]],
+    ["Compliance conference, 12 November", "The court will ask what is outstanding", [nextConf]],
+  ],
+  happened: {
+    summary: "A Harbor Transit service vehicle turned left across the client's lane and struck the driver's side of the client's car. The client drove home and went to the emergency room the next morning.",
+    when: "Sunday, 23 April 2023, about 8:30 in the morning",
+    where: "Mill Street at Harbor Avenue, Eastport, outside the Harbor Transit depot",
+    who: "Dana Whitlock, driving alone · a Harbor Transit employee driving a service vehicle · one eyewitness on foot",
+    first: "Neck, upper back and left shoulder pain reported at the emergency room on 24 April 2023",
+    disputed: "The defense says the client was not wearing a seat belt; its own examiner recorded a belted driver.",
+  },
+  // Inputs to the estimator. The amounts come from the file; the multiplier, fault share and fee are the attorney's assumptions.
+  value: { estimate: 340000, source: "Estimated Case Value field", specials: 96400, wages: 148000, liens: 22000,
+    caps: [["Self-insured, no stated limit", 0, "Insurance Carrier field and the intake notes"], ["$100,000 per person", 100000, "Policy Limits field, marked confirmed"]] },
+  injuries: [
+    ["Left shoulder", "arthroscopic repair, 2 August 2023", surgery1],
+    ["Right shoulder", "surgery recommended May 2024, not scheduled", recommended],
+    ["Neck", "conservative treatment; physical therapy records stop in November 2023", ptAsk[0]],
+  ],
+};
+
 events.sort((a, b) => a.t - b.t);
 const byId = Object.fromEntries(events.map((e) => [e.id, e]));
 const conflictsOf = (id) => CONFLICTS.filter((c) => c.a === id || c.b === id);
@@ -418,7 +650,7 @@ const conflictsOf = (id) => CONFLICTS.filter((c) => c.a === id || c.b === id);
    ------------------------------------------------------------------ */
 const css = getComputedStyle(document.documentElement);
 const tok = (name) => css.getPropertyValue(name).trim();
-const LANE_H = parseInt(tok("--lane-h"), 10), HEAD_H = 26, AXIS_H = 30, R = 9;
+const LANE_H = parseInt(tok("--lane-h"), 10), HEAD_H = 26, STAGE_H = 26, AXIS_H = 30, R = 9;
 const FIRST = events[0].t - 20 * DAY, LAST = events[events.length - 1].t + 30 * DAY;
 
 // Lanes that fold into one row until opened.
@@ -470,7 +702,7 @@ function renderLabels(rs) {
       <button class="toggle" data-toggle="${g.id}" aria-expanded="${open}" aria-label="${open ? "Collapse" : "Expand"} ${g.name}">${open ? "−" : "+"}</button>
       ${r.head ? "" : `<span class="bars">${bars}</span>`}
       <div><b>${g.name}</b>${r.head ? "" : `<small>${g.lanes.length} parties${quiet ? ` · ${quiet} gone quiet` : ""}</small>`}</div></div>`;
-  }).join("") + `<div class="axis-label"></div>`;
+  }).join("") + `<div class="stage-label">Stage</div><div class="axis-label"></div>`;
 }
 
 // Every record is a disc with a glyph for its type.
@@ -507,7 +739,7 @@ function placements(active) {
 function render() {
   const rs = rows(); renderLabels(rs);
   const rowOf = {}; rs.forEach((r) => r.lanes.forEach((id) => { rowOf[id] = r; }));
-  const W = plot.clientWidth, lanesH = rs.reduce((a, r) => a + r.h, 0), H = lanesH + AXIS_H;
+  const W = plot.clientWidth, lanesH = rs.reduce((a, r) => a + r.h, 0), axisY = lanesH + STAGE_H, H = axisY + AXIS_H;
   const x = (t) => (t - state.v0) / (state.v1 - state.v0) * W;
   const y = (lane) => rowOf[lane].mid;
   const line = tok("--ink-line"), t3 = tok("--ink-text-3"), t1 = tok("--ink-text"), ink = tok("--ink");
@@ -528,11 +760,23 @@ function render() {
   for (; c.getTime() <= state.v1; c.setMonth(c.getMonth() + step)) {
     const tx = x(c.getTime()); if (tx < -40) continue;
     const jan = c.getMonth() === 0;
-    s += `<line x1="${tx}" x2="${tx}" y1="0" y2="${lanesH + 5}" stroke="${line}" ${jan ? "" : 'stroke-dasharray="2 5"'}/>`;
+    s += `<line x1="${tx}" x2="${tx}" y1="0" y2="${axisY + 5}" stroke="${line}" ${jan ? "" : 'stroke-dasharray="2 5"'}/>`;
     // Drop labels that would collide: minor ticks when crowded, and anything under the TODAY label.
     if ((!jan && tickPx < 64) || (jan && tickPx * (12 / step) < 70 && c.getFullYear() % 2) || Math.abs(tx - xt) < 62 || tx < 0) continue;
-    s += `<text x="${tx + 5}" y="${lanesH + 20}" font-size="11" fill="${jan ? t1 : t3}" font-weight="${jan ? 600 : 400}">${jan || step === 1 && tx < 40 ? fmt(c, { month: "short", year: "numeric" }) : fmt(c, { month: "short" })}</text>`;
+    s += `<text x="${tx + 5}" y="${axisY + 20}" font-size="11" fill="${jan ? t1 : t3}" font-weight="${jan ? 600 : 400}">${jan || step === 1 && tx < 40 ? fmt(c, { month: "short", year: "numeric" }) : fmt(c, { month: "short" })}</text>`;
   }
+
+  // Stage band: when the matter entered each stage. Outlined is pre-litigation, filled is litigation.
+  s += `<line x1="0" x2="${W}" y1="${axisY + .5}" y2="${axisY + .5}" stroke="${line}"/>`;
+  const reached = CASE.stages.filter((g) => g.from);
+  reached.forEach((g, i) => {
+    const a = Math.max(x(g.from), -4), b = Math.min(x(reached[i + 1] ? reached[i + 1].from : TODAY), W + 4), lit = g.phase === "Litigation";
+    if (b - a < 3) return;
+    s += `<rect x="${a + 1}" y="${lanesH + 5}" width="${b - a - 2}" height="${STAGE_H - 9}" rx="4" fill="${lit ? tok("--lane-firm") : "none"}" fill-opacity="${lit ? .28 : 0}" stroke="${lit ? tok("--lane-firm") : t3}" stroke-opacity=".7"><title>${g.phase}: ${g.name}, from ${fmt(g.from)}</title></rect>`;
+    const label = i === 0 || reached[i - 1].phase !== g.phase ? `${g.phase.toUpperCase()} · ${g.name}` : g.name;
+    const fits = (txt) => txt.length * 6.2 + 14 < b - a;
+    if (fits(label) || fits(g.name)) s += `<text x="${a + 8}" y="${lanesH + 17.5}" font-size="10.5" font-weight="600" fill="${lit ? t1 : tok("--ink-text-2")}">${fits(label) ? label : g.name}</text>`;
+  });
 
   // Silence, on lanes that are open to view on their own.
   for (const r of rs) {
@@ -575,8 +819,8 @@ function render() {
 
   // Today.
   if (xt > 0 && xt < W) {
-    s += `<line x1="${xt}" x2="${xt}" y1="0" y2="${lanesH + 5}" stroke="${t1}" stroke-width="1.5"/>`;
-    s += `<text x="${xt + (W - xt < 60 ? -6 : 6)}" y="${lanesH + 20}" text-anchor="${W - xt < 60 ? "end" : "start"}" font-size="11" font-weight="700" fill="${t1}" letter-spacing=".06em">TODAY</text>`;
+    s += `<line x1="${xt}" x2="${xt}" y1="0" y2="${axisY + 5}" stroke="${t1}" stroke-width="1.5"/>`;
+    s += `<text x="${xt + (W - xt < 60 ? -6 : 6)}" y="${axisY + 20}" text-anchor="${W - xt < 60 ? "end" : "start"}" font-size="11" font-weight="700" fill="${t1}" letter-spacing=".06em">TODAY</text>`;
   }
 
   // Marks. Records that would overlap on a row are stacked into one mark with a shadow behind it.
@@ -705,19 +949,172 @@ function renderConflict(k) {
 }
 
 /* ------------------------------------------------------------------
+   Case state
+   ------------------------------------------------------------------ */
+// Placeholder illustration. The real build shows the face cropped from the client's photo ID, never the ID itself.
+const PORTRAIT = `<svg viewBox="0 0 96 96" role="img" aria-label="Client portrait (placeholder illustration)"><rect width="96" height="96" fill="#cfe6d9"/>
+  <path d="M10 96c1-19 15-27 38-27s37 8 38 27z" fill="#0e6b57"/><path d="M39 70c3 6 15 6 18 0l-2-12H41z" fill="#e2ad8c"/>
+  <ellipse cx="48" cy="42" rx="17.5" ry="20.5" fill="#f0c4a4"/>
+  <path d="M29.5 44c-3-19 6-31 19-31s22 10 18.5 31c-2-9-6-15-12-17-8 4-17 5-22 6-2 3-3 6-3.5 11z" fill="#3a2a22"/>
+  <circle cx="41" cy="44" r="1.8" fill="#3a2a22"/><circle cx="55" cy="44" r="1.8" fill="#3a2a22"/>
+  <path d="M42 53c3 3 9 3 12 0" fill="none" stroke="#a8644a" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+const money = (n) => (n < 0 ? "−$" : "$") + Math.abs(n).toLocaleString("en-US");
+const short = (t) => fmt(t, { month: "short", day: "numeric", year: "2-digit" }).replace(", ", " ’");
+const chip = (id) => { const e = byId[id]; return `<button class="src" data-id="${id}" title="${esc(e.title)}"><i style="background:var(${laneById[e.lane].paper})"></i>${KIND[e.kind]} · ${short(e.t)}</button>`; };
+const lastHeard = (laneId) => { const h = events.filter((e) => e.lane === laneId && e.t <= TODAY); return h.length ? h[h.length - 1] : null; };
+
+function renderState() {
+  const el = (id) => document.getElementById(id);
+  const client = laneById.client, call = lastHeard("client");
+  const overdue = events.filter((e) => e.overdue), upcoming = events.filter((e) => e.t > TODAY);
+  const sol = CONFLICTS.find((k) => /limitations/i.test(k.why));
+
+  el("face").innerHTML = PORTRAIT;
+  const reached = CASE.stages.filter((g) => g.from), now = reached[reached.length - 1];
+  el("heroKicker").textContent = `${client.name} · ${now.phase} · ${now.name}`;
+  el("phases").innerHTML = [...new Set(CASE.stages.map((g) => g.phase))].map((ph) => {
+    const list = CASE.stages.filter((g) => g.phase === ph);
+    return `<div class="phase ${ph === now.phase ? "on" : ""}" style="flex:${list.length}"><small>${ph}${ph === now.phase ? " · current" : ""}</small><ol>${list.map((g) =>
+      `<li class="${g === now ? "now" : g.from ? "done" : ""}"${g === now ? ' aria-current="step"' : ""}><b>${g.name}</b><span>${g.from ? fmt(g.from, { month: "short", year: "numeric" }) : "not reached"}</span></li>`).join("")}</ol></div>`;
+  }).join("");
+
+  // Statute of limitations: a countdown until suit is filed, then a record of the margin.
+  const filed = CASE.suitFiled ? byId[CASE.suitFiled] : null, toStatute = Math.round((CASE.statute - TODAY) / DAY);
+  const statuteValue = sol ? "Needs review" : filed ? "Suit filed in time" : toStatute < 0 ? "Statute has run" : `${toStatute} days left`;
+  const statuteSub = filed ? `statute ran ${fmt(CASE.statute)}; suit filed ${span(filed.t, CASE.statute)} before${sol ? ", but the defense pleads it" : ""}` : `statute runs ${fmt(CASE.statute)}`;
+  const statuteCls = sol || (!filed && toStatute <= 90) ? (!filed && toStatute <= 30 ? "late" : "warn") : "good";
+  el("headline").textContent = CASE.headline;
+
+  const tile = (cls, attr, label, value, sub) => `<${attr ? "button" : "div"} class="tile ${cls}" ${attr}><span>${label}</span><b>${value}</b><small>${sub}</small></${attr ? "button" : "div"}>`;
+  el("tiles").innerHTML =
+    tile("good", `data-id="${call.id}"`, "Last client contact", `${Math.round((TODAY - call.t) / DAY)} days ago`, `${KIND[call.kind]}, ${fmt(call.t, { month: "short", day: "numeric" })}`) +
+    tile(statuteCls, sol ? `data-conflict="${sol.id}"` : filed ? `data-id="${filed.id}"` : "", "Statute of limitations", statuteValue, statuteSub) +
+    tile(overdue.length ? "late" : "good", overdue.length ? `data-id="${overdue[0].id}"` : "", "Overdue", overdue.length, overdue.length ? `oldest is ${span(overdue[0].t, TODAY)} late` : "nothing overdue") +
+    tile("", upcoming.length ? `data-id="${upcoming[0].id}"` : "", "Next date", upcoming.length ? fmt(upcoming[0].t, { month: "short", day: "numeric" }) : "None", upcoming.length ? `${esc(upcoming[0].title)}, in ${span(TODAY, upcoming[0].t)}` : "nothing scheduled") +
+    tile("", "", "Case age", span(CASE.opened, TODAY), `opened ${fmt(CASE.opened)}`) +
+    tile("", "", "Firm costs", money(CASE.costs), `${CASE.expenses} expenses to date`);
+
+  // Need to know: rules over dates and records. Each one only appears when it applies.
+  const alerts = [], soon = upcoming.filter((e) => e.t - TODAY <= 90 * DAY);
+  const alert = (cls, attr, title, text) => alerts.push(`<${attr ? "button" : "div"} class="alert ${cls}" ${attr}><i>${cls === "ok" ? "✓" : "!"}</i><div><b>${title}</b><span>${text}</span></div></${attr ? "button" : "div"}>`);
+  if (!filed && toStatute <= 90) alert("crit", "", toStatute < 0 ? "The statute of limitations has run and no suit is filed" : `${toStatute} days to the statute of limitations`, `It runs on ${fmt(CASE.statute)} and no suit has been filed.`);
+  if (sol) alert("warn", `data-conflict="${sol.id}"`, "Limitations is pleaded as a defense", `The file marks it satisfied (suit filed ${fmt(filed.t)}, statute ${fmt(CASE.statute)}), but the answer raises it. An attorney should confirm.`);
+  if (soon.length) alert("warn", `data-id="${soon[0].id}"`, `${soon.length} date${soon.length === 1 ? "" : "s"} inside the next 90 days`, soon.map((e) => `${esc(e.title)} (${fmt(e.t, { month: "short", day: "numeric" })}, ${Math.round((e.t - TODAY) / DAY)} days)`).join(" · "));
+  for (const e of overdue) alert("crit", `data-id="${e.id}"`, `Overdue: ${esc(e.title)}`, `${span(e.t, TODAY)} late.`);
+  const noAck = LOR.filter((r) => !r[3]);
+  for (const r of noAck) alert("warn", `data-id="${r[2]}"`, `No acknowledgment of our letter of representation from ${esc(r[0])}`, `Sent ${fmt(byId[r[2]].t)}, ${span(byId[r[2]].t, TODAY)} ago.`);
+  const sinceClient = Math.round((TODAY - call.t) / DAY);
+  if (sinceClient > 30) alert("warn", `data-id="${call.id}"`, `No contact with the client in ${sinceClient} days`, `Last was a ${KIND[call.kind].toLowerCase()} on ${fmt(call.t)}.`);
+  if (CONFLICTS.length > (sol ? 1 : 0)) alert("warn", "", `${CONFLICTS.length - (sol ? 1 : 0)} other contradictions in the file`, "Listed on the right with both sources.");
+  el("alerts").innerHTML = alerts.join("") || `<div class="alert ok"><i>✓</i><div><b>Nothing urgent</b><span>No deadline inside 90 days, nothing overdue, no unanswered letters.</span></div></div>`;
+
+  el("lorCount").textContent = `${LOR.length - noAck.length} of ${LOR.length} acknowledged`;
+  el("lor").innerHTML = LOR.map(([who, role, sent, ack]) => `<tr><td><b>${esc(who)}</b><small>${esc(role)}</small></td><td>Sent ${chip(sent)}</td>
+    <td>${ack ? `<span class="ok">✓ Acknowledged</span> ${chip(ack)}` : `<span class="no">No acknowledgment</span><small>${span(byId[sent].t, TODAY)} and counting</small>`}</td></tr>`).join("");
+
+  el("story").innerHTML = CASE.story.map(([text, src]) => `<li>${esc(text)} ${src.map(chip).join("")}</li>`).join("");
+  el("chain").innerHTML = CASE.chain.map(([title, sub, src], i) => `<div class="link ${i ? "" : "root"}"><b>${esc(title)}</b><span>${esc(sub)}</span><span>${src.map(chip).join("")}</span></div>`).join("");
+
+  // Now, next, waiting: computed from the records, not written by a model.
+  const waiting = LANES.map((l) => {
+    const asks = events.filter((e) => e.open && e.party === l.id); if (!asks.length) return "";
+    const heard = lastHeard(l.id);
+    return `<button class="item wait" data-id="${asks[asks.length - 1].id}"><b>${esc(l.name)}</b><span>${asks.length} requests open, oldest ${fmt(asks[0].t)}</span><span>last heard ${heard ? fmt(heard.t) : "never"}</span></button>`;
+  }).join("");
+  const col = (title, n, body) => `<div><h3>${title} <i>${n}</i></h3>${body || `<p class="none">Nothing here.</p>`}</div>`;
+  el("nnw").innerHTML =
+    col("Overdue", overdue.length, overdue.map((e) => `<button class="item late" data-id="${e.id}"><b>${esc(e.title)}</b><span>${span(e.t, TODAY)} late · due ${fmt(e.t)}</span></button>`).join("")) +
+    col("Coming up", upcoming.length, upcoming.map((e) => `<button class="item" data-id="${e.id}"><b>${esc(e.title)}</b><span>${fmt(e.t, { weekday: "short", month: "short", day: "numeric" })} · in ${span(TODAY, e.t)}</span></button>`).join("")) +
+    col("Waiting on others", (waiting.match(/<button/g) || []).length, waiting);
+
+  el("injuries").innerHTML = CASE.injuries.map(([part, what, id]) => `<li><b>${esc(part)}:</b> <span>${esc(what)}</span> ${chip(id)}</li>`).join("");
+
+  el("clashCount").textContent = `${CONFLICTS.length} need attorney review`;
+  el("clashes").innerHTML = CONFLICTS.map((k) => {
+    const a = byId[k.a], b = byId[k.b], who = (e) => `${KIND[e.kind]} · ${laneById[e.lane].name} · ${fmt(e.t)}`;
+    return `<button class="clash" data-conflict="${k.id}"><b>⚠ ${esc(k.why)}</b><q>${esc(k.qa)}</q><span>${esc(who(a))}</span><q>${esc(k.qb)}</q><span>${esc(who(b))}</span></button>`;
+  }).join("");
+
+  const h = CASE.happened;
+  el("what").innerHTML = `<dt>What</dt><dd class="lead">${esc(h.summary)} ${chip(intake)}</dd>
+    <dt>When</dt><dd>${esc(h.when)}</dd><dt>Where</dt><dd>${esc(h.where)}</dd><dt>Who</dt><dd>${esc(h.who)}</dd>
+    <dt>First care</dt><dd>${esc(h.first)}</dd><dt>In dispute</dt><dd>${esc(h.disputed)} ${chip(answer)}${chip(report)}</dd>`;
+
+  const v = CASE.value;
+  el("money").innerHTML = `<div class="est-out"><b class="big" id="estOut"></b><span id="estNote"></span></div>
+    <div class="bar" role="img" id="estBar"></div>
+    <p id="estCap" style="margin:0 0 10px"></p>
+    <dl class="fall" id="estFall"></dl>
+    <div class="knobs">
+      <label for="kMult"><b>Pain and suffering</b>, as a multiple of medical bills</label><output id="oMult"></output>
+      <input id="kMult" type="range" min="0" max="5" step="0.25" value="1.5">
+      <label for="kFault"><b>Client's share of fault</b></label><output id="oFault"></output>
+      <input id="kFault" type="range" min="0" max="100" step="5" value="0">
+      <label for="kFee"><b>Firm's fee</b></label><output id="oFee"></output>
+      <input id="kFee" type="range" min="0" max="45" step="1" value="33">
+      <label for="kCap"><b>Coverage</b>: the file gives two answers ⚠</label><span></span>
+      <select id="kCap">${v.caps.map(([name, , from], i) => `<option value="${i}">${esc(name)} (${esc(from)})</option>`).join("")}</select>
+    </div>`;
+  const calc = () => {
+    const mult = +el("kMult").value, fault = +el("kFault").value / 100, fee = +el("kFee").value / 100, cap = v.caps[+el("kCap").value][1];
+    const economic = v.specials + v.wages, pain = Math.round(v.specials * mult), gross = economic + pain;
+    const afterFault = Math.round(gross * (1 - fault)), recover = cap ? Math.min(afterFault, cap) : afterFault, lost = afterFault - recover;
+    const feeAmt = Math.round(recover * fee), net = recover - feeAmt - v.liens - CASE.costs;
+    el("oMult").textContent = mult.toFixed(2) + "×"; el("oFault").textContent = Math.round(fault * 100) + "%"; el("oFee").textContent = Math.round(fee * 100) + "%";
+    el("estOut").textContent = money(recover);
+    el("estNote").textContent = `recoverable on these assumptions · the file's own estimate is ${money(v.estimate)}`;
+    el("estBar").innerHTML = `<i style="width:${(recover / Math.max(afterFault, 1) * 100).toFixed(1)}%"></i>${lost ? `<i class="lost" style="left:${(recover / afterFault * 100).toFixed(1)}%;right:0"></i>` : ""}`;
+    el("estBar").setAttribute("aria-label", lost ? `${money(recover)} recoverable, ${money(lost)} above the coverage limit` : `${money(recover)} recoverable, no coverage limit applied`);
+    el("estCap").innerHTML = lost ? `⚠ <b>${money(lost)}</b> of the claim sits above this coverage limit and would not be recovered.` : "No coverage limit applied on this reading.";
+    const rows = [["Medical bills to date", v.specials], ["Lost wages claimed", v.wages], [`Pain and suffering (${mult.toFixed(2)}× medical)`, pain]];
+    if (fault) rows.push([`Client's fault (${Math.round(fault * 100)}%)`, afterFault - gross]);
+    if (lost) rows.push(["Above the coverage limit", -lost]);
+    rows.push([`Firm's fee (${Math.round(fee * 100)}%)`, -feeAmt], ["Known liens", -v.liens], ["Firm costs to date", -CASE.costs]);
+    el("estFall").innerHTML = rows.map(([label, n]) => `<dt>${esc(label)}</dt><dd>${money(n)}</dd>`).join("") + `<dt class="sum">To the client</dt><dd class="sum">${money(net)}</dd>`;
+  };
+  ["kMult", "kFault", "kFee", "kCap"].forEach((id) => el(id).addEventListener("input", calc));
+  calc();
+
+  // Activity by quarter per party, with how long since each was last heard from.
+  const q0 = new Date(FIRST), quarters = [];
+  for (let c = new Date(q0.getFullYear(), Math.floor(q0.getMonth() / 3) * 3, 1); c.getTime() <= TODAY; c.setMonth(c.getMonth() + 3)) quarters.push(c.getTime());
+  el("pulse").innerHTML = LANES.filter((l) => l.id !== "file").map((l) => {
+    const mine = events.filter((e) => e.lane === l.id && e.t <= TODAY);
+    const counts = quarters.map((t, i) => mine.filter((e) => e.t >= t && e.t < (quarters[i + 1] || Infinity)).length), max = Math.max(1, ...counts);
+    const bw = 120 / quarters.length, heard = lastHeard(l.id), gap = heard ? TODAY - heard.t : 0, quiet = l.id !== "firm" && l.id !== "court" && gap >= 120 * DAY;
+    const bars = counts.map((n, i) => `<rect x="${(i * bw + 1).toFixed(1)}" y="${n ? 22 - Math.max(3, n / max * 20) : 21}" width="${(bw - 2).toFixed(1)}" height="${n ? Math.max(3, n / max * 20) : 1}" rx="1" fill="${n ? `var(${l.paper})` : "var(--paper-line)"}"/>`).join("");
+    return `<b><i style="background:var(${l.paper})"></i>${esc(l.name)}</b><svg width="120" height="22" role="img" aria-label="${mine.length} records">${bars}</svg><span class="${quiet ? "quiet" : ""}">${heard ? (quiet ? `silent for ${span(heard.t, TODAY)}` : `last ${fmt(heard.t, { month: "short", day: "numeric" })}`) : "nothing yet"}</span>`;
+  }).join("");
+}
+
+function setView(name) {
+  state.view = name;
+  const onState = name === "state";
+  document.getElementById("stateTop").hidden = !onState;
+  document.getElementById("stateMain").hidden = !onState;
+  document.getElementById("timelineTop").hidden = onState;
+  document.getElementById("timelineMain").hidden = onState;
+  document.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === name));
+  if (!onState) render();
+  window.scrollTo(0, 0);
+}
+
+/* ------------------------------------------------------------------
    Interaction
    ------------------------------------------------------------------ */
 function select(id) {
+  if (state.view === "state") setView("timeline");
   state.selected = id; state.conflict = null;
   const e = byId[id];
-  if (e.t < state.v0 || e.t > state.v1) { const w = state.v1 - state.v0; setView(e.t - w / 2, e.t + w / 2, false); }
+  if (e.t < state.v0 || e.t > state.v1) { const w = state.v1 - state.v0; setRange(e.t - w / 2, e.t + w / 2, false); }
   render(); renderThread(e); renderDetail(e);
 }
 function selectConflict(id) {
+  if (state.view === "state") setView("timeline");
   state.conflict = id; state.selected = null;
   render(); renderConflict(CONFLICTS.find((k) => k.id === id));
 }
-function setView(v0, v1, draw = true) {
+function setRange(v0, v1, draw = true) {
   const w = Math.min(v1 - v0, LAST - FIRST);
   v0 = Math.max(FIRST, Math.min(v0, LAST - w));
   state.v0 = v0; state.v1 = v0 + w;
@@ -725,9 +1122,9 @@ function setView(v0, v1, draw = true) {
 }
 function preset(m) {
   document.querySelectorAll("[data-range]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.range === String(m)));
-  if (m === "all") return setView(FIRST, LAST);
+  if (m === "all") return setRange(FIRST, LAST);
   const w = m * 30.44 * DAY, anchor = state.selected ? byId[state.selected].t : TODAY;
-  setView(anchor - w * 0.75, anchor + w * 0.25);
+  setRange(anchor - w * 0.75, anchor + w * 0.25);
 }
 function stepSel(dir) {
   const list = events.filter(matches); if (!list.length) return;
@@ -736,15 +1133,16 @@ function stepSel(dir) {
 }
 
 document.querySelectorAll("[data-range]").forEach((b) => b.onclick = () => preset(b.dataset.range === "all" ? "all" : +b.dataset.range));
-document.getElementById("today").onclick = () => { const w = state.v1 - state.v0; setView(TODAY - w * 0.75, TODAY + w * 0.25); };
-document.getElementById("back").onclick = () => { const w = state.v1 - state.v0; setView(state.v0 - w / 2, state.v1 - w / 2); };
-document.getElementById("fwd").onclick = () => { const w = state.v1 - state.v0; setView(state.v0 + w / 2, state.v1 + w / 2); };
+document.getElementById("today").onclick = () => { const w = state.v1 - state.v0; setRange(TODAY - w * 0.75, TODAY + w * 0.25); };
+document.getElementById("back").onclick = () => { const w = state.v1 - state.v0; setRange(state.v0 - w / 2, state.v1 - w / 2); };
+document.getElementById("fwd").onclick = () => { const w = state.v1 - state.v0; setRange(state.v0 + w / 2, state.v1 + w / 2); };
 document.getElementById("prev").onclick = () => stepSel(-1);
 document.getElementById("next").onclick = () => stepSel(1);
 document.getElementById("q").oninput = (ev) => { state.query = ev.target.value.trim().toLowerCase(); render(); };
 
 // Clicks anywhere a record or contradiction is referenced.
 document.addEventListener("click", (ev) => {
+  const vw = ev.target.closest("[data-view]"); if (vw) return setView(vw.dataset.view);
   const c = ev.target.closest("[data-conflict]"); if (c) return selectConflict(c.dataset.conflict);
   const m = ev.target.closest("[data-ids]");
   if (m) { if (dragged) return; const ids = m.dataset.ids.split(","); return select(ids[(ids.indexOf(state.selected) + 1) % ids.length]); }
@@ -754,7 +1152,7 @@ document.addEventListener("click", (ev) => {
 });
 document.addEventListener("submit", (ev) => { if (ev.target.id === "askForm") { ev.preventDefault(); ask(document.getElementById("askInput").value); } });
 document.addEventListener("keydown", (ev) => {
-  if (ev.target.matches("input")) return;
+  if (ev.target.matches("input") || state.view === "state") return;
   if (ev.key === "ArrowLeft") { stepSel(-1); ev.preventDefault(); }
   if (ev.key === "ArrowRight") { stepSel(1); ev.preventDefault(); }
   if ((ev.key === "Enter" || ev.key === " ") && ev.target.closest(".mark")) { ev.target.closest(".mark").dispatchEvent(new MouseEvent("click", { bubbles: true })); ev.preventDefault(); }
@@ -800,7 +1198,7 @@ window.addEventListener("pointermove", (ev) => {
   const dx = ev.clientX - drag.x; if (Math.abs(dx) < 4 && !dragged) return;
   dragged = true; plot.classList.add("dragging");
   const dt = dx / plot.clientWidth * (drag.v1 - drag.v0);
-  setView(drag.v0 - dt, drag.v1 - dt);
+  setRange(drag.v0 - dt, drag.v1 - dt);
 });
 window.addEventListener("pointerup", () => { drag = null; plot.classList.remove("dragging"); setTimeout(() => { dragged = false; }, 0); });
 window.addEventListener("resize", render);
@@ -811,6 +1209,10 @@ if (opts.includes("open")) GROUPS.forEach((g) => { if (g.fold) state.open[g.id] 
 
 // Open on the most recent thing that happened.
 select(events.filter((e) => e.t <= TODAY).pop().id);
+
+// The case state is the landing view; timeline.html#timeline opens on the timeline instead.
+renderState();
+setView(opts.includes("timeline") ? "timeline" : "state");
 </script>
 </body>
 </html>

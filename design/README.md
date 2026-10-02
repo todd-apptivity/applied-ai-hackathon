@@ -14,7 +14,7 @@ Each page is one self-contained file: inline CSS, inline JS, no build step, no d
 | `provider.html` | Provider | One patient's case as shared with one provider's office |
 | `provider-home.html` | Provider | All of a provider's patients across shared cases |
 
-Not built yet: the lawyer's **case state** view (briefing with contradiction warnings and task list). The "Case state" tab in `timeline.html` is a dead button.
+`timeline.html` holds two views behind the tabs in its top bar: **Case state** (the landing view, a first guess to be refined) and **Timeline**. `timeline.html#timeline` opens straight on the timeline.
 
 ## Rules that apply to every mock
 
@@ -75,6 +75,22 @@ Layout follows Gong's account page: a compact strip of lanes on top, a reading a
 - **Controls:** search dims non-matching marks; 3M / 1Y / ALL, Today, drag to pan, arrow keys or Previous / Next.
 - **URL option:** `timeline.html#open` starts with both groups unfolded.
 
+### Case state view (first draft, same file)
+
+- **Hero:** client portrait, a one-sentence headline, and six tiles: last client contact, limitations (shows "Needs review" when a contradiction touches it), overdue, next date, case age, firm costs.
+- **Stage strip:** every stage of the matter grouped under Pre-litigation and Litigation, with the date each was entered and the current one marked. The same history is drawn as a stage band under the lanes on the timeline (outlined = pre-litigation, filled = litigation).
+- **Statute of limitations tile:** a countdown until suit is filed (amber inside 90 days, red inside 30), then the margin it was filed by. Shows "Needs review" when a contradiction touches it.
+- **Need to know:** rule-based alerts that only appear when they apply: statute inside 90 days with no suit filed, limitations pleaded as a defense, dates inside the next 90 days, overdue tasks, letters of representation with no acknowledgment, no client contact in 30 days, other contradictions.
+- **Letters of representation:** who was sent one, when, and whether they acknowledged it.
+- **The story so far:** six sentences, each followed by source chips that jump to that record on the timeline.
+- **What is holding the case:** a chain of blockers, the root one highlighted.
+- **Now, next, waiting:** overdue tasks, upcoming dates, and parties with unanswered requests. Computed from the records, not written by a model.
+- **Where the file disagrees with itself:** one card per contradiction with both quotes; clicking opens it on the timeline.
+- **What happened:** the incident in one place: what, when, where, who, first care, and what is in dispute, with source chips.
+- **Value estimator:** an interactive calculator. Amounts come from the file (medical bills, lost wages, liens, costs); sliders set the pain-and-suffering multiple, the client's share of fault and the fee; a dropdown picks between the two conflicting coverage readings and shows how much falls above the limit. Labelled as arithmetic, not a prediction, because the PRD lists predicting settlement value as a non-goal.
+- **Injuries and treatment**, and **who we have heard from** (activity by quarter per party, with silence flagged).
+- The story, headline, blocker chain, value and injuries are hand-written in a `CASE` object; in the real build a model composes them from extracted facts, each citing record ids.
+
 ## `provider.html` (one patient)
 
 - **Header:** patient portrait and name, "Shared with {provider} by {firm}", an "← All patients" link to `provider-home.html`, the date the firm published the page, and a notifications bell.
@@ -95,6 +111,9 @@ Layout follows Gong's account page: a compact strip of lanes on top, a reading a
 - **No notifications bell here yet.**
 
 ## Open questions
+
+- Stage history: Clio returns only the matter's current stage, not when each stage was entered. The stage strip and band need those dates from somewhere (inferred from records such as the filing date, or stored by Ninety each time it sees the stage change).
+- Letters of representation are hand-listed in the mock. The real build has to recognise them among the communications and match acknowledgments to them.
 
 - Should `provider.html` drop its "Since you last opened this page" card now that the notifications tray covers the same ground?
 - Should the patient photo be shown to providers by default, or only when the attorney switches it on?
