@@ -71,8 +71,9 @@ describe("Clio client", () => {
           status: "Open",
           open_date: "2024-01-02",
           client: { id: 1, name: "Pat Example" },
+          statute_of_limitations: { id: 8, name: "Limitations", due_at: "2026-01-02", status: "pending" },
           custom_field_values: [
-            { id: 9, field_name: "Venue", value: null, picklist_option: { id: 3, name: "County court" } },
+            { id: "picklist-9", field_name: "Venue", value: "County court" },
           ],
         },
       },
@@ -122,6 +123,7 @@ describe("Clio client", () => {
 
     assert.equal(snapshot.matterId, "42");
     assert.match(byType("custom_field")[0].text, /Venue: County court/);
+    assert.match(byType("matter")[0].text, /Statute of limitations date \(Clio field\): 2026-01-02\nStatute of limitations task status: pending/);
     assert.deepEqual(byType("contact").map((r) => r.title).sort(), ["Dr. Example (Treating physician)", "Pat Example (Client)"]);
     assert.match(byType("communication")[0].text, /From: Paralegal\nTo: Pat Example/);
     assert.equal(byType("expense").length, 1, "time entries are not expenses");

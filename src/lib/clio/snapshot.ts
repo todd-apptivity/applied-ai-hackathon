@@ -28,10 +28,8 @@ export async function fetchMatterSnapshot(matterId: number): Promise<MatterSnaps
   addContact(matter.client, "Client");
   for (const rel of bundle.relationships) addContact(rel.contact, rel.description);
 
-  // Typed as a date string upstream; tolerate the Task-shaped object Clio can return.
-  const sol = matter.statute_of_limitations as unknown;
-  const solDate = typeof sol === "string" ? sol : (sol as { due_at?: string } | null)?.due_at;
-  const solStatus = typeof sol === "object" && sol ? (sol as { status?: string }).status : null;
+  // Clio returns the limitations date as an associated Task.
+  const sol = matter.statute_of_limitations;
 
   const parts: MatterParts = {
     matter: {
@@ -44,14 +42,14 @@ export async function fetchMatterSnapshot(matterId: number): Promise<MatterSnaps
       stage: matter.matter_stage?.name,
       openDate: matter.open_date,
       closeDate: matter.close_date,
-      statuteOfLimitations: solDate,
-      statuteOfLimitationsStatus: solStatus,
+      statuteOfLimitations: sol?.due_at,
+      statuteOfLimitationsStatus: sol?.status,
       updatedAt: matter.updated_at,
     },
     customFields: (matter.custom_field_values ?? []).map((v) => ({
       id: String(v.id),
-      name: v.field_name ?? v.custom_field?.name ?? "Custom field",
-      value: v.picklist_option?.name ?? v.value,
+      name: v.field_name ?? "Custom field",
+      value: v.value,
     })),
     contacts: [...contacts.values()].map(({ contact: c, roles }) => ({
       id: String(c.id),
