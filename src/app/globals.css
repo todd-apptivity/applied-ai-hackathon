@@ -8,33 +8,51 @@
  * (muted, border, ring, primary, ...) in the same two-mode shape.
  */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Evergreen: the palette of the case views (see design/README.md). */
+  --background: #f5f1e4;
+  --foreground: #10231f;
 
-  --card: #ffffff;
-  --card-foreground: #171717;
-  --popover: #ffffff;
-  --popover-foreground: #171717;
-  --primary: #18181b;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
-  --destructive: #dc2626;
-  --destructive-foreground: #fafafa;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #a1a1aa;
+  --card: #fffef9;
+  --card-foreground: #10231f;
+  --popover: #fffef9;
+  --popover-foreground: #10231f;
+  --primary: #0e6b57;
+  --primary-foreground: #ffffff;
+  --secondary: #ebe5d3;
+  --secondary-foreground: #10231f;
+  --muted: #ebe5d3;
+  --muted-foreground: #4d5e58;
+  --accent: #e4ecdf;
+  --accent-foreground: #10231f;
+  --destructive: #d03b3b;
+  --destructive-foreground: #ffffff;
+  --border: #e3dcc6;
+  --input: #d6cdb2;
+  --ring: #0e6b57;
   --radius: 0.625rem;
+
+  /* The dark green strip across the top of every page. */
+  --ink: #0e3b35;
+  --ink-foreground: #f5f1e4;
+  --ink-muted: #c2d8cf;
+  --ink-border: #22635a;
 }
+
+/*
+ * One theme. The case views are designed light-on-paper only, so `dark:`
+ * utilities are tied to a class nothing sets instead of to the OS setting.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-border: var(--ink-border);
   --font-mono: var(--font-geist-mono);
 
   --color-card: var(--card);
@@ -77,35 +95,16 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-
-    --card: #18181b;
-    --card-foreground: #ededed;
-    --popover: #18181b;
-    --popover-foreground: #ededed;
-    --primary: #fafafa;
-    --primary-foreground: #18181b;
-    --secondary: #27272a;
-    --secondary-foreground: #fafafa;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --accent: #27272a;
-    --accent-foreground: #fafafa;
-    --destructive: #ef4444;
-    --destructive-foreground: #fafafa;
-    --border: #27272a;
-    --input: #3f3f46;
-    --ring: #52525b;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Headings in the serif the case views use. */
+h1, h2 {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
 }
 
 @custom-variant data-open (&:where([data-state="open"], [data-open]:not([data-open="false"])));

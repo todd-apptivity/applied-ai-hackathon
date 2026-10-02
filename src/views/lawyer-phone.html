@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Case</title>
+<style>
+  /* Design tokens. Same set as the other mocks in design/. */
+  :root {
+    --paper: #f5f1e4; --paper-card: #fffef9; --paper-line: #e3dcc6;
+    --paper-text: #10231f; --paper-text-2: #4d5e58; --paper-text-3: #86948e;
+    --ink: #0e3b35; --ink-raised: #165048; --ink-line: #22635a;
+    --ink-text: #f5f1e4; --ink-text-2: #c2d8cf; --ink-text-3: #8fb3a7;
+    --lane-client: #62aefc; --lane-firm: #6fe0b3; --lane-provider: #c4b5ff; --lane-defense: #f0629a; --lane-court: #f5f1e4; --lane-file: #8fb3a7;
+    --lane-client-p: #2a78d6; --lane-firm-p: #12855d; --lane-provider-p: #4a3aa7; --lane-defense-p: #c9457a; --lane-court-p: #10231f; --lane-file-p: #86948e;
+    --contradiction: #fab219; --critical: #d03b3b; --accent: #0e6b57;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --col: 430px; --bar-h: 62px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #d9d3c0; color: var(--paper-text); font-family: var(--sans); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  h1, h2, h3, p, dl, dd, ol, ul { margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 2px solid var(--contradiction); outline-offset: 2px; }
+
+  /* On a desktop the app sits in a phone-wide column; on a phone it fills the screen. */
+  .phone { width: min(100%, var(--col)); min-height: 100vh; margin: 0 auto; background: var(--paper); padding-bottom: calc(var(--bar-h) + env(safe-area-inset-bottom)); box-shadow: 0 0 60px rgba(16,35,31,.25); }
+  .fixed { position: fixed; left: 50%; transform: translateX(-50%); width: min(100%, var(--col)); z-index: 20; }
+
+  .appbar { position: sticky; top: 0; z-index: 15; background: var(--ink); color: var(--ink-text); padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--ink-line); }
+  .appbar h1 { font-family: var(--serif); font-size: 17px; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .appbar span { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); background: var(--lane-firm); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+
+  .tabs { bottom: 0; height: calc(var(--bar-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--paper-card); border-top: 1px solid var(--paper-line); display: grid; grid-template-columns: repeat(3, 1fr); }
+  .tabs button { border: 0; background: none; display: grid; place-items: center; align-content: center; gap: 2px; font-size: 11.5px; font-weight: 600; color: var(--paper-text-3); position: relative; }
+  .tabs button[aria-pressed="true"] { color: var(--accent); }
+  .tabs button[aria-pressed="true"]::before { content: ""; position: absolute; top: 0; left: 28%; right: 28%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
+  .tabs b { position: absolute; top: 8px; left: calc(50% + 8px); min-width: 17px; height: 17px; border-radius: 9px; background: var(--contradiction); color: #2b1d00; font-size: 11px; line-height: 17px; padding: 0 4px; }
+
+  /* ---------- Case ---------- */
+  .hero { background: var(--ink); color: var(--ink-text); padding: 28px 22px 24px; text-align: center; }
+  .kicker { display: block; margin-top: 14px; font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-text-3); }
+  .headline { margin-top: 8px; font-family: var(--serif); font-size: 23px; line-height: 1.3; overflow-wrap: anywhere; text-wrap: balance; }
+  .who { display: flex; gap: 12px; align-items: center; }
+  .face { margin: 0 auto; width: 76px; height: 76px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--lane-client); }
+  .face { display: grid; place-items: center; background: var(--ink-raised); font-family: var(--serif); font-size: 26px; font-weight: 600; color: var(--ink-text); }
+  .who p { font-family: var(--serif); font-size: 19px; line-height: 1.3; overflow-wrap: anywhere; }
+  /* The 30-second brief: read it, or have it read to you. */
+  .listen { margin-top: 22px; width: 100%; min-height: 54px; border: 0; border-radius: 14px; background: var(--lane-firm); color: var(--ink); display: flex; align-items: center; gap: 12px; padding: 8px 16px 8px 10px; text-align: left; }
+  .listen:disabled { background: var(--ink-raised); color: var(--ink-text-3); }
+  .listen .play { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--ink); color: var(--lane-firm); display: grid; place-items: center; }
+  .listen b { display: block; font-size: 16px; line-height: 1.2; }
+  .listen small { display: block; font-size: 12.5px; opacity: .8; }
+  .caption { margin-top: 16px; min-height: 96px; }
+  .caption small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--lane-firm); }
+  .caption p { margin-top: 6px; font-size: 18px; line-height: 1.4; overflow-wrap: anywhere; }
+  .dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+  .dots i { width: 22px; height: 4px; border-radius: 2px; background: var(--ink-line); }
+  .dots i.on { background: var(--lane-firm); } .dots i.done { background: var(--ink-text-3); }
+  .readit { margin-top: 6px; min-height: 44px; border: 0; background: none; color: var(--ink-text-2); font-size: 14px; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--ink-text-3); }
+  .brief { margin-top: 4px; display: grid; gap: 6px; text-align: left; }
+  .brief button { display: grid; grid-template-columns: 4px minmax(0, 1fr); gap: 10px; text-align: left; border: 0; background: none; color: var(--ink-text-2); padding: 7px 8px 7px 0; border-radius: 8px; }
+  .brief button::before { content: ""; border-radius: 2px; background: var(--ink-line); }
+  .brief small { display: block; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .brief span { display: block; font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
+  .brief button.on { background: var(--ink-raised); color: var(--ink-text); }
+  .brief button.on::before { background: var(--lane-firm); }
+  .brief button.done span { color: var(--ink-text-3); }
+  .stage { margin-top: 2px; }
+  .stage small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-2); margin-bottom: 6px; }
+  .stage div { display: flex; gap: 3px; }
+  .stage i { flex: 1; height: 6px; border-radius: 3px; background: var(--paper-line); }
+  .stage i.done { background: var(--paper-text-3); }
+  .stage i.now { background: var(--accent); }
+  .stage ol { list-style: none; display: grid; gap: 4px; margin-top: 12px; font-size: 13.5px; color: var(--paper-text-2); }
+  .stage li { display: flex; justify-content: space-between; gap: 12px; }
+  .stage li.now { color: var(--paper-text); font-weight: 600; }
+  .stage i.gap { flex: 0 0 8px; background: none; }
+  .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 22px; text-align: left; }
+  .tile { text-align: left; background: var(--ink-raised); border: 1px solid var(--ink-line); border-top: 3px solid var(--ink-text-3); border-radius: 10px; padding: 8px 10px; min-width: 0; min-height: 76px; color: inherit; }
+  .tile.good { border-top-color: var(--lane-firm); } .tile.warn { border-top-color: var(--contradiction); } .tile.late { border-top-color: var(--critical); }
+  .tile span { display: block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-text-3); }
+  .tile b { display: block; font-family: var(--serif); font-size: 19px; line-height: 1.15; margin-top: 3px; overflow-wrap: anywhere; }
+  .tile small { display: block; font-size: 11.5px; color: var(--ink-text-2); line-height: 1.25; margin-top: 2px; }
+
+  .block { padding: 22px 16px 6px; }
+  .more { border: 0; background: none; color: var(--accent); font-size: 14px; font-weight: 600; min-height: 44px; padding: 0; }
+  .block > h2 { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); margin-bottom: 8px; }
+  .alert { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; width: 100%; text-align: left; border: 0; background: none; padding: 10px 0; border-top: 1px solid var(--paper-line); min-height: 44px; }
+  .alert:first-of-type { border-top: 0; padding-top: 2px; }
+  .alert i { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; background: #fff4d6; color: #7a5200; }
+  .alert.crit i { background: #fdecec; color: #a02020; }
+  .alert b { display: block; font-size: 14.5px; line-height: 1.3; font-weight: 600; overflow-wrap: anywhere; }
+  .alert span { display: block; font-size: 13px; color: var(--paper-text-2); line-height: 1.35; }
+
+  .fold { margin: 10px 16px 0; background: var(--paper-card); border: 1px solid var(--paper-line); border-radius: 12px; overflow: hidden; }
+  .fold summary { list-style: none; display: grid; grid-template-columns: minmax(0, 1fr) auto 14px; gap: 10px; align-items: center; padding: 12px 14px; min-height: 52px; cursor: pointer; }
+  .fold summary::-webkit-details-marker { display: none; }
+  .fold summary b { font-size: 15px; font-weight: 600; }
+  .fold summary small { display: block; font-size: 12.5px; color: var(--paper-text-2); font-weight: 400; overflow-wrap: anywhere; }
+  .fold summary em { font-style: normal; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 1px 8px; background: var(--paper); color: var(--paper-text-2); white-space: nowrap; }
+  .fold summary em.warn { background: #fff4d6; color: #5c3d00; box-shadow: inset 0 0 0 1px var(--contradiction); }
+  .fold summary::after { content: "›"; font-size: 20px; color: var(--paper-text-3); transition: transform .15s; }
+  .fold[open] summary::after { transform: rotate(90deg); }
+  .fold .in { padding: 2px 14px 14px; }
+  @media (prefers-reduced-motion: reduce) { .fold summary::after { transition: none; } }
+
+  .story { list-style: none; display: grid; gap: 10px; font-family: var(--serif); font-size: 16.5px; line-height: 1.45; }
+  .src { text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin: 2px 2px 0 0; border: 1px solid var(--paper-line); background: var(--paper); border-radius: 999px; padding: 2px 9px 2px 7px; font-family: var(--sans); font-size: 12px; color: var(--paper-text-2); white-space: nowrap; }
+  .src i { width: 7px; height: 7px; border-radius: 50%; }
+  .what { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; font-size: 14px; }
+  .what dt { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); padding-top: 3px; }
+  .what dd { overflow-wrap: anywhere; }
+  .link { position: relative; background: var(--paper); border-radius: 10px; padding: 10px 12px; margin-bottom: 22px; }
+  .link:last-child { margin-bottom: 0; }
+  .link:not(:last-child)::after { content: "↓"; position: absolute; left: 14px; bottom: -21px; color: var(--paper-text-3); }
+  .link.root { background: #fff4d6; box-shadow: inset 0 0 0 1px var(--contradiction); }
+  .link b { display: block; font-size: 14.5px; line-height: 1.3; }
+  .link span { display: block; font-size: 12.5px; color: var(--paper-text-2); margin: 2px 0 4px; }
+  .sub { font-family: var(--serif); font-size: 16px; font-weight: 600; margin: 12px 0 6px; }
+  .sub:first-child { margin-top: 0; }
+  .item { display: block; width: 100%; text-align: left; border: 0; border-left: 3px solid var(--paper-line); background: none; padding: 7px 0 7px 10px; margin-bottom: 4px; min-height: 44px; }
+  .item.late { border-left-color: var(--critical); } .item.wait { border-left-color: var(--contradiction); }
+  .item b { display: block; font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; }
+  .item span { display: block; font-size: 12.5px; color: var(--paper-text-2); }
+  .clash { display: block; width: 100%; text-align: left; border: 1px solid var(--paper-line); border-left: 4px solid var(--contradiction); background: var(--paper); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  .clash b { display: block; font-size: 14px; line-height: 1.35; }
+  .clash q { display: block; quotes: "“" "”"; font-family: var(--serif); font-size: 15px; line-height: 1.35; margin-top: 6px; overflow-wrap: anywhere; }
+  .clash span { display: block; font-size: 12px; color: var(--paper-text-3); }
+  .lor { display: grid; gap: 10px; font-size: 13.5px; }
+  .lor div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; }
+  .lor .ok { color: #0b5c40; font-weight: 600; } .lor .no { color: #a02020; font-weight: 600; }
+  .lor small { color: var(--paper-text-3); grid-column: 1 / -1; }
+  .big { font-family: var(--serif); font-size: 28px; line-height: 1.1; font-weight: 600; }
+  .fall { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 13px; margin-top: 10px; }
+  .fall dt { color: var(--paper-text-2); } .fall dd { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .fall .sum { border-top: 1px solid var(--paper-line); padding-top: 4px; color: var(--paper-text); }
+  .knobs { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 13px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--paper-line); }
+  .knobs output { font-weight: 600; }
+  .knobs input, .knobs select { grid-column: 1 / -1; width: 100%; min-height: 36px; margin-bottom: 6px; accent-color: var(--accent); }
+  .knobs select { border: 1px solid var(--paper-line); background: var(--paper); border-radius: 8px; padding: 6px 8px; }
+  .note { font-size: 12.5px; color: var(--paper-text-2); margin-top: 6px; }
+
+  /* ---------- Timeline ---------- */
+  .scrub { position: sticky; top: 43px; z-index: 12; background: var(--ink); color: var(--ink-text); padding: 8px 0 0; }
+  .scrub svg { display: block; width: 100%; touch-action: none; cursor: pointer; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px 10px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chips button { flex: none; border: 1px solid var(--ink-line); background: var(--ink-raised); color: var(--ink-text-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; min-height: 34px; display: inline-flex; align-items: center; gap: 6px; }
+  .chips button i { width: 8px; height: 8px; border-radius: 50%; }
+  .chips button[aria-pressed="true"] { background: var(--ink-text); color: var(--ink); border-color: var(--ink-text); font-weight: 600; }
+  .month { scroll-margin-top: 150px; }
+  .month > h3 { position: sticky; top: 147px; z-index: 5; background: var(--paper); padding: 10px 16px 6px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); display: flex; justify-content: space-between; }
+  .month.future > h3 { color: var(--accent); }
+  .rec { display: grid; grid-template-columns: 4px 30px minmax(0, 1fr); gap: 10px; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--paper-line); background: var(--paper-card); padding: 10px 16px 10px 0; min-height: 56px; align-items: start; }
+  .rec > i { align-self: stretch; border-radius: 0 3px 3px 0; }
+  .rec svg { display: block; margin-top: 1px; }
+  .rec b { display: block; font-size: 14.5px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+  .rec span { display: block; font-size: 12.5px; color: var(--paper-text-2); }
+  .rec p { font-size: 13px; color: var(--paper-text-2); margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .flags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .flag { display: inline-flex; align-items: center; border-radius: 999px; padding: 1px 8px; font-size: 11.5px; font-weight: 600; border: 1px solid var(--paper-text-3); color: var(--paper-text-2); }
+  .flag.warn { border-color: var(--contradiction); background: #fff4d6; color: #5c3d00; }
+  .flag.late { border-color: var(--critical); background: #fdecec; color: #a02020; }
+  .flag.open { border-style: dashed; }
+  .quiet { text-align: center; font-size: 12.5px; color: var(--paper-text-3); padding: 10px 16px; border-top: 1px dashed var(--paper-line); }
+  .empty { padding: 28px 16px; color: var(--paper-text-2); }
+
+  /* ---------- Ask ---------- */
+  .ask-wrap { padding: 16px; }
+  .ask-wrap h2 { font-family: var(--serif); font-size: 22px; font-weight: 600; }
+  .ask-wrap > p { color: var(--paper-text-2); font-size: 14px; margin: 4px 0 14px; }
+  .askform { display: flex; gap: 8px; }
+  .askform input { flex: 1; min-width: 0; min-height: 46px; border: 1px solid var(--paper-line); background: var(--paper-card); border-radius: 10px; padding: 0 12px; font-size: 16px; }
+  .askform button, .primary { border: 0; background: var(--accent); color: #fff; border-radius: 10px; padding: 0 16px; font-weight: 600; min-height: 46px; }
+  .sugg { display: grid; gap: 8px; margin-top: 12px; }
+  .sugg button { text-align: left; border: 1px solid var(--paper-line); background: var(--paper-card); border-radius: 10px; padding: 11px 12px; min-height: 44px; font-size: 14.5px; }
+  .answer { margin-top: 14px; background: var(--paper-card); border: 1px solid var(--paper-line); border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+  .answer em { display: block; font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); margin-bottom: 4px; }
+
+  /* ---------- Sheet ---------- */
+  .scrim { position: fixed; inset: 0; background: rgba(16,35,31,.45); z-index: 30; }
+  .sheet { bottom: 0; z-index: 31; max-height: 88vh; overflow-y: auto; background: var(--paper-card); border-radius: 18px 18px 0 0; padding: 8px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -18px 48px rgba(0,0,0,.3); border-top: 5px solid var(--tint, var(--paper-line)); }
+  .grab { width: 40px; height: 4px; border-radius: 2px; background: var(--paper-line); margin: 0 auto 10px; }
+  .sheet-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .kind { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--paper-text-2); display: inline-flex; align-items: center; gap: 7px; }
+  .kind i { width: 9px; height: 9px; border-radius: 50%; }
+  .x { border: 0; background: var(--paper); width: 36px; height: 36px; border-radius: 50%; font-size: 18px; color: var(--paper-text-2); flex: none; }
+  .sheet h3 { font-family: var(--serif); font-size: 22px; line-height: 1.2; font-weight: 600; margin: 6px 0 8px; overflow-wrap: anywhere; }
+  .facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 12px; font-size: 13px; margin: 8px 0 12px; }
+  .facts dt { color: var(--paper-text-3); } .facts dd { overflow-wrap: anywhere; }
+  .body { padding-top: 12px; border-top: 1px solid var(--paper-line); white-space: pre-line; overflow-wrap: anywhere; }
+  .side { background: var(--paper); border-radius: 10px; padding: 12px; margin-top: 10px; }
+  .side h4 { margin: 0 0 4px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); }
+  .side q { display: block; quotes: "“" "”"; font-family: var(--serif); font-size: 17px; line-height: 1.35; overflow-wrap: anywhere; }
+  .side p { font-size: 12.5px; color: var(--paper-text-2); margin-top: 4px; }
+  .nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .nav button, .ghost { border: 1px solid var(--paper-line); background: var(--paper); border-radius: 10px; min-height: 44px; font-size: 14px; color: var(--paper-text-2); padding: 0 12px; }
+  .nav button:disabled { opacity: .4; }
+  .sheet .askform { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--paper-line); }
+</style>
+</head>
+<body>
+<div class="phone">
+  <header class="appbar"><h1 id="mTitle"></h1><span id="phasePill"></span></header>
+
+  <main id="vCase">
+    <section class="hero">
+      <div class="face" id="face"></div>
+      <small class="kicker" id="kicker"></small>
+      <p class="headline" id="headline"></p>
+      <button class="listen" id="listen" aria-pressed="false"><span class="play" id="playIcon"></span><span><b id="listenLabel"></b><small id="listenSub"></small></span></button>
+      <div class="caption" id="caption" aria-live="polite" hidden></div>
+      <button class="readit" id="readit" aria-expanded="false" aria-controls="brief"></button>
+      <div class="brief" id="brief" hidden></div>
+      <div class="tiles" id="tiles"></div>
+    </section>
+    <section class="block"><h2>Need to know</h2><div id="alerts"></div></section>
+    <div id="folds"></div>
+  </main>
+
+  <main id="vTime" hidden>
+    <div class="scrub">
+      <svg id="strip" height="46" role="img" aria-label="Activity by month. Tap to jump to a month."></svg>
+      <div class="chips" id="chips" role="group" aria-label="Show records for"></div>
+    </div>
+    <div id="feed"></div>
+  </main>
+
+  <main id="vAsk" hidden>
+    <div class="ask-wrap">
+      <h2>Ask about this case</h2>
+      <p>Answered from the case file, with the records each answer came from.</p>
+      <form class="askform" id="askAll"><input id="askAllInput" placeholder="Ask anything about the file" aria-label="Question" autocomplete="off"><button>Ask</button></form>
+      <div class="sugg" id="sugg"></div>
+      <div id="askAllOut"></div>
+    </div>
+  </main>
+</div>
+
+<nav class="tabs fixed" aria-label="Views">
+  <button data-tab="vCase"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="15" height="15" rx="3"/><path d="M7 8.500h8M7 12h8M7 15.500h5"/></svg>Case<b id="tabAlerts"></b></button>
+  <button data-tab="vTime"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3 11h16"/><circle cx="7" cy="11" r="2" fill="currentColor"/><circle cx="14" cy="11" r="2" fill="currentColor"/><path d="M7 5v3M14 14v3"/></svg>Timeline</button>
+  <button data-tab="vAsk"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.500h14v9.500H10l-4 3v-3H4z"/></svg>Ask</button>
+</nav>
+
+<div class="scrim" id="scrim" hidden></div>
+<section class="sheet fixed" id="sheet" role="dialog" aria-modal="true" aria-label="Record" hidden></section>
+
+<script>
+/* ------------------------------------------------------------------
+   Data. The server fills this slot with the matter's records, already
+   shaped by src/lib/matter/derive.ts. Nothing about any matter is written here.
+   ------------------------------------------------------------------ */
+const DATA = /*__VIEW_DATA__*/null;
+
+const DAY = 864e5;
+const TODAY = DATA.today;
+const LANE_TOKENS = { client: "client", firm: "firm", medical: "provider", defense: "defense", court: "court", other: "court", file: "file" };
+const LANES = DATA.lanes.map((l) => ({ ...l, ink: `--lane-${LANE_TOKENS[l.cls]}`, paper: `--lane-${LANE_TOKENS[l.cls]}-p` }));
+const laneById = Object.fromEntries(LANES.map((l, i) => [l.id, { ...l, index: i }]));
+const KIND = { email: "Email", call: "Phone call", note: "Note", task: "Task", event: "Calendar entry", doc: "Document", expense: "Expense" };
+const events = DATA.events;
+const CASE = DATA.case;
+// Contradictions come from the composed layer, which is not built yet.
+const CONFLICTS = [];
+const byId = Object.fromEntries(events.map((e) => [e.id, e]));
+const conflictsOf = (id) => CONFLICTS.filter((c) => c.a === id || c.b === id);
+document.title = `${DATA.title} · Case`;
+document.getElementById("mTitle").textContent = CASE.clientName || DATA.title;
+
+/* ------------------------------------------------------------------
+   Helpers
+   ------------------------------------------------------------------ */
+const $ = (id) => document.getElementById(id);
+const fmt = (t, o = { month: "short", day: "numeric", year: "numeric" }) => new Date(t).toLocaleDateString("en-US", o);
+const span = (a, b) => { const m = Math.round((b - a) / (30.44 * DAY)); return m < 1 ? `${Math.round((b - a) / DAY)} days` : m < 12 ? `${m} mo` : `${Math.floor(m / 12)} yr ${m % 12} mo`; };
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const money = (n) => (n < 0 ? "−$" : "$") + Math.abs(n).toLocaleString("en-US");
+const short = (t) => fmt(t, { month: "short", day: "numeric", year: "2-digit" }).replace(", ", " ’");
+const chip = (id) => { const e = byId[id]; return `<button class="src" data-id="${id}"><i style="background:var(${laneById[e.lane].paper})"></i>${KIND[e.kind]} · ${short(e.t)}</button>`; };
+const lastHeard = (laneId) => { const h = events.filter((e) => e.lane === laneId && e.t <= TODAY); return h.length ? h[h.length - 1] : null; };
+const partyOf = (e) => e.party || e.lane;
+const whoFrom = (e) => e.lane === "firm" ? "Our firm" : laneById[e.lane].name;
+const whoTo = (e) => e.lane === "firm" ? (e.party ? laneById[e.party].name : null) : (e.party ? "Our firm" : null);
+
+const ICON = {
+  email: `<rect x="-4.5" y="-3.2" width="9" height="6.4" rx="1"/><path d="M-4.5 -2.4 0 1 4.5 -2.4"/>`,
+  call: `<path d="M-3.9 -4.200h2.300l1 2.6-1.4 1c.6 1.3 1.6 2.3 2.9 2.900l1-1.4 2.6 1v2.300c-4.6.3-8.7-3.8-8.4-8.400z" fill="currentColor" stroke="none"/>`,
+  note: `<path d="M-3.6 -3h7.200M-3.6 0h7.200M-3.6 3h4.4"/>`,
+  task: `<path d="M-4 .2-1.3 2.9 4-2.9"/>`,
+  event: `<rect x="-4.2" y="-3.4" width="8.4" height="7.6" rx="1"/><path d="M-4.2 -.9h8.400M-2 -5v2.200M2 -5v2.2"/>`,
+  doc: `<path d="M-3.2 -4.600h3.900l2.5 2.500v6.700h-6.400zM.7 -4.600v2.500h2.5"/>`,
+  expense: `<path d="M2.4 -2.400c-.5-.9-1.4-1.3-2.4-1.3-1.4 0-2.4.7-2.4 1.8 0 2.6 4.9 1.1 4.9 3.7 0 1.1-1 1.9-2.5 1.9-1.1 0-2.1-.5-2.6-1.400M0 -5v10"/>`,
+};
+const disc = (e) => { const c = `var(${laneById[e.lane].paper})`, hollow = e.open;
+  return `<svg width="30" height="30" viewBox="-15 -15 30 30" aria-hidden="true"><circle r="12.5" fill="${hollow ? "var(--paper-card)" : c}" stroke="${c}" stroke-width="2"/><g transform="scale(1.250)" color="${hollow ? c : "#fff"}" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICON[e.kind]}</g></svg>`; };
+
+const state = { tab: "vCase", party: "all", sheet: null };
+const upcoming = events.filter((e) => e.t > TODAY), overdue = events.filter((e) => e.overdue);
+// Everyone the firm has exchanged a message with, in either direction.
+const lastContact = (laneId) => { const h = events.filter((e) => (e.lane === laneId || e.party === laneId) && (e.kind === "email" || e.kind === "call") && e.t <= TODAY); return h.length ? h[h.length - 1] : null; };
+const clientCall = laneById.client ? lastContact("client") : null;
+const sinceClient = clientCall ? Math.round((TODAY - clientCall.t) / DAY) : null;
+// Outside parties holding unanswered firm messages, longest wait first.
+const waitingOn = LANES.map((l) => {
+  if (l.cls === "client" || l.cls === "firm" || l.cls === "file") return null;
+  const asks = events.filter((e) => e.open && e.party === l.id); if (!asks.length) return null;
+  return { lane: l, asks, heard: lastHeard(l.id) };
+}).filter(Boolean).sort((a, b) => a.asks[0].t - b.asks[0].t);
+// Limitations, as Clio records it: the matter's limitations task.
+const st = CASE.statute, stLeft = st && st.date != null ? Math.round((st.date - TODAY) / DAY) : null, stMarked = !!st && /complete/i.test(st.status || "");
+const field = (pattern) => (CASE.fields.find((f) => pattern.test(f.name)) || {}).value || null;
+
+/* ------------------------------------------------------------------
+   Case
+   ------------------------------------------------------------------ */
+function renderCase() {
+  const name = CASE.clientName || DATA.title;
+  $("phasePill").textContent = CASE.stage || CASE.status || "";
+  $("phasePill").hidden = !$("phasePill").textContent;
+  $("face").textContent = name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  $("kicker").textContent = [DATA.title, CASE.stage, CASE.status].filter(Boolean).join(" · ");
+  $("headline").textContent = CASE.description || DATA.title;
+
+  const tile = (cls, attr, label, value, sub) => `<button class="tile ${cls}" ${attr}><span>${label}</span><b>${value}</b><small>${sub}</small></button>`;
+  const statute = !st || st.date == null ? ["", "Not set", "no limitations task"]
+    : stMarked ? ["good", "Complete", `task due ${fmt(st.date, { month: "short", day: "numeric", year: "numeric" })}`]
+    : stLeft < 0 ? ["late", "Past due", `was due ${fmt(st.date, { month: "short", day: "numeric" })}`]
+    : [stLeft <= 30 ? "late" : stLeft <= 90 ? "warn" : "good", `${stLeft} days`, `runs ${fmt(st.date, { month: "short", day: "numeric" })}`];
+  $("tiles").innerHTML =
+    tile(clientCall ? (sinceClient > 30 ? "warn" : "good") : "", clientCall ? `data-id="${clientCall.id}"` : "", "Client contact", clientCall ? `${sinceClient} days` : "None", clientCall ? `${KIND[clientCall.kind].toLowerCase()}, ${fmt(clientCall.t, { month: "short", day: "numeric" })}` : "nothing on file") +
+    tile(statute[0], "", "Statute", statute[1], statute[2]) +
+    tile("", upcoming.length ? `data-id="${upcoming[0].id}"` : "", "Next date", upcoming.length ? fmt(upcoming[0].t, { month: "short", day: "numeric" }) : "None", upcoming.length ? `in ${Math.round((upcoming[0].t - TODAY) / DAY)} days` : "");
+
+  // Need to know: rules over dates and records. Each one only appears when it applies.
+  const alerts = [], soon = upcoming.filter((e) => e.t - TODAY <= 90 * DAY);
+  const alert = (cls, attr, title, text) => alerts.push(`<button class="alert ${cls}" ${attr}><i>!</i><div><b>${title}</b><span>${text}</span></div></button>`);
+  if (st && st.date != null && !stMarked && stLeft <= 90) alert("crit", "", stLeft < 0 ? "The limitations date has passed and its task is not marked complete" : `${stLeft} days to the limitations date`, `Due ${fmt(st.date)}.`);
+  for (const e of overdue) alert("crit", `data-id="${e.id}"`, `Overdue: ${esc(e.title)}`, `${span(e.t, TODAY)} late`);
+  for (const w of waitingOn.slice(0, 3)) alert("warn", `data-id="${w.asks[w.asks.length - 1].id}"`, `${esc(w.lane.name)} has not replied`, `${w.asks.length} unanswered since ${fmt(w.asks[0].t)}`);
+  if (soon.length) alert("warn", `data-id="${soon[0].id}"`, `${soon.length} dates in the next 90 days`, `First: ${esc(soon[0].title)}, ${fmt(soon[0].t, { month: "short", day: "numeric" })}`);
+  if (clientCall && sinceClient > 30) alert("warn", `data-id="${clientCall.id}"`, `No contact with the client in ${sinceClient} days`, `Last on ${fmt(clientCall.t)}`);
+  $("alerts").innerHTML = alerts.slice(0, 3).join("") + (alerts.length > 3 ? `<div id="moreAlerts" hidden>${alerts.slice(3).join("")}</div><button class="more" data-more>Show ${alerts.length - 3} more</button>` : "") || `<p class="note">Nothing urgent: no deadline inside 90 days, nothing overdue, no unanswered messages.</p>`;
+  $("tabAlerts").textContent = alerts.length || ""; $("tabAlerts").hidden = !alerts.length;
+
+  const fold = (title, teaser, badge, body, cls = "") => `<details class="fold"><summary><div><b>${title}</b><small>${teaser}</small></div>${badge ? `<em class="${cls}">${badge}</em>` : "<span></span>"}</summary><div class="in">${body}</div></details>`;
+  $("folds").innerHTML =
+    fold("Now, next, waiting", `${overdue.length} overdue · ${upcoming.length} coming up · ${waitingOn.length} waiting`, overdue.length ? `${overdue.length} late` : "",
+      `<p class="sub">Overdue</p>${overdue.map((e) => `<button class="item late" data-id="${e.id}"><b>${esc(e.title)}</b><span>${span(e.t, TODAY)} late</span></button>`).join("") || `<p class="note">Nothing overdue.</p>`}
+       <p class="sub">Coming up</p>${upcoming.slice(0, 8).map((e) => `<button class="item" data-id="${e.id}"><b>${esc(e.title)}</b><span>${fmt(e.t, { weekday: "short", month: "short", day: "numeric" })} · in ${Math.round((e.t - TODAY) / DAY)} days</span></button>`).join("") || `<p class="note">Nothing scheduled.</p>`}
+       <p class="sub">Waiting on others</p>${waitingOn.map((w) => `<button class="item wait" data-id="${w.asks[w.asks.length - 1].id}"><b>${esc(w.lane.name)}</b><span>${w.asks.length} unanswered · last heard ${w.heard ? fmt(w.heard.t) : "never"}</span></button>`).join("") || `<p class="note">Nobody is holding an unanswered message.</p>`}`, "warn") +
+    fold("Matter fields", "As entered in Clio", `${CASE.fields.length}`, `<dl class="what">${CASE.fields.map((f) => `<dt>${esc(f.name)}</dt><dd>${esc(f.value)}</dd>`).join("")}</dl>`) +
+    fold("Costs and age", `${money(CASE.costs)} spent · ${CASE.opened ? "open " + span(CASE.opened, TODAY) : "no open date"}`, "", `<dl class="fall"><dt>Firm costs to date</dt><dd>${money(CASE.costs)}</dd><dt>Expenses counted</dt><dd>${CASE.expenses}</dd>${CASE.opened ? `<dt>Opened</dt><dd>${fmt(CASE.opened)}</dd>` : ""}</dl>`) +
+    fold("Not yet analysed", "Story, blockers and contradictions", "", `<p class="note">These are composed from the file by a model. That step is not built yet, so nothing is shown in its place.</p>`);
+}
+
+/* ------------------------------------------------------------------
+   The 30-second brief, and its narration.
+   Spoken with the browser's built-in voice.
+   ------------------------------------------------------------------ */
+// Each line is filled in from the records and the Clio fields; none is written by hand or by a model.
+const say = (n, one, many) => `${n === 0 ? "No" : n} ${n === 1 ? one : many}`;
+const summary = field(/summary/i), firstUp = upcoming[0], topWait = waitingOn[0];
+const BRIEF = [
+  ["Who", `${CASE.clientName || DATA.title}. ${[CASE.stage ? `${CASE.stage} stage` : null, CASE.opened ? `open for ${span(CASE.opened, TODAY).replace(" yr", " years").replace(" mo", " months")}` : null].filter(Boolean).join(", ")}.`],
+  summary ? ["What happened", summary] : null,
+  ["Watch out", `${say(overdue.length, "task is", "tasks are")} overdue${overdue.length ? `: ${overdue[0].title}` : ""}. ${!st || st.date == null ? "No limitations date is recorded." : stMarked ? "The limitations task is marked complete." : stLeft < 0 ? "The limitations date has passed and is not marked complete." : `${stLeft} days remain to the limitations date.`}`],
+  topWait ? ["Waiting on", `${topWait.lane.name} has not replied to ${say(topWait.asks.length, "message", "messages").toLowerCase()} since ${fmt(topWait.asks[0].t, { month: "long", year: "numeric" })}.`] : null,
+  ["Next", `${clientCall ? `The client was last contacted ${sinceClient} days ago.` : "There is no client contact on file."} ${firstUp ? `Next up: ${firstUp.title}, on ${fmt(firstUp.t, { month: "long", day: "numeric" })}.` : "Nothing is scheduled."}`],
+].filter(Boolean);
+const briefSeconds = Math.round(BRIEF.reduce((n, l) => n + l[1].split(/\s+/).length, 0) / 2.7 / 5) * 5;
+const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+let speaking = -1, readOpen = false;
+
+function renderBrief() {
+  const on = speaking >= 0;
+  $("brief").innerHTML = BRIEF.map(([label, text], i) => `<button data-line="${i}" class="${i === speaking ? "on" : on && i < speaking ? "done" : ""}"${i === speaking ? ' aria-current="true"' : ""}><div><small>${label}</small><span>${esc(text)}</span></div></button>`).join("");
+  // While it plays, only the line being spoken is on screen. The full text is behind "Read the brief".
+  $("caption").hidden = !on;
+  $("caption").innerHTML = on ? `<small>${BRIEF[speaking][0]}</small><p>${esc(BRIEF[speaking][1])}</p><div class="dots">${BRIEF.map((_, i) => `<i class="${i === speaking ? "on" : i < speaking ? "done" : ""}"></i>`).join("")}</div>` : "";
+  $("brief").hidden = !readOpen || on;
+  $("readit").hidden = on;
+  $("readit").textContent = readOpen ? "Hide the brief" : "Read the brief instead";
+  $("readit").setAttribute("aria-expanded", readOpen);
+  $("listen").disabled = !canSpeak;
+  $("listen").setAttribute("aria-pressed", on);
+  $("playIcon").innerHTML = on ? `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="2" fill="currentColor"/></svg>` : `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3.5 1.5v11l9-5.5z" fill="currentColor"/></svg>`;
+  $("listenLabel").textContent = !canSpeak ? "Voice is not available in this browser" : on ? "Stop" : "Listen to the brief";
+  $("listenSub").textContent = !canSpeak ? "The brief is written out below." : on ? `Part ${speaking + 1} of ${BRIEF.length}: ${BRIEF[speaking][0].toLowerCase()}` : `About ${briefSeconds} seconds`;
+}
+function stopBrief() { if (speaking < 0) return; speaking = -1; if (canSpeak) speechSynthesis.cancel(); renderBrief(); }
+function speakFrom(i) {
+  if (!canSpeak) return;
+  if (i >= BRIEF.length) return stopBrief();
+  speechSynthesis.cancel(); speaking = i; renderBrief();
+  const u = new SpeechSynthesisUtterance(BRIEF[i][1]); u.rate = 1.05; u.lang = "en-US";
+  u.onend = () => { if (speaking === i) speakFrom(i + 1); };
+  u.onerror = () => { if (speaking === i) stopBrief(); };
+  speechSynthesis.speak(u);
+}
+
+/* ------------------------------------------------------------------
+   Timeline: an overview strip to scrub, party chips, and a feed
+   ------------------------------------------------------------------ */
+const GROUP_TOKEN = { client: "--lane-client", firm: "--lane-firm", medical: "--lane-provider", defense: "--lane-defense", court: "--lane-court", other: "--lane-court", file: "--lane-file" };
+const PARTIES = [["all", "Everyone", null, []], ...DATA.groups.map((g) => [g.id, g.name || { client: "Client", firm: "Firm", file: "File" }[g.id] || laneById[g.lanes[0]].name, GROUP_TOKEN[g.id] || "--lane-court", g.lanes])];
+const monthOf = (t) => { const c = new Date(t); return c.getFullYear() * 12 + c.getMonth(); };
+const M0 = monthOf(events.length ? events[0].t : TODAY), M1 = Math.max(monthOf(events.length ? events[events.length - 1].t : TODAY), monthOf(TODAY));
+const inParty = (e) => { const lanes = PARTIES.find((p) => p[0] === state.party)[3]; return !lanes.length || [e.lane, e.party].some((l) => lanes.includes(l)); };
+
+function renderStrip(current) {
+  const svg = $("strip"), W = svg.clientWidth || 400, n = M1 - M0 + 1, bw = (W - 32) / n, x = (m) => 16 + (m - M0) * bw;
+  const counts = Array(n).fill(0); events.filter(inParty).forEach((e) => counts[monthOf(e.t) - M0]++);
+  const max = Math.max(1, ...counts), color = PARTIES.find((p) => p[0] === state.party)[2] || "--ink-text-2";
+  let s = current != null ? `<rect x="${x(current) - 3}" y="2" width="${bw + 6}" height="34" rx="4" fill="var(--ink-raised)" stroke="var(--ink-text-3)"/>` : "";
+  counts.forEach((c, i) => { const h = c ? Math.max(3, c / max * 24) : 1; s += `<rect x="${(x(M0 + i) + .5).toFixed(1)}" y="${32 - h}" width="${Math.max(1, bw - 1).toFixed(1)}" height="${h}" rx="1" fill="var(${c ? color : "--ink-line"})"/>`; });
+  for (const k of CONFLICTS) { const m = monthOf(Math.max(byId[k.a].t, byId[k.b].t)); s += `<circle cx="${x(m) + bw / 2}" cy="6" r="3.5" fill="var(--contradiction)"/>`; }
+  const tm = monthOf(TODAY); s += `<line x1="${x(tm) + bw / 2}" x2="${x(tm) + bw / 2}" y1="2" y2="36" stroke="var(--ink-text)" stroke-width="1.5"/>`;
+  for (let m = M0; m <= M1; m++) if (m % 12 === 0) s += `<text x="${x(m)}" y="45" font-size="10" fill="var(--ink-text-3)" font-family="system-ui, sans-serif">${Math.floor(m / 12)}</text>`;
+  svg.setAttribute("viewBox", `0 0 ${W} 46`); svg.innerHTML = s;
+  svg.dataset.bw = bw;
+}
+
+function renderTimeline() {
+  $("chips").innerHTML = PARTIES.map(([id, name, color]) => `<button data-party="${id}" aria-pressed="${state.party === id}">${color ? `<i style="background:var(${color})"></i>` : ""}${name}</button>`).join("");
+  const list = events.filter(inParty), fut = list.filter((e) => e.t > TODAY), past = list.filter((e) => e.t <= TODAY).reverse();
+  const row = (e) => { const flags = [conflictsOf(e.id).length ? `<span class="flag warn">⚠ Contradicted</span>` : "", e.overdue ? `<span class="flag late">Overdue ${span(e.t, TODAY)}</span>` : "", e.open ? `<span class="flag open">No reply yet</span>` : ""].join("");
+    return `<button class="rec" data-id="${e.id}"><i style="background:var(${laneById[e.lane].paper})"></i>${disc(e)}<div><b>${esc(e.title)}</b><span>${esc(whoFrom(e))}${whoTo(e) ? " → " + esc(whoTo(e)) : ""} · ${fmt(e.t, { month: "short", day: "numeric" })}</span><p>${esc(e.body)}</p>${flags ? `<div class="flags">${flags}</div>` : ""}</div></button>`; };
+  let html = fut.length ? `<section class="month future" data-m="${monthOf(fut[0].t)}"><h3><span>Coming up</span><span>${fut.length}</span></h3>${fut.map(row).join("")}</section>` : "";
+  let prev = null;
+  for (let i = 0; i < past.length;) {
+    const m = monthOf(past[i].t), group = []; while (i < past.length && monthOf(past[i].t) === m) group.push(past[i++]);
+    if (prev != null && prev - m > 4) html += `<p class="quiet">${prev - m - 1} months with nothing here</p>`;
+    html += `<section class="month" data-m="${m}"><h3><span>${fmt(group[0].t, { month: "long", year: "numeric" })}</span><span>${group.length}</span></h3>${group.map(row).join("")}</section>`;
+    prev = m;
+  }
+  $("feed").innerHTML = html || `<p class="empty">No records for this party.</p>`;
+  syncStrip();
+}
+
+// The strip's marker follows whichever month is at the top of the feed.
+function syncStrip() {
+  if (state.tab !== "vTime") return;
+  const top = $("feed").querySelectorAll(".month"); let cur = null;
+  for (const el of top) { if (el.getBoundingClientRect().bottom > 160) { cur = +el.dataset.m; break; } }
+  renderStrip(cur);
+}
+function jumpTo(clientX) {
+  const svg = $("strip"), r = svg.getBoundingClientRect(), m = Math.round(M0 + (clientX - r.left - 16) / +svg.dataset.bw);
+  const secs = [...$("feed").querySelectorAll(".month")]; if (!secs.length) return;
+  secs.reduce((a, b) => Math.abs(+b.dataset.m - m) < Math.abs(+a.dataset.m - m) ? b : a).scrollIntoView({ block: "start" });
+}
+
+/* ------------------------------------------------------------------
+   Sheet: one record, or both sides of a contradiction
+   ------------------------------------------------------------------ */
+function openSheet(html, tint) {
+  stopBrief();
+  const sh = $("sheet"); sh.style.setProperty("--tint", tint); sh.innerHTML = `<div class="grab"></div>` + html; sh.hidden = false; $("scrim").hidden = false; sh.scrollTop = 0;
+  document.body.style.overflow = "hidden"; sh.querySelector(".x").focus();
+}
+function closeSheet() { $("sheet").hidden = true; $("scrim").hidden = true; document.body.style.overflow = ""; state.sheet = null; }
+
+function showRecord(id) {
+  const e = byId[id], lane = laneById[e.lane], to = whoTo(e); state.sheet = id;
+  const thread = events.filter((o) => partyOf(o) === partyOf(e)), i = thread.indexOf(e);
+  const flags = [...conflictsOf(id).map((k) => `<button class="flag warn" data-conflict="${k.id}">⚠ Contradicted elsewhere</button>`), e.overdue ? `<span class="flag late">Overdue by ${span(e.t, TODAY)}</span>` : "", e.open ? `<span class="flag open">No reply yet</span>` : "", e.t > TODAY ? `<span class="flag">In ${Math.round((e.t - TODAY) / DAY)} days</span>` : ""].join("");
+  openSheet(`<div class="sheet-top"><span class="kind"><i style="background:var(${lane.paper})"></i>${KIND[e.kind]} · ${esc(lane.name)}</span><button class="x" data-close aria-label="Close">×</button></div>
+    <h3>${esc(e.title)}</h3>${flags ? `<div class="flags">${flags}</div>` : ""}
+    <dl class="facts"><dt>Date</dt><dd>${fmt(e.t, { weekday: "short", month: "long", day: "numeric", year: "numeric" })}</dd><dt>From</dt><dd>${esc(whoFrom(e))}</dd>${to ? `<dt>To</dt><dd>${esc(to)}</dd>` : ""}</dl>
+    <p class="body">${esc(e.body)}</p>
+    ${e.url ? `<p style="margin-top:12px"><a class="ghost" style="display:inline-flex;align-items:center;text-decoration:none" href="${esc(e.url)}" target="_blank" rel="noreferrer">↗ Open in Clio</a></p>` : ""}
+    <form class="askform" data-ask-record><input placeholder="Ask about this record" aria-label="Ask about this record" autocomplete="off"><button>Ask</button></form><div id="recAnswer"></div>
+    <div class="nav"><button data-id="${i > 0 ? thread[i - 1].id : ""}" ${i > 0 ? "" : "disabled"}>‹ Earlier in thread</button><button data-id="${i < thread.length - 1 ? thread[i + 1].id : ""}" ${i < thread.length - 1 ? "" : "disabled"}>Later in thread ›</button></div>`, `var(${lane.paper})`);
+}
+function showConflict(id) {
+  const k = CONFLICTS.find((c) => c.id === id), side = (eid, q, label) => { const e = byId[eid]; return `<div class="side"><h4>${label}</h4><q>${esc(q)}</q><p>${KIND[e.kind]} · ${esc(laneById[e.lane].name)} · ${fmt(e.t)}</p><button class="ghost" data-id="${eid}" style="margin-top:8px">Open this record</button></div>`; };
+  openSheet(`<div class="sheet-top"><span class="kind"><i style="background:var(--contradiction)"></i>Contradiction · needs attorney review</span><button class="x" data-close aria-label="Close">×</button></div>
+    <h3>${esc(k.why)}</h3>${side(k.a, k.qa, "The file says")}${side(k.b, k.qb, "But this shows")}
+    <p class="note" style="margin-top:12px">Both sources are shown as written. Which one is right is the attorney's call.</p>`, "var(--contradiction)");
+}
+
+/* ------------------------------------------------------------------
+   Ask. The server searches the case-file index and answers with citations.
+   ------------------------------------------------------------------ */
+const SUGGESTED = ["What is holding this case up?", "What injuries were claimed, and what treatment followed?", "What is overdue or due soon?"];
+async function askFile(question, record, out) {
+  out.innerHTML = `<div class="answer"><em>Searching the case file…</em></div>`;
+  try {
+    const res = await fetch(`/api/matters/${DATA.matterId}/ask`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question, record }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || data.error || "The question could not be answered.");
+    const cites = (data.citations || []).map((c) => {
+      const hit = events.find((x) => x.ref === c.ref), label = esc(`${c.title}${c.date ? " · " + c.date : ""}`);
+      return hit ? `<button class="src" data-id="${hit.id}">${label}</button>` : c.url ? `<a class="src" href="${esc(c.url)}" target="_blank" rel="noreferrer">${label}</a>` : `<span class="src">${label}</span>`;
+    }).join("");
+    out.innerHTML = `<div class="answer"><em>From the case file</em><div style="white-space:pre-line">${esc(data.answer)}</div>${cites ? `<div style="margin-top:8px">${cites}</div>` : ""}</div>`;
+  } catch (err) {
+    out.innerHTML = `<div class="answer"><em>Could not answer</em>${esc(err.message)}</div>`;
+  }
+}
+const answerAll = (q) => askFile(q, undefined, $("askAllOut"));
+
+/* ------------------------------------------------------------------
+   Wiring
+   ------------------------------------------------------------------ */
+function setTab(name) {
+  stopBrief();
+  state.tab = name;
+  ["vCase", "vTime", "vAsk"].forEach((id) => { $(id).hidden = id !== name; });
+  document.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tab === name));
+  window.scrollTo(0, 0);
+  if (name === "vTime") renderTimeline();
+}
+document.addEventListener("click", (ev) => {
+  const t = (sel) => ev.target.closest(sel);
+  if (t("[data-close]") || ev.target.id === "scrim") return closeSheet();
+  if (t("#listen")) return speaking >= 0 ? stopBrief() : speakFrom(0);
+  if (t("#readit")) { readOpen = !readOpen; return renderBrief(); }
+  if (t("[data-more]")) { $("moreAlerts").hidden = false; return t("[data-more]").remove(); }
+  if (t("[data-line]")) return speakFrom(+t("[data-line]").dataset.line);
+  if (t("[data-tab]")) return setTab(t("[data-tab]").dataset.tab);
+  if (t("[data-party]")) { state.party = t("[data-party]").dataset.party; window.scrollTo(0, 0); return renderTimeline(); }
+  if (t("[data-conflict]")) return showConflict(t("[data-conflict]").dataset.conflict);
+  if (t("[data-id]") && t("[data-id]").dataset.id) return showRecord(t("[data-id]").dataset.id);
+  if (t("[data-q]")) { $("askAllInput").value = t("[data-q]").dataset.q; return answerAll(t("[data-q]").dataset.q); }
+});
+document.addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  if (ev.target.id === "askAll") { const q = $("askAllInput").value.trim(); if (q) answerAll(q); }
+  const recordQuestion = ev.target.matches("[data-ask-record]") ? ev.target.querySelector("input").value.trim() : "";
+  if (recordQuestion && state.sheet) { const e = byId[state.sheet]; askFile(recordQuestion, { ref: e.ref, title: e.title, date: fmt(e.t), text: e.body.slice(0, 2000) }, $("recAnswer")); }
+});
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !$("sheet").hidden) closeSheet(); });
+$("strip").addEventListener("pointerdown", (ev) => { jumpTo(ev.clientX); $("strip").setPointerCapture(ev.pointerId); });
+$("strip").addEventListener("pointermove", (ev) => { if (ev.buttons) jumpTo(ev.clientX); });
+window.addEventListener("scroll", syncStrip, { passive: true });
+window.addEventListener("resize", syncStrip);
+
+$("sugg").innerHTML = SUGGESTED.map((q) => `<button data-q="${esc(q)}">${esc(q)}</button>`).join("");
+readOpen = !canSpeak;
+renderCase(); renderBrief();
+window.addEventListener("pagehide", stopBrief);
+// mobile.html#timeline or #ask opens on that tab; #record opens a record sheet, for reviewing the design.
+const opts = location.hash.slice(1).split(",");
+setTab(opts.includes("timeline") || opts.includes("record") ? "vTime" : opts.includes("ask") ? "vAsk" : "vCase");
+if (opts.includes("record") && events.length) showRecord((events.filter((e) => e.t <= TODAY).pop() || events[0]).id);
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Timeline · design mock</title>
+<title>Case</title>
 <style>
   /* Design tokens. These port to src/app/globals.css (@theme) at integration. */
   :root {
@@ -78,6 +78,7 @@
     letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .matter span { color: var(--ink-text-3); font-size: 13px; white-space: nowrap; }
+  .navlink { color: var(--ink-text-2); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
   .tools { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin-left: auto; }
   .views { display: flex; gap: 2px; background: var(--ink-raised); padding: 3px; border-radius: 8px; }
   .views button {
@@ -225,6 +226,7 @@
   [hidden] { display: none !important; }
   .hero { display: flex; align-items: center; gap: 18px; padding: 18px 24px 16px; }
   .hero .face { flex: none; width: 84px; height: 84px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--lane-client); }
+  .hero .face { display: grid; place-items: center; background: var(--ink-raised); font-family: var(--serif); font-size: 30px; font-weight: 600; color: var(--ink-text); }
   .hero .face svg { display: block; width: 100%; height: 100%; }
   .hero small { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
   .hero p { margin: 2px 0 0; font-family: var(--serif); font-size: 24px; line-height: 1.3; max-width: 60ch; overflow-wrap: anywhere; }
@@ -382,8 +384,8 @@
 <section class="instrument" aria-label="Case timeline">
   <header class="topbar">
     <div class="matter">
-      <h1>Whitlock v. Harbor Transit</h1>
-      <span>Personal injury · Litigation · opened May 2023</span>
+      <h1 id="mTitle"></h1>
+      <span id="mSub"></span>
     </div>
     <div class="tools">
       <div class="views" role="group" aria-label="View">
@@ -436,16 +438,11 @@
 <main class="state" id="stateMain">
   <div>
     <section class="panel"><h2>Need to know <em>worked out from dates and records</em></h2><div id="alerts"></div></section>
-    <section class="panel"><h2>What happened <em>from the intake and the pleadings</em></h2><dl class="what" id="what"></dl></section>
-    <section class="panel"><h2>The story so far <em>every sentence links to its source</em></h2><ol class="story" id="story"></ol></section>
-    <section class="panel"><h2>What is holding the case</h2><div class="chain" id="chain"></div></section>
     <section class="panel"><h2>Now, next, waiting</h2><div class="nnw" id="nnw"></div></section>
-    <section class="panel"><h2>Injuries and treatment <em>from the medical records</em></h2><ul class="body-list" id="injuries"></ul></section>
+    <section class="panel"><h2>Not yet analysed</h2><p class="none">The story, the blocker chain and the contradiction check are composed from the file by a model. That step is not built yet, so nothing is shown here in its place.</p></section>
   </div>
   <div>
-    <section class="panel"><h2>Where the file disagrees with itself <em id="clashCount"></em></h2><div id="clashes"></div></section>
-    <section class="panel"><h2>Letters of representation <em id="lorCount"></em></h2><table class="lor" id="lor"></table></section>
-    <section class="panel money"><h2>Value estimator <em>arithmetic on the file's numbers, not a prediction</em></h2><div id="money"></div></section>
+    <section class="panel"><h2>Matter fields <em>as entered in Clio</em></h2><dl class="what" id="fields"></dl></section>
     <section class="panel"><h2>Who we have heard from <em>activity by quarter</em></h2><div class="pulse" id="pulse"></div></section>
   </div>
 </main>
@@ -466,204 +463,42 @@
 
 <script>
 /* ------------------------------------------------------------------
-   Mock data. Invented matter; replaced by the Clio bundle at integration.
+   Data. The server fills this slot with the matter's records, already
+   shaped by src/lib/matter/derive.ts. Nothing about any matter is written here.
    ------------------------------------------------------------------ */
+const DATA = /*__VIEW_DATA__*/null;
+
 const DAY = 864e5;
-const d = (s) => new Date(s + "T12:00:00").getTime();
-const TODAY = d("2026-10-02");
-
-const LANES = [
-  { id: "client",  name: "Dana Whitlock",            role: "Client",                 ink: "--lane-client",   paper: "--lane-client-p" },
-  { id: "firm",    name: "Our firm",                 role: "Attorneys and staff",    ink: "--lane-firm",     paper: "--lane-firm-p" },
-  { id: "ortho",   name: "Ridgeline Orthopedics",    role: "Treating provider",      ink: "--lane-provider", paper: "--lane-provider-p" },
-  { id: "pt",      name: "Northside Physical Therapy", role: "Treating provider",    ink: "--lane-provider", paper: "--lane-provider-p" },
-  { id: "defense", name: "Harbor Transit",           role: "Defense and its counsel", ink: "--lane-defense",  paper: "--lane-defense-p" },
-  { id: "court",   name: "Court",                    role: "Orders and hearings",    ink: "--lane-court",    paper: "--lane-court-p" },
-  { id: "file",    name: "File",                     role: "When records were added", ink: "--lane-file",     paper: "--lane-file-p" },
-];
+const TODAY = DATA.today;
+const LANE_TOKENS = { client: "client", firm: "firm", medical: "provider", defense: "defense", court: "court", other: "court", file: "file" };
+const LANES = DATA.lanes.map((l) => ({ ...l, ink: `--lane-${LANE_TOKENS[l.cls]}`, paper: `--lane-${LANE_TOKENS[l.cls]}-p` }));
 const laneById = Object.fromEntries(LANES.map((l, i) => [l.id, { ...l, index: i }]));
-
 const KIND = { email: "Email", call: "Phone call", note: "Note", task: "Task", event: "Calendar entry", doc: "Document", expense: "Expense" };
-
-// Small seeded generator so the filler is the same on every load.
-let seed = 20261002;
-const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-const pick = (a) => a[Math.floor(rnd() * a.length)];
-
-const events = [];
-const add = (e) => { e.id = "e" + events.length; events.push(e); return e.id; };
-
-function fill(from, to, n, make) {
-  const a = d(from), b = d(to);
-  for (let i = 0; i < n; i++) add({ t: Math.round((a + rnd() * (b - a)) / DAY) * DAY, ...make() });
-}
-
-fill("2023-05-10", "2026-09-20", 16, () => pick([
-  { lane: "client", kind: "email", party: "client", title: "Update on my treatment", body: "Quick update after this week's appointment. The shoulder is still stiff in the mornings and I am keeping every visit.\n\nLet me know if you need anything from me." },
-  { lane: "client", kind: "call",  party: "client", title: "Call from client about work", body: "Client called to say they are still unable to return to full duties. Asked whether the wage records had been requested yet." },
-  { lane: "client", kind: "email", party: "client", title: "Photos and paperwork", body: "Attaching the paperwork I was handed at the last visit, plus two more photos of the car." },
-]));
-fill("2023-05-08", "2026-09-28", 30, () => pick([
-  { lane: "firm", kind: "note",  title: "File review", body: "Reviewed the file ahead of the next conference. Outstanding: updated records from both treating providers and the wage documentation." },
-  { lane: "firm", kind: "email", party: "client",  title: "Checking in before the conference", body: "Dana, a short note to confirm we are on track. Please send any new bills you have received." },
-  { lane: "firm", kind: "email", party: "ortho",   title: "Request for updated records", body: "Please send the chart notes and billing for all visits since our last request. An authorization is enclosed." },
-  { lane: "firm", kind: "email", party: "defense", title: "Follow-up on outstanding discovery", body: "Counsel, we have not received responses to the demands served last quarter. Please advise when we can expect them." },
-  { lane: "firm", kind: "task",  title: "Calendar next compliance date", body: "Confirm the compliance conference date and diary the discovery deadlines that run from it.", done: true },
-]));
-fill("2023-05-20", "2026-03-30", 9, () => pick([
-  { lane: "ortho", kind: "email", party: "ortho", title: "Visit summary and billing", body: "Attached are the visit summary and the statement for this month's appointments." },
-  { lane: "ortho", kind: "call",  party: "ortho", title: "Front office returned call", body: "Front office confirmed the patient attended the follow-up and that the surgeon recommends a second procedure." },
-]));
-fill("2023-05-25", "2023-11-15", 6, () => pick([
-  { lane: "pt", kind: "email", party: "pt", title: "Attendance and progress notes", body: "Progress notes for the last four sessions are attached. Patient attended all scheduled visits." },
-  { lane: "pt", kind: "email", party: "pt", title: "Statement of account", body: "Current statement of account for services to date." },
-]));
-fill("2024-01-15", "2026-08-30", 11, () => pick([
-  { lane: "defense", kind: "email", party: "defense", title: "Response to discovery demands", body: "Enclosed please find defendant's responses and objections to plaintiff's demands." },
-  { lane: "defense", kind: "email", party: "defense", title: "Request to adjourn deposition", body: "We ask to adjourn the deposition by three weeks because of a scheduling conflict." },
-]));
-fill("2024-02-01", "2026-06-30", 6, () => pick([
-  { lane: "court", kind: "event", with: ["defense"], title: "Compliance conference", body: "Compliance conference held. Discovery deadlines extended; next conference set." },
-  { lane: "court", kind: "event", title: "Preliminary conference order", body: "Order entered setting the discovery schedule." },
-]));
-fill("2023-05-14", "2026-08-01", 12, () => pick([
-  { lane: "file", kind: "doc",     title: "Records bundle added", body: "Scanned records received from a treating provider and added to the medical records folder." },
-  { lane: "file", kind: "doc",     title: "Discovery response filed to folder", body: "Copy of the served response saved to the discovery folder." },
-  { lane: "file", kind: "expense", title: "Records reproduction fee", body: "Fee paid by the firm for reproduction of a provider chart." },
-]));
-
-/* Hand-written events that carry the story the design needs to show. */
-// A provider that went silent, and the requests that went unanswered.
-const ptAsk = ["2024-03-12", "2024-11-06", "2025-07-22", "2026-05-05"].map((day, i) => add({
-  t: d(day), lane: "firm", kind: "email", party: "pt", open: true,
-  title: `Records request to physical therapy (${["first", "second", "third", "fourth"][i]})`,
-  body: "We represent your patient and are still missing treatment notes and billing after November 2023. Please send them, or tell us if treatment ended.",
-}));
-
-// The surgeon who has not scheduled the surgery.
-const surgeryAsks = ["2026-05-05", "2026-06-17", "2026-07-29", "2026-09-02"].map((day, i) => add({
-  t: d(day), lane: "firm", kind: i % 2 ? "call" : "email", party: "ortho", open: true,
-  title: "Asked for a date for the second shoulder surgery",
-  body: "The second procedure has been recommended but not scheduled. We cannot value the case or certify readiness until we have a date. Please confirm one.",
-}));
-const surgeryReply = add({ t: d("2026-09-24"), lane: "ortho", kind: "email", party: "ortho", title: "Re: surgery date", body: "The surgeon's calendar for the fall is not final. We will be in touch once the schedule opens." });
-const lateTask = add({ t: d("2026-08-25"), lane: "firm", kind: "task", overdue: true, title: "Obtain updated orthopedic records", body: "Due 25 August 2026. Still open: the provider has not sent records since the spring request." });
-
-// Contradiction 1: a note says nobody contacted the witness; a subpoena says otherwise.
-const subpoena = add({ t: d("2025-11-02"), lane: "court", kind: "doc", title: "Subpoena served on eyewitness", body: "Subpoena filed and served on the eyewitness, setting a deposition for 8 December 2025." });
-const witnessNote = add({ t: d("2026-09-15"), lane: "firm", kind: "note", title: "Witness status", body: "Checked the file for the eyewitness. Nobody has contacted him since the accident. We should reach out before the next conference." });
-
-// Contradiction 2: limitations marked satisfied; the answer pleads it as a defense.
-const answer = add({ t: d("2024-12-18"), lane: "defense", kind: "doc", title: "Verified answer with affirmative defenses", body: "Defendant's verified answer. Among the affirmative defenses: the action is barred by the applicable statute of limitations, and plaintiff failed to wear a seat belt." });
-const solTask = add({ t: d("2026-04-22"), lane: "firm", kind: "task", done: true, title: "Limitations date", body: "Marked complete. Limitations satisfied: notice of claim served and suit commenced within time." });
-
-// Contradiction 3 and a long file connector: a report filed months after the exam it describes.
-const exam = add({ t: d("2026-03-31"), lane: "defense", kind: "event", with: ["client"], title: "Defense medical examination", body: "Orthopedic examination of the plaintiff by the defense's examining physician." });
-const report = add({ t: d("2026-09-14"), lane: "file", kind: "doc", describes: exam, title: "Defense examination report added", body: "Report of the 31 March 2026 examination. Records reduced range of motion in the right shoulder; rotation testing marked as refused. Concludes the patient has plateaued." });
-const reportNote = add({ t: d("2026-09-13"), lane: "firm", kind: "note", title: "Summary of defense examination", body: "Read the defense examiner's report. He records normal range of motion and no restrictions. Helpful to them on damages." });
-
-// How it started, and the treatment the summary cites.
-const intake = add({ t: d("2023-05-09"), lane: "firm", kind: "note", title: "Intake summary", body: "Met with Dana Whitlock. On 23 April 2023 a Harbor Transit service vehicle turned across the client's lane and struck the driver's side. Complaints: both shoulders and neck. Retainer and authorizations signed." });
-const surgery1 = add({ t: d("2023-08-02"), lane: "ortho", kind: "event", with: ["client"], title: "Left shoulder surgery", body: "Arthroscopic repair of the left shoulder at Ridgeline Orthopedics. Operative report received 31 August 2023." });
-const recommended = add({ t: d("2024-05-14"), lane: "ortho", kind: "email", party: "ortho", title: "Second surgery recommended", body: "After the latest imaging the surgeon recommends an arthroscopic repair of the right shoulder. Scheduling to follow." });
-
-// Letters of representation: who was told the firm represents the client, and who acknowledged it.
-const lorSend = (day, party, who) => add({ t: d(day), lane: "firm", kind: "email", party, title: `Letter of representation to ${who}`, body: `Please be advised that this firm represents Dana Whitlock for injuries sustained on 23 April 2023. Direct all further communication to this office and confirm receipt.` });
-const lorAck = (day, lane, who) => add({ t: d(day), lane, kind: "email", party: lane, title: "Acknowledgment of representation", body: `${who} acknowledges your letter of representation and has noted the file.` });
-const LOR = [
-  ["Harbor Transit claims office", "Defendant's claims administrator", lorSend("2023-05-12", "defense", "Harbor Transit claims"), lorAck("2023-05-30", "defense", "The claims office")],
-  ["Ridgeline Orthopedics", "Treating provider", lorSend("2023-05-15", "ortho", "Ridgeline Orthopedics"), lorAck("2023-05-22", "ortho", "Ridgeline Orthopedics")],
-  ["Northside Physical Therapy", "Treating provider", lorSend("2023-05-26", "pt", "Northside Physical Therapy"), null],
-];
-const suitFiled = add({ t: d("2024-06-18"), lane: "court", kind: "doc", title: "Summons and complaint filed", body: "Action commenced against Harbor Transit. Index number assigned." });
-const noteOfIssue = add({ t: d("2026-12-15"), lane: "court", kind: "task", title: "Note of issue due", body: "Court-ordered deadline to file the note of issue and certify that discovery is complete." });
-
-// Last client contact, and what is coming.
-const lastCall = add({ t: d("2026-09-27"), lane: "client", kind: "call", party: "client", title: "Call with client", body: "Spoke with Dana for twenty minutes. Still in pain at night, still attending every appointment, anxious about the surgery date." });
-add({ t: d("2026-10-20"), lane: "firm", kind: "task", title: "Prepare client for deposition", body: "Due 20 October 2026. Preparation session ahead of the continued deposition." });
-const nextConf = add({ t: d("2026-11-12"), lane: "court", kind: "event", with: ["firm", "defense"], title: "Compliance conference", body: "Scheduled for 12 November 2026. The court expects a report on outstanding discovery." });
-add({ t: d("2026-12-08"), lane: "defense", kind: "event", with: ["client", "firm"], title: "Continued deposition of plaintiff", body: "Scheduled for 8 December 2026 at defense counsel's office." });
-
-const CONFLICTS = [
-  { id: "c0", a: witnessNote, b: subpoena, why: "A note says the witness was never contacted, but a subpoena was served on him ten months earlier.",
-    qa: "Nobody has contacted him since the accident.", qb: "Subpoena filed and served on the eyewitness, setting a deposition for 8 December 2025." },
-  { id: "c1", a: solTask, b: answer, why: "The limitations task is marked satisfied, but the defense pleaded limitations as a defense.",
-    qa: "Limitations satisfied: notice of claim served and suit commenced within time.", qb: "The action is barred by the applicable statute of limitations." },
-  { id: "c2", a: reportNote, b: report, why: "The note's summary of the report does not match what the report says.",
-    qa: "He records normal range of motion and no restrictions.", qb: "Records reduced range of motion in the right shoulder; rotation testing marked as refused." },
-];
-
-// The summary layer. In the real build the story and blocker chain are composed from extracted facts,
-// each citing record ids; the tiles, now/next/waiting and activity are computed from the records.
-const CASE = {
-  opened: d("2023-05-07"), costs: 1265, expenses: 5,
-  statute: d("2026-04-23"), suitFiled,
-  // Stage history. `from` is when the matter entered the stage; stages without one have not been reached.
-  stages: [
-    { phase: "Pre-litigation", name: "Intake", from: d("2023-05-07") },
-    { phase: "Pre-litigation", name: "Treatment", from: d("2023-06-01") },
-    { phase: "Pre-litigation", name: "Demand", from: d("2024-02-10") },
-    { phase: "Litigation", name: "Suit filed", from: d("2024-06-18") },
-    { phase: "Litigation", name: "Discovery", from: d("2025-01-20") },
-    { phase: "Litigation", name: "Mediation" },
-    { phase: "Litigation", name: "Trial or settlement" },
-  ],
-  headline: "In discovery, and stuck on one thing: the right shoulder surgery has no date.",
-  story: [
-    ["Dana Whitlock was struck by a Harbor Transit service vehicle on 23 April 2023 and retained the firm two weeks later.", [intake]],
-    ["The injuries are to both shoulders and the neck. The left shoulder was operated on in August 2023.", [surgery1]],
-    ["A second surgery, on the right shoulder, was recommended in May 2024. It still has no date, after four requests to the surgeon since May 2026.", [recommended, surgeryAsks[3], surgeryReply]],
-    ["Suit is filed and discovery is ongoing. The defense answered in December 2024 and its doctor examined the client in March 2026.", [answer, exam]],
-    ["The physical therapy office has not replied since November 2023, across four records requests.", [ptAsk[3]]],
-    ["Next is a compliance conference on 12 November 2026, where the court will ask what is still outstanding.", [nextConf]],
-  ],
-  chain: [
-    ["The right shoulder surgery has no date", "Waiting on Ridgeline Orthopedics for 5 months", [surgeryAsks[0], surgeryReply]],
-    ["Treatment cannot be called complete", "No end point for the medical records or the bills", [recommended]],
-    ["The case cannot be valued or certified ready", "Updated orthopedic records are also overdue", [lateTask]],
-    ["Compliance conference, 12 November", "The court will ask what is outstanding", [nextConf]],
-  ],
-  happened: {
-    summary: "A Harbor Transit service vehicle turned left across the client's lane and struck the driver's side of the client's car. The client drove home and went to the emergency room the next morning.",
-    when: "Sunday, 23 April 2023, about 8:30 in the morning",
-    where: "Mill Street at Harbor Avenue, Eastport, outside the Harbor Transit depot",
-    who: "Dana Whitlock, driving alone · a Harbor Transit employee driving a service vehicle · one eyewitness on foot",
-    first: "Neck, upper back and left shoulder pain reported at the emergency room on 24 April 2023",
-    disputed: "The defense says the client was not wearing a seat belt; its own examiner recorded a belted driver.",
-  },
-  // Inputs to the estimator. The amounts come from the file; the multiplier, fault share and fee are the attorney's assumptions.
-  value: { estimate: 340000, source: "Estimated Case Value field", specials: 96400, wages: 148000, liens: 22000,
-    caps: [["Self-insured, no stated limit", 0, "Insurance Carrier field and the intake notes"], ["$100,000 per person", 100000, "Policy Limits field, marked confirmed"]] },
-  injuries: [
-    ["Left shoulder", "arthroscopic repair, 2 August 2023", surgery1],
-    ["Right shoulder", "surgery recommended May 2024, not scheduled", recommended],
-    ["Neck", "conservative treatment; physical therapy records stop in November 2023", ptAsk[0]],
-  ],
-};
-
-events.sort((a, b) => a.t - b.t);
+const events = DATA.events;
+const CASE = DATA.case;
+// Contradictions come from the composed layer, which is not built yet.
+const CONFLICTS = [];
 const byId = Object.fromEntries(events.map((e) => [e.id, e]));
 const conflictsOf = (id) => CONFLICTS.filter((c) => c.a === id || c.b === id);
+document.title = `${DATA.title} · Case`;
+document.getElementById("mTitle").textContent = CASE.description || DATA.title;
+document.getElementById("mSub").textContent = [DATA.title, DATA.subtitle].filter(Boolean).join(" · ");
 
 /* ------------------------------------------------------------------
    Lane strip
    ------------------------------------------------------------------ */
 const css = getComputedStyle(document.documentElement);
 const tok = (name) => css.getPropertyValue(name).trim();
-const LANE_H = parseInt(tok("--lane-h"), 10), HEAD_H = 26, STAGE_H = 26, AXIS_H = 30, R = 9;
-const FIRST = events[0].t - 20 * DAY, LAST = events[events.length - 1].t + 30 * DAY;
+const LANE_H = parseInt(tok("--lane-h"), 10), HEAD_H = 26, AXIS_H = 30, R = 9;
+// Clio gives only the current stage, so the stage band is drawn only when a stage history is supplied.
+const STAGE_H = (CASE.stages || []).some((g) => g.from) ? 26 : 0;
+const FIRST = (events.length ? events[0].t : TODAY - 365 * DAY) - 20 * DAY, LAST = Math.max(events.length ? events[events.length - 1].t : TODAY, TODAY) + 30 * DAY;
 
 // Lanes that fold into one row until opened.
-const GROUPS = [
-  { id: "client",  lanes: ["client"] },
-  { id: "firm",    lanes: ["firm"] },
-  { id: "medical", lanes: ["ortho", "pt"],      fold: true, name: "Medical providers" },
-  { id: "legal",   lanes: ["defense", "court"], fold: true, name: "Defense and court" },
-  { id: "file",    lanes: ["file"] },
-];
+const GROUPS = DATA.groups;
 
 const svg = document.getElementById("svg"), plot = document.getElementById("plot"), tip = document.getElementById("tip");
-const state = { v0: FIRST, v1: LAST, selected: null, hover: null, conflict: null, query: "", open: { medical: false, legal: false } };
+const state = { v0: FIRST, v1: LAST, selected: null, hover: null, conflict: null, query: "", open: Object.fromEntries(GROUPS.filter((g) => g.fold).map((g) => [g.id, false])) };
 
 const fmt = (t, o = { month: "short", day: "numeric", year: "numeric" }) => new Date(t).toLocaleDateString("en-US", o);
 const span = (a, b) => { const m = Math.round((b - a) / (30.44 * DAY)); return m < 1 ? `${Math.round((b - a) / DAY)} days` : m < 12 ? `${m} mo` : `${Math.floor(m / 12)} yr ${m % 12} mo`; };
@@ -672,7 +507,7 @@ const matches = (e) => !state.query || (e.title + " " + e.body + " " + laneById[
 
 // When an outside party was last heard from, if that was long enough ago to matter.
 function silentSince(laneId) {
-  if (["firm", "court", "file"].includes(laneId)) return null;
+  if (["client", "firm", "court", "file"].includes(laneById[laneId].cls)) return null;
   const heard = events.filter((e) => e.lane === laneId && e.t <= TODAY);
   if (!heard.length) return null;
   const last = heard[heard.length - 1].t;
@@ -697,12 +532,12 @@ function renderLabels(rs) {
   document.getElementById("labels").innerHTML = rs.map((r) => {
     if (!r.group) return `<div class="lane-label ${r.child ? "child" : ""}" style="height:${r.h}px"><i style="background:var(${r.lane.ink})"></i><div><b>${r.lane.name}</b><small>${r.lane.role}</small></div></div>`;
     const g = r.group, open = state.open[g.id], quiet = g.lanes.filter(silentSince).length;
-    const bars = g.lanes.map((id) => `<i style="background:var(${laneById[id].ink})"></i>`).join("");
+    const bars = g.lanes.slice(0, 3).map((id) => `<i style="background:var(${laneById[id].ink})"></i>`).join("");
     return `<div class="lane-label grp ${r.head ? "head" : ""}" style="height:${r.h}px">
       <button class="toggle" data-toggle="${g.id}" aria-expanded="${open}" aria-label="${open ? "Collapse" : "Expand"} ${g.name}">${open ? "−" : "+"}</button>
       ${r.head ? "" : `<span class="bars">${bars}</span>`}
       <div><b>${g.name}</b>${r.head ? "" : `<small>${g.lanes.length} parties${quiet ? ` · ${quiet} gone quiet` : ""}</small>`}</div></div>`;
-  }).join("") + `<div class="stage-label">Stage</div><div class="axis-label"></div>`;
+  }).join("") + (STAGE_H ? `<div class="stage-label">Stage</div>` : "") + `<div class="axis-label"></div>`;
 }
 
 // Every record is a disc with a glyph for its type.
@@ -768,7 +603,7 @@ function render() {
 
   // Stage band: when the matter entered each stage. Outlined is pre-litigation, filled is litigation.
   s += `<line x1="0" x2="${W}" y1="${axisY + .5}" y2="${axisY + .5}" stroke="${line}"/>`;
-  const reached = CASE.stages.filter((g) => g.from);
+  const reached = (CASE.stages || []).filter((g) => g.from);
   reached.forEach((g, i) => {
     const a = Math.max(x(g.from), -4), b = Math.min(x(reached[i + 1] ? reached[i + 1].from : TODAY), W + 4), lit = g.phase === "Litigation";
     if (b - a < 3) return;
@@ -923,7 +758,7 @@ function renderDetail(e) {
       ${described ? `<dt>Describes</dt><dd><button class="cite" data-id="${described.id}">${esc(described.title)}, ${fmt(described.t)}</button> (${span(described.t, e.t)} before it reached the file)</dd>` : ""}
     </dl>
     <p class="body">${esc(e.body)}</p>
-    <a class="source" href="#" onclick="return false">↗ Open this ${KIND[e.kind].toLowerCase()} in Clio</a>
+    ${e.url ? `<a class="source" href="${esc(e.url)}" target="_blank" rel="noreferrer">↗ Open in Clio</a>` : ""}
     <div class="ask">
       <label for="askInput">Ask about this record</label>
       <form id="askForm"><input id="askInput" autocomplete="off" placeholder="e.g. ${asks[0]}"><button>Ask</button></form>
@@ -951,139 +786,78 @@ function renderConflict(k) {
 /* ------------------------------------------------------------------
    Case state
    ------------------------------------------------------------------ */
-// Placeholder illustration. The real build shows the face cropped from the client's photo ID, never the ID itself.
-const PORTRAIT = `<svg viewBox="0 0 96 96" role="img" aria-label="Client portrait (placeholder illustration)"><rect width="96" height="96" fill="#cfe6d9"/>
-  <path d="M10 96c1-19 15-27 38-27s37 8 38 27z" fill="#0e6b57"/><path d="M39 70c3 6 15 6 18 0l-2-12H41z" fill="#e2ad8c"/>
-  <ellipse cx="48" cy="42" rx="17.5" ry="20.5" fill="#f0c4a4"/>
-  <path d="M29.5 44c-3-19 6-31 19-31s22 10 18.5 31c-2-9-6-15-12-17-8 4-17 5-22 6-2 3-3 6-3.5 11z" fill="#3a2a22"/>
-  <circle cx="41" cy="44" r="1.8" fill="#3a2a22"/><circle cx="55" cy="44" r="1.8" fill="#3a2a22"/>
-  <path d="M42 53c3 3 9 3 12 0" fill="none" stroke="#a8644a" stroke-width="1.8" stroke-linecap="round"/></svg>`;
 const money = (n) => (n < 0 ? "−$" : "$") + Math.abs(n).toLocaleString("en-US");
 const short = (t) => fmt(t, { month: "short", day: "numeric", year: "2-digit" }).replace(", ", " ’");
 const chip = (id) => { const e = byId[id]; return `<button class="src" data-id="${id}" title="${esc(e.title)}"><i style="background:var(${laneById[e.lane].paper})"></i>${KIND[e.kind]} · ${short(e.t)}</button>`; };
 const lastHeard = (laneId) => { const h = events.filter((e) => e.lane === laneId && e.t <= TODAY); return h.length ? h[h.length - 1] : null; };
 
+// Everyone the firm has exchanged a message with, in either direction.
+const lastContact = (laneId) => { const h = events.filter((e) => (e.lane === laneId || e.party === laneId) && (e.kind === "email" || e.kind === "call") && e.t <= TODAY); return h.length ? h[h.length - 1] : null; };
+
 function renderState() {
   const el = (id) => document.getElementById(id);
-  const client = laneById.client, call = lastHeard("client");
   const overdue = events.filter((e) => e.overdue), upcoming = events.filter((e) => e.t > TODAY);
-  const sol = CONFLICTS.find((k) => /limitations/i.test(k.why));
+  const call = laneById.client ? lastContact("client") : null;
+  const name = CASE.clientName || DATA.title;
 
-  el("face").innerHTML = PORTRAIT;
-  const reached = CASE.stages.filter((g) => g.from), now = reached[reached.length - 1];
-  el("heroKicker").textContent = `${client.name} · ${now.phase} · ${now.name}`;
-  el("phases").innerHTML = [...new Set(CASE.stages.map((g) => g.phase))].map((ph) => {
-    const list = CASE.stages.filter((g) => g.phase === ph);
-    return `<div class="phase ${ph === now.phase ? "on" : ""}" style="flex:${list.length}"><small>${ph}${ph === now.phase ? " · current" : ""}</small><ol>${list.map((g) =>
-      `<li class="${g === now ? "now" : g.from ? "done" : ""}"${g === now ? ' aria-current="step"' : ""}><b>${g.name}</b><span>${g.from ? fmt(g.from, { month: "short", year: "numeric" }) : "not reached"}</span></li>`).join("")}</ol></div>`;
-  }).join("");
+  el("face").textContent = name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  el("heroKicker").textContent = [CASE.clientName, CASE.stage, CASE.status].filter(Boolean).join(" · ");
+  el("headline").textContent = CASE.description || DATA.title;
+  el("phases").hidden = true;
 
-  // Statute of limitations: a countdown until suit is filed, then a record of the margin.
-  const filed = CASE.suitFiled ? byId[CASE.suitFiled] : null, toStatute = Math.round((CASE.statute - TODAY) / DAY);
-  const statuteValue = sol ? "Needs review" : filed ? "Suit filed in time" : toStatute < 0 ? "Statute has run" : `${toStatute} days left`;
-  const statuteSub = filed ? `statute ran ${fmt(CASE.statute)}; suit filed ${span(filed.t, CASE.statute)} before${sol ? ", but the defense pleads it" : ""}` : `statute runs ${fmt(CASE.statute)}`;
-  const statuteCls = sol || (!filed && toStatute <= 90) ? (!filed && toStatute <= 30 ? "late" : "warn") : "good";
-  el("headline").textContent = CASE.headline;
+  // Limitations, as Clio records it: the matter's limitations task, its due date and whether it is marked complete.
+  const st = CASE.statute, left = st && st.date ? Math.round((st.date - TODAY) / DAY) : null, marked = st && /complete/i.test(st.status || "");
+  const statute = !st || st.date == null ? ["", "Not set", "no limitations task on the matter"]
+    : marked ? ["good", "Marked complete", `limitations task, due ${fmt(st.date)}`]
+    : left < 0 ? ["late", "Past due", `was due ${fmt(st.date)} and is not marked complete`]
+    : [left <= 30 ? "late" : left <= 90 ? "warn" : "good", `${left} days left`, `runs ${fmt(st.date)}`];
 
   const tile = (cls, attr, label, value, sub) => `<${attr ? "button" : "div"} class="tile ${cls}" ${attr}><span>${label}</span><b>${value}</b><small>${sub}</small></${attr ? "button" : "div"}>`;
+  const sinceClient = call ? Math.round((TODAY - call.t) / DAY) : null;
   el("tiles").innerHTML =
-    tile("good", `data-id="${call.id}"`, "Last client contact", `${Math.round((TODAY - call.t) / DAY)} days ago`, `${KIND[call.kind]}, ${fmt(call.t, { month: "short", day: "numeric" })}`) +
-    tile(statuteCls, sol ? `data-conflict="${sol.id}"` : filed ? `data-id="${filed.id}"` : "", "Statute of limitations", statuteValue, statuteSub) +
+    tile(call ? (sinceClient > 30 ? "warn" : "good") : "", call ? `data-id="${call.id}"` : "", "Last client contact", call ? `${sinceClient} days ago` : "None", call ? `${KIND[call.kind]}, ${fmt(call.t, { month: "short", day: "numeric" })}` : "no call or email on file") +
+    tile(statute[0], "", "Statute of limitations", statute[1], statute[2]) +
     tile(overdue.length ? "late" : "good", overdue.length ? `data-id="${overdue[0].id}"` : "", "Overdue", overdue.length, overdue.length ? `oldest is ${span(overdue[0].t, TODAY)} late` : "nothing overdue") +
     tile("", upcoming.length ? `data-id="${upcoming[0].id}"` : "", "Next date", upcoming.length ? fmt(upcoming[0].t, { month: "short", day: "numeric" }) : "None", upcoming.length ? `${esc(upcoming[0].title)}, in ${span(TODAY, upcoming[0].t)}` : "nothing scheduled") +
-    tile("", "", "Case age", span(CASE.opened, TODAY), `opened ${fmt(CASE.opened)}`) +
-    tile("", "", "Firm costs", money(CASE.costs), `${CASE.expenses} expenses to date`);
+    tile("", "", "Case age", CASE.opened ? span(CASE.opened, TODAY) : "Unknown", CASE.opened ? `opened ${fmt(CASE.opened)}` : "no open date") +
+    tile("", "", "Firm costs", money(CASE.costs), `${CASE.expenses} expense${CASE.expenses === 1 ? "" : "s"} to date`);
+
+  // Waiting on others: outside parties holding unanswered firm messages.
+  const waitingOn = LANES.map((l) => {
+    if (l.cls === "client" || l.cls === "firm" || l.cls === "file") return null;
+    const asks = events.filter((e) => e.open && e.party === l.id); if (!asks.length) return null;
+    return { lane: l, asks, heard: lastHeard(l.id) };
+  }).filter(Boolean).sort((a, b) => a.asks[0].t - b.asks[0].t);
 
   // Need to know: rules over dates and records. Each one only appears when it applies.
   const alerts = [], soon = upcoming.filter((e) => e.t - TODAY <= 90 * DAY);
   const alert = (cls, attr, title, text) => alerts.push(`<${attr ? "button" : "div"} class="alert ${cls}" ${attr}><i>${cls === "ok" ? "✓" : "!"}</i><div><b>${title}</b><span>${text}</span></div></${attr ? "button" : "div"}>`);
-  if (!filed && toStatute <= 90) alert("crit", "", toStatute < 0 ? "The statute of limitations has run and no suit is filed" : `${toStatute} days to the statute of limitations`, `It runs on ${fmt(CASE.statute)} and no suit has been filed.`);
-  if (sol) alert("warn", `data-conflict="${sol.id}"`, "Limitations is pleaded as a defense", `The file marks it satisfied (suit filed ${fmt(filed.t)}, statute ${fmt(CASE.statute)}), but the answer raises it. An attorney should confirm.`);
-  if (soon.length) alert("warn", `data-id="${soon[0].id}"`, `${soon.length} date${soon.length === 1 ? "" : "s"} inside the next 90 days`, soon.map((e) => `${esc(e.title)} (${fmt(e.t, { month: "short", day: "numeric" })}, ${Math.round((e.t - TODAY) / DAY)} days)`).join(" · "));
+  if (st && st.date != null && !marked && left <= 90) alert("crit", "", left < 0 ? "The limitations date has passed and its task is not marked complete" : `${left} days to the limitations date`, `Due ${fmt(st.date)}.`);
   for (const e of overdue) alert("crit", `data-id="${e.id}"`, `Overdue: ${esc(e.title)}`, `${span(e.t, TODAY)} late.`);
-  const noAck = LOR.filter((r) => !r[3]);
-  for (const r of noAck) alert("warn", `data-id="${r[2]}"`, `No acknowledgment of our letter of representation from ${esc(r[0])}`, `Sent ${fmt(byId[r[2]].t)}, ${span(byId[r[2]].t, TODAY)} ago.`);
-  const sinceClient = Math.round((TODAY - call.t) / DAY);
-  if (sinceClient > 30) alert("warn", `data-id="${call.id}"`, `No contact with the client in ${sinceClient} days`, `Last was a ${KIND[call.kind].toLowerCase()} on ${fmt(call.t)}.`);
-  if (CONFLICTS.length > (sol ? 1 : 0)) alert("warn", "", `${CONFLICTS.length - (sol ? 1 : 0)} other contradictions in the file`, "Listed on the right with both sources.");
-  el("alerts").innerHTML = alerts.join("") || `<div class="alert ok"><i>✓</i><div><b>Nothing urgent</b><span>No deadline inside 90 days, nothing overdue, no unanswered letters.</span></div></div>`;
+  if (soon.length) alert("warn", `data-id="${soon[0].id}"`, `${soon.length} date${soon.length === 1 ? "" : "s"} inside the next 90 days`, soon.slice(0, 6).map((e) => `${esc(e.title)} (${fmt(e.t, { month: "short", day: "numeric" })}, ${Math.round((e.t - TODAY) / DAY)} days)`).join(" · "));
+  for (const w of waitingOn.slice(0, 4)) alert("warn", `data-id="${w.asks[w.asks.length - 1].id}"`, `${esc(w.lane.name)} has not replied`, `${w.asks.length} message${w.asks.length === 1 ? "" : "s"} unanswered since ${fmt(w.asks[0].t)}${w.heard ? `; last heard ${fmt(w.heard.t)}` : "; never heard from"}.`);
+  if (call && sinceClient > 30) alert("warn", `data-id="${call.id}"`, `No contact with the client in ${sinceClient} days`, `Last was a ${KIND[call.kind].toLowerCase()} on ${fmt(call.t)}.`);
+  el("alerts").innerHTML = alerts.join("") || `<div class="alert ok"><i>✓</i><div><b>Nothing urgent</b><span>No deadline inside 90 days, nothing overdue, no unanswered messages.</span></div></div>`;
 
-  el("lorCount").textContent = `${LOR.length - noAck.length} of ${LOR.length} acknowledged`;
-  el("lor").innerHTML = LOR.map(([who, role, sent, ack]) => `<tr><td><b>${esc(who)}</b><small>${esc(role)}</small></td><td>Sent ${chip(sent)}</td>
-    <td>${ack ? `<span class="ok">✓ Acknowledged</span> ${chip(ack)}` : `<span class="no">No acknowledgment</span><small>${span(byId[sent].t, TODAY)} and counting</small>`}</td></tr>`).join("");
-
-  el("story").innerHTML = CASE.story.map(([text, src]) => `<li>${esc(text)} ${src.map(chip).join("")}</li>`).join("");
-  el("chain").innerHTML = CASE.chain.map(([title, sub, src], i) => `<div class="link ${i ? "" : "root"}"><b>${esc(title)}</b><span>${esc(sub)}</span><span>${src.map(chip).join("")}</span></div>`).join("");
-
-  // Now, next, waiting: computed from the records, not written by a model.
-  const waiting = LANES.map((l) => {
-    const asks = events.filter((e) => e.open && e.party === l.id); if (!asks.length) return "";
-    const heard = lastHeard(l.id);
-    return `<button class="item wait" data-id="${asks[asks.length - 1].id}"><b>${esc(l.name)}</b><span>${asks.length} requests open, oldest ${fmt(asks[0].t)}</span><span>last heard ${heard ? fmt(heard.t) : "never"}</span></button>`;
-  }).join("");
   const col = (title, n, body) => `<div><h3>${title} <i>${n}</i></h3>${body || `<p class="none">Nothing here.</p>`}</div>`;
   el("nnw").innerHTML =
     col("Overdue", overdue.length, overdue.map((e) => `<button class="item late" data-id="${e.id}"><b>${esc(e.title)}</b><span>${span(e.t, TODAY)} late · due ${fmt(e.t)}</span></button>`).join("")) +
-    col("Coming up", upcoming.length, upcoming.map((e) => `<button class="item" data-id="${e.id}"><b>${esc(e.title)}</b><span>${fmt(e.t, { weekday: "short", month: "short", day: "numeric" })} · in ${span(TODAY, e.t)}</span></button>`).join("")) +
-    col("Waiting on others", (waiting.match(/<button/g) || []).length, waiting);
+    col("Coming up", upcoming.length, upcoming.slice(0, 8).map((e) => `<button class="item" data-id="${e.id}"><b>${esc(e.title)}</b><span>${fmt(e.t, { weekday: "short", month: "short", day: "numeric" })} · in ${span(TODAY, e.t)}</span></button>`).join("")) +
+    col("Waiting on others", waitingOn.length, waitingOn.map((w) => `<button class="item wait" data-id="${w.asks[w.asks.length - 1].id}"><b>${esc(w.lane.name)}</b><span>${w.asks.length} unanswered, oldest ${fmt(w.asks[0].t)}</span><span>last heard ${w.heard ? fmt(w.heard.t) : "never"}</span></button>`).join(""));
 
-  el("injuries").innerHTML = CASE.injuries.map(([part, what, id]) => `<li><b>${esc(part)}:</b> <span>${esc(what)}</span> ${chip(id)}</li>`).join("");
-
-  el("clashCount").textContent = `${CONFLICTS.length} need attorney review`;
-  el("clashes").innerHTML = CONFLICTS.map((k) => {
-    const a = byId[k.a], b = byId[k.b], who = (e) => `${KIND[e.kind]} · ${laneById[e.lane].name} · ${fmt(e.t)}`;
-    return `<button class="clash" data-conflict="${k.id}"><b>⚠ ${esc(k.why)}</b><q>${esc(k.qa)}</q><span>${esc(who(a))}</span><q>${esc(k.qb)}</q><span>${esc(who(b))}</span></button>`;
-  }).join("");
-
-  const h = CASE.happened;
-  el("what").innerHTML = `<dt>What</dt><dd class="lead">${esc(h.summary)} ${chip(intake)}</dd>
-    <dt>When</dt><dd>${esc(h.when)}</dd><dt>Where</dt><dd>${esc(h.where)}</dd><dt>Who</dt><dd>${esc(h.who)}</dd>
-    <dt>First care</dt><dd>${esc(h.first)}</dd><dt>In dispute</dt><dd>${esc(h.disputed)} ${chip(answer)}${chip(report)}</dd>`;
-
-  const v = CASE.value;
-  el("money").innerHTML = `<div class="est-out"><b class="big" id="estOut"></b><span id="estNote"></span></div>
-    <div class="bar" role="img" id="estBar"></div>
-    <p id="estCap" style="margin:0 0 10px"></p>
-    <dl class="fall" id="estFall"></dl>
-    <div class="knobs">
-      <label for="kMult"><b>Pain and suffering</b>, as a multiple of medical bills</label><output id="oMult"></output>
-      <input id="kMult" type="range" min="0" max="5" step="0.25" value="1.5">
-      <label for="kFault"><b>Client's share of fault</b></label><output id="oFault"></output>
-      <input id="kFault" type="range" min="0" max="100" step="5" value="0">
-      <label for="kFee"><b>Firm's fee</b></label><output id="oFee"></output>
-      <input id="kFee" type="range" min="0" max="45" step="1" value="33">
-      <label for="kCap"><b>Coverage</b>: the file gives two answers ⚠</label><span></span>
-      <select id="kCap">${v.caps.map(([name, , from], i) => `<option value="${i}">${esc(name)} (${esc(from)})</option>`).join("")}</select>
-    </div>`;
-  const calc = () => {
-    const mult = +el("kMult").value, fault = +el("kFault").value / 100, fee = +el("kFee").value / 100, cap = v.caps[+el("kCap").value][1];
-    const economic = v.specials + v.wages, pain = Math.round(v.specials * mult), gross = economic + pain;
-    const afterFault = Math.round(gross * (1 - fault)), recover = cap ? Math.min(afterFault, cap) : afterFault, lost = afterFault - recover;
-    const feeAmt = Math.round(recover * fee), net = recover - feeAmt - v.liens - CASE.costs;
-    el("oMult").textContent = mult.toFixed(2) + "×"; el("oFault").textContent = Math.round(fault * 100) + "%"; el("oFee").textContent = Math.round(fee * 100) + "%";
-    el("estOut").textContent = money(recover);
-    el("estNote").textContent = `recoverable on these assumptions · the file's own estimate is ${money(v.estimate)}`;
-    el("estBar").innerHTML = `<i style="width:${(recover / Math.max(afterFault, 1) * 100).toFixed(1)}%"></i>${lost ? `<i class="lost" style="left:${(recover / afterFault * 100).toFixed(1)}%;right:0"></i>` : ""}`;
-    el("estBar").setAttribute("aria-label", lost ? `${money(recover)} recoverable, ${money(lost)} above the coverage limit` : `${money(recover)} recoverable, no coverage limit applied`);
-    el("estCap").innerHTML = lost ? `⚠ <b>${money(lost)}</b> of the claim sits above this coverage limit and would not be recovered.` : "No coverage limit applied on this reading.";
-    const rows = [["Medical bills to date", v.specials], ["Lost wages claimed", v.wages], [`Pain and suffering (${mult.toFixed(2)}× medical)`, pain]];
-    if (fault) rows.push([`Client's fault (${Math.round(fault * 100)}%)`, afterFault - gross]);
-    if (lost) rows.push(["Above the coverage limit", -lost]);
-    rows.push([`Firm's fee (${Math.round(fee * 100)}%)`, -feeAmt], ["Known liens", -v.liens], ["Firm costs to date", -CASE.costs]);
-    el("estFall").innerHTML = rows.map(([label, n]) => `<dt>${esc(label)}</dt><dd>${money(n)}</dd>`).join("") + `<dt class="sum">To the client</dt><dd class="sum">${money(net)}</dd>`;
-  };
-  ["kMult", "kFault", "kFee", "kCap"].forEach((id) => el(id).addEventListener("input", calc));
-  calc();
+  el("fields").innerHTML = CASE.fields.length
+    ? CASE.fields.map((f) => `<dt>${esc(f.name)}</dt><dd>${esc(f.value)}</dd>`).join("")
+    : `<dt>None</dt><dd>This matter has no custom fields filled in.</dd>`;
 
   // Activity by quarter per party, with how long since each was last heard from.
   const q0 = new Date(FIRST), quarters = [];
   for (let c = new Date(q0.getFullYear(), Math.floor(q0.getMonth() / 3) * 3, 1); c.getTime() <= TODAY; c.setMonth(c.getMonth() + 3)) quarters.push(c.getTime());
-  el("pulse").innerHTML = LANES.filter((l) => l.id !== "file").map((l) => {
+  el("pulse").innerHTML = LANES.filter((l) => l.cls !== "file").map((l) => {
     const mine = events.filter((e) => e.lane === l.id && e.t <= TODAY);
     const counts = quarters.map((t, i) => mine.filter((e) => e.t >= t && e.t < (quarters[i + 1] || Infinity)).length), max = Math.max(1, ...counts);
-    const bw = 120 / quarters.length, heard = lastHeard(l.id), gap = heard ? TODAY - heard.t : 0, quiet = l.id !== "firm" && l.id !== "court" && gap >= 120 * DAY;
-    const bars = counts.map((n, i) => `<rect x="${(i * bw + 1).toFixed(1)}" y="${n ? 22 - Math.max(3, n / max * 20) : 21}" width="${(bw - 2).toFixed(1)}" height="${n ? Math.max(3, n / max * 20) : 1}" rx="1" fill="${n ? `var(${l.paper})` : "var(--paper-line)"}"/>`).join("");
-    return `<b><i style="background:var(${l.paper})"></i>${esc(l.name)}</b><svg width="120" height="22" role="img" aria-label="${mine.length} records">${bars}</svg><span class="${quiet ? "quiet" : ""}">${heard ? (quiet ? `silent for ${span(heard.t, TODAY)}` : `last ${fmt(heard.t, { month: "short", day: "numeric" })}`) : "nothing yet"}</span>`;
+    const bw = 120 / quarters.length, heard = lastHeard(l.id), gap = heard ? TODAY - heard.t : 0, quiet = l.cls !== "firm" && l.cls !== "court" && gap >= 120 * DAY;
+    const bars = counts.map((n, i) => `<rect x="${(i * bw + 1).toFixed(1)}" y="${n ? 22 - Math.max(3, n / max * 20) : 21}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${n ? Math.max(3, n / max * 20) : 1}" rx="1" fill="${n ? `var(${l.paper})` : "var(--paper-line)"}"/>`).join("");
+    return `<b><i style="background:var(${l.paper})"></i>${esc(l.name)}</b><svg width="120" height="22" role="img" aria-label="${mine.length} records">${bars}</svg><span class="${quiet ? "quiet" : ""}">${heard ? (quiet ? `silent for ${span(heard.t, TODAY)}` : `last ${fmt(heard.t, { month: "short", day: "numeric" })}`) : "nothing on file"}</span>`;
   }).join("");
 }
 
@@ -1158,18 +932,26 @@ document.addEventListener("keydown", (ev) => {
   if ((ev.key === "Enter" || ev.key === " ") && ev.target.closest(".mark")) { ev.target.closest(".mark").dispatchEvent(new MouseEvent("click", { bubbles: true })); ev.preventDefault(); }
 });
 
-// Placeholder answer. The real one comes from the case-file search and cites records.
-function ask(q) {
+// Ask: the server searches the case-file index and answers with citations.
+async function ask(q) {
   if (!q.trim() || !state.selected) return;
-  const e = byId[state.selected], box = document.getElementById("answer");
-  const thread = events.filter((o) => partyOf(o) === partyOf(e));
-  const later = thread.filter((o) => o.t > e.t && o.lane !== e.lane).slice(0, 2);
-  box.innerHTML = `<div class="answer"><em>Looking through the file…</em></div>`;
-  setTimeout(() => {
-    box.innerHTML = `<div class="answer"><em>Sample answer · design mock</em>
-      ${later.length ? `After this, the file shows ${later.length === 1 ? "one related record" : "two related records"} from the other side:` : "Nothing from the other side follows this record in the file."}
-      <div style="margin-top:6px;display:grid;gap:4px">${later.map((o) => `<button class="cite" data-id="${o.id}">${esc(o.title)}, ${fmt(o.t)}</button>`).join("")}</div></div>`;
-  }, 500);
+  const e = byId[state.selected], asked = e.id, box = () => (state.selected === asked ? document.getElementById("answer") : null);
+  box().innerHTML = `<div class="answer"><em>Searching the case file…</em></div>`;
+  let html;
+  try {
+    const res = await fetch(`/api/matters/${DATA.matterId}/ask`, { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ question: q, record: { ref: e.ref, title: e.title, date: fmt(e.t), text: e.body.slice(0, 2000) } }) });
+    const out = await res.json();
+    if (!res.ok) throw new Error(out.message || out.error || "The question could not be answered.");
+    const cites = (out.citations || []).map((c) => {
+      const hit = events.find((x) => x.ref === c.ref), label = esc(`${c.title}${c.date ? ", " + c.date : ""}`);
+      return hit ? `<button class="cite" data-id="${hit.id}">${label}</button>` : c.url ? `<a class="cite" href="${esc(c.url)}" target="_blank" rel="noreferrer">${label}</a>` : `<span>${label}</span>`;
+    }).join("");
+    html = `<div class="answer"><em>From the case file</em><div style="white-space:pre-line">${esc(out.answer)}</div>${cites ? `<div style="margin-top:8px;display:grid;gap:4px">${cites}</div>` : ""}</div>`;
+  } catch (err) {
+    html = `<div class="answer"><em>Could not answer</em>${esc(err.message)}</div>`;
+  }
+  if (box()) box().innerHTML = html;
 }
 
 // Hover: tooltip, and the band joining the lanes a record sits on.
@@ -1208,7 +990,8 @@ const opts = location.hash.slice(1).split(",");
 if (opts.includes("open")) GROUPS.forEach((g) => { if (g.fold) state.open[g.id] = true; });
 
 // Open on the most recent thing that happened.
-select(events.filter((e) => e.t <= TODAY).pop().id);
+const latest = events.filter((e) => e.t <= TODAY).pop() || events[0];
+if (latest) select(latest.id);
 // Open on the last three months; ALL is one click away.
 preset(3);
 

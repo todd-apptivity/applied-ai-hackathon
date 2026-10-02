@@ -6,7 +6,7 @@ import { listViewers, viewerToPrincipal } from "@/lib/identity/viewers";
 import { listIndexedMatters, listingLabel, type MatterListing } from "@/lib/matters/registry";
 import { allowedKinds, canAccessMatter } from "@/lib/permissions/policy";
 
-export const metadata = { title: "Matters" };
+export const metadata = { title: "Cases" };
 
 /**
  * The matter picker.
@@ -43,11 +43,11 @@ export default async function MattersPage() {
     <main className="mx-auto w-full max-w-4xl flex-1 overflow-y-auto px-6 py-8 font-sans">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Matters</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Cases</h1>
           <p className="text-sm text-muted-foreground">
             {matters.length === 0
               ? "Nothing indexed yet"
-              : `${matters.length} matter${matters.length === 1 ? "" : "s"} in the local index`}
+              : `${matters.length} case${matters.length === 1 ? "" : "s"} in the local index`}
           </p>
         </div>
         <ViewerSwitcher
@@ -77,7 +77,7 @@ function MatterRow({ matter }: { matter: MatterListing }) {
   return (
     <li>
       <Link
-        href={`/matters/${matter.matterId}`}
+        href={`/matters/${matter.matterId}/case`}
         className="block rounded-lg border border-border bg-card px-4 py-3 hover:border-foreground/30"
       >
         <div className="flex flex-wrap items-baseline justify-between gap-3">

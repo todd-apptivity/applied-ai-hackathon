@@ -66,8 +66,15 @@ export default async function MatterPage({
             href="/matters"
             className="text-xs text-muted-foreground underline hover:text-foreground"
           >
-            All matters
+            All cases
           </Link>
+          {/* A plain anchor: the case view is its own document, not a page in this layout. */}
+          <a
+            href={`/matters/${id}/case`}
+            className="ml-3 text-xs text-muted-foreground underline hover:text-foreground"
+          >
+            Open the case
+          </a>
           <h1 className="mt-1 text-xl font-semibold tracking-tight">{label}</h1>
           <p className="text-sm text-muted-foreground">
             Matter {id} · viewing as {viewer.name}

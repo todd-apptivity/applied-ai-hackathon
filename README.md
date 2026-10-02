@@ -8,7 +8,7 @@ First, run the development server:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3123](http://localhost:3123) with your browser to see the result.
 
 ## Clio Manage connection
 
@@ -21,7 +21,7 @@ verb. Everything the app produces lives in its own database.
 
 In Clio: **Settings → Developer applications → Add**.
 
-- Redirect URI: `http://localhost:3000/api/clio/callback` (must match exactly)
+- Redirect URI: `http://localhost:3123/api/clio/callback` (must match exactly)
 - Permissions, **read only**: Users, Practice Areas, Contacts, Matters,
   Custom Fields, Documents, Notes, Communications, Tasks, Calendars, Activities
 
@@ -39,7 +39,7 @@ cp .env.example .env.local
 
 ### 3. Connect
 
-Run `npm run dev` and open [/clio](http://localhost:3000/clio), then
+Run `npm run dev` and open [/clio](http://localhost:3123/clio), then
 **Connect to Clio**. The callback stores the tokens in `.clio/tokens.json`
 (gitignored, mode 600) so the dev server can restart without re-authorizing.
 Access tokens refresh automatically.

@@ -56,7 +56,7 @@ export default async function ClioPage({ searchParams }: PageProps<"/clio">) {
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 overflow-y-auto px-6 py-16 font-sans">
       <h1 className="text-2xl font-semibold tracking-tight">Clio connection</h1>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="mt-2 text-sm text-muted-foreground">
         Clio is input only. This app reads matters, contacts, notes,
         communications, tasks, calendar entries, activities, and documents, and
         never calls a Clio write endpoint.
@@ -69,17 +69,17 @@ export default async function ClioPage({ searchParams }: PageProps<"/clio">) {
       )}
 
       {!state.configured && (
-        <section className="mt-8 rounded border border-zinc-300 px-4 py-4 text-sm dark:border-zinc-700">
+        <section className="mt-8 rounded border border-border bg-card px-4 py-4 text-sm">
           <p className="font-medium">Not configured.</p>
-          <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+          <p className="mt-2 text-muted-foreground">
             Copy <code>.env.example</code> to <code>.env.local</code> and set{" "}
             <code>CLIO_CLIENT_ID</code> and <code>CLIO_CLIENT_SECRET</code> from
             your Clio developer app, then restart <code>next dev</code>.
           </p>
-          <p className="mt-3 text-zinc-600 dark:text-zinc-400">
+          <p className="mt-3 text-muted-foreground">
             Grant the app these permissions, read only:
           </p>
-          <ul className="mt-1 list-disc pl-5 text-zinc-600 dark:text-zinc-400">
+          <ul className="mt-1 list-disc pl-5 text-muted-foreground">
             {REQUIRED_READ_PERMISSIONS.map((permission) => (
               <li key={permission}>{permission}</li>
             ))}
@@ -97,11 +97,11 @@ export default async function ClioPage({ searchParams }: PageProps<"/clio">) {
           <Link
             href="/api/clio/connect"
             prefetch={false}
-            className="inline-block rounded bg-black px-4 py-2 font-medium text-white dark:bg-white dark:text-black"
+            className="inline-block rounded bg-primary px-4 py-2 font-medium text-primary-foreground"
           >
             Connect to Clio
           </Link>
-          <p className="mt-3 text-zinc-600 dark:text-zinc-400">
+          <p className="mt-3 text-muted-foreground">
             Region: <code>{getClioConfig().region}</code> · redirect{" "}
             <code>{getClioConfig().redirectUri}</code>
           </p>
@@ -112,7 +112,7 @@ export default async function ClioPage({ searchParams }: PageProps<"/clio">) {
         <section className="mt-8 text-sm">
           <p>
             Connected as <strong>{state.user.name}</strong>{" "}
-            <span className="text-zinc-500">({state.user.email})</span>
+            <span className="text-muted-foreground">({state.user.email})</span>
             {state.user.account?.name ? ` · ${state.user.account.name}` : ""}
           </p>
 
@@ -125,18 +125,18 @@ export default async function ClioPage({ searchParams }: PageProps<"/clio">) {
           <h2 className="mt-8 text-base font-semibold">
             Open matters ({state.matters?.length ?? 0})
           </h2>
-          <ul className="mt-3 divide-y divide-zinc-200 dark:divide-zinc-800">
+          <ul className="mt-3 divide-y divide-border">
             {state.matters?.map((matter) => (
               <li key={matter.id} className="py-3">
                 <div className="flex flex-wrap items-baseline gap-2">
                   <span className="font-medium">
                     {matter.display_number ?? matter.id}
                   </span>
-                  <span className="text-zinc-600 dark:text-zinc-400">
+                  <span className="text-muted-foreground">
                     {matter.description}
                   </span>
                 </div>
-                <div className="mt-1 flex flex-wrap gap-3 text-xs text-zinc-500">
+                <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
                   {matter.matter_stage?.name && <span>{matter.matter_stage.name}</span>}
                   {matter.client?.name && <span>{matter.client.name}</span>}
                   <a
