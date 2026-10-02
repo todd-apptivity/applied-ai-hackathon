@@ -6,21 +6,49 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --import tsx --test \"tests/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "rag:seed": "tsx scripts/rag.ts seed",
+    "rag:embed": "tsx scripts/rag.ts embed",
+    "rag:status": "tsx scripts/rag.ts status",
+    "rag:query": "tsx scripts/rag.ts query",
+    "rag:audit": "tsx scripts/audit-rag.ts",
+    "rag:ocr": "tsx scripts/ocr.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.71",
+    "@ai-sdk/openai-compatible": "^3.0.62",
+    "@anthropic-ai/sdk": "^0.131.0",
+    "@assistant-ui/ai-sdk": "^0.0.9",
+    "@assistant-ui/react": "^0.15.23",
+    "@assistant-ui/react-markdown": "^0.14.18",
+    "ai": "^7.0.127",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cn": "^0.4.0",
+    "lucide-react": "^1.50.0",
     "next": "16.3.8",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.3.289",
+    "radix-ui": "^1.6.7",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "react-textarea-autosize": "^8.5.9",
+    "remark-gfm": "^4.0.1",
+    "tailwind-merge": "^3.7.0",
+    "tw-shimmer": "^0.4.13",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^24.19.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

@@ -44,3 +44,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+
+# local sqlite cache / retrieval index
+/.data/
+
+# scratch
+/.scratch/

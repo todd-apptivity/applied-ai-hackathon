@@ -96,6 +96,15 @@ export function getClioConfig(): ClioConfig {
   };
 }
 
+/**
+ * The region's Clio host on its own. Building a deep link needs the host but
+ * not the OAuth credentials, so this does not go through `getClioConfig`,
+ * which throws when they are absent.
+ */
+export function clioHost(): string {
+  return REGION_HOSTS[parseRegion(process.env.CLIO_REGION)];
+}
+
 /** True when credentials are present, without throwing. */
 export function isClioConfigured(): boolean {
   return Boolean(process.env.CLIO_CLIENT_ID && process.env.CLIO_CLIENT_SECRET);
