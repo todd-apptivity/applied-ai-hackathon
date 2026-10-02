@@ -67,12 +67,11 @@ export interface ClioContact extends ClioRef {
 }
 
 export interface ClioCustomFieldValue {
-  id: number;
+  /** Composite string, e.g. "date-1702097093" — not the custom field's id. */
+  id: string;
   field_type?: string;
   field_name?: string;
   value?: unknown;
-  picklist_option?: ClioRef;
-  custom_field?: ClioRef;
   etag?: string;
 }
 
@@ -84,7 +83,8 @@ export interface ClioMatter extends ClioRef {
   open_date?: string;
   close_date?: string;
   pending_date?: string;
-  statute_of_limitations?: string;
+  /** Clio returns the associated limitations Task, not a bare date. */
+  statute_of_limitations?: Pick<ClioTask, "id" | "name" | "due_at" | "status">;
   client?: ClioContact;
   practice_area?: ClioPracticeArea;
   matter_stage?: ClioMatterStage;
@@ -131,7 +131,6 @@ export interface ClioTask extends ClioRef {
   due_at?: string;
   status?: string;
   priority?: string;
-  complete?: boolean;
   completed_at?: string;
   statute_of_limitations?: boolean;
   assignee?: ClioRef;

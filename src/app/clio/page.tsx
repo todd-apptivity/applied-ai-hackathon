@@ -22,17 +22,28 @@ async function loadConnection(): Promise<ConnectionState> {
   if (!isClioConfigured()) return { configured: false, connected: false };
   if (!(await isConnected())) return { configured: true, connected: false };
 
+  let user: ClioUser;
   try {
-    const [user, matters] = await Promise.all([
-      getCurrentUser(),
-      listMatters({ status: "Open" }),
-    ]);
-    return { configured: true, connected: true, user, matters };
+    user = await getCurrentUser();
   } catch (error) {
     if (error instanceof ClioNotConnectedError) {
       return { configured: true, connected: false };
     }
     return { configured: true, connected: false, error: (error as Error).message };
+  }
+
+  // The connection is live past this point. A failing matter list is a read
+  // error to surface, not a reason to claim we are disconnected.
+  try {
+    const matters = await listMatters({ status: "Open" });
+    return { configured: true, connected: true, user, matters };
+  } catch (error) {
+    return {
+      configured: true,
+      connected: true,
+      user,
+      error: (error as Error).message,
+    };
   }
 }
 
@@ -104,6 +115,12 @@ export default async function ClioPage({ searchParams }: PageProps<"/clio">) {
             <span className="text-zinc-500">({state.user.email})</span>
             {state.user.account?.name ? ` · ${state.user.account.name}` : ""}
           </p>
+
+          {state.error && (
+            <p className="mt-4 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+              Read failed: {state.error}
+            </p>
+          )}
 
           <h2 className="mt-8 text-base font-semibold">
             Open matters ({state.matters?.length ?? 0})
