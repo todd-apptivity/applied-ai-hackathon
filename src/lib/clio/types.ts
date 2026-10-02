@@ -139,7 +139,9 @@ export interface ClioTask extends ClioRef {
   updated_at?: string;
 }
 
-export interface ClioCalendarEntry extends ClioRef {
+export interface ClioCalendarEntry extends Omit<ClioRef, "id"> {
+  /** Clio returns calendar entry ids as strings, unlike other resources. */
+  id: string;
   summary?: string;
   description?: string;
   location?: string;
