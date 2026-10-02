@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored by the shadcn / assistant-ui registry (`npx shadcn add`). Edited
+    // upstream, overwritten on re-add, so linting them only reports other
+    // people's style. Our own components live outside these two directories.
+    "src/components/assistant-ui/**",
+    "src/components/ui/**",
   ]),
 ]);
 

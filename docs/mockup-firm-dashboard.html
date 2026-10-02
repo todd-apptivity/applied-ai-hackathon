@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ninety — Firm Dashboard (mockup)</title>
+<style>
+  :root {
+    --bg: #f7f7f8;
+    --panel: #ffffff;
+    --ink: #18181b;
+    --ink-2: #3f3f46;
+    --muted: #71717a;
+    --line: #e4e4e7;
+    --line-2: #d4d4d8;
+    --accent: #1e3a8a;
+    --accent-soft: #eef2ff;
+    --red: #b42318;
+    --red-soft: #fef3f2;
+    --amber: #b54708;
+    --amber-soft: #fffaeb;
+    --green: #067647;
+    --green-soft: #ecfdf3;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #09090b; --panel: #121214; --ink: #fafafa; --ink-2: #d4d4d8;
+      --muted: #8b8b94; --line: #27272a; --line-2: #3f3f46;
+      --accent: #93b4ff; --accent-soft: #16233f;
+      --red: #ff9b92; --red-soft: #2b1512;
+      --amber: #f5c37a; --amber-soft: #2b1f0f;
+      --green: #7cd9a8; --green-soft: #0f2419;
+      --shadow: 0 1px 2px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px 72px; }
+
+  /* ---- top bar ---- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20; background: var(--panel);
+    border-bottom: 1px solid var(--line); margin-bottom: 20px;
+  }
+  .topbar-inner {
+    max-width: 1240px; margin: 0 auto; padding: 10px 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .brand { font-weight: 650; letter-spacing: -.01em; }
+  .brand span { color: var(--muted); font-weight: 400; }
+  .topbar .sep { color: var(--line-2); }
+  .sync { margin-left: auto; color: var(--muted); font-size: 12.5px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; }
+  .btn {
+    border: 1px solid var(--line-2); background: var(--panel); color: var(--ink);
+    border-radius: 7px; padding: 5px 11px; font-size: 12.5px; cursor: pointer; font-weight: 500;
+  }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) { .btn-primary { color: #0b1220; } }
+  .tabs { display: flex; gap: 2px; }
+  .tab { padding: 5px 10px; border-radius: 7px; font-size: 13px; color: var(--muted); cursor: pointer; }
+  .tab.on { background: var(--accent-soft); color: var(--accent); font-weight: 550; }
+
+  /* ---- primitives ---- */
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+  }
+  .card > h2 {
+    margin: 0; padding: 12px 16px; font-size: 12px; font-weight: 650;
+    letter-spacing: .07em; text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px;
+  }
+  .card > h2 .count { font-weight: 500; letter-spacing: 0; text-transform: none; font-size: 12px; }
+  .card-body { padding: 16px; }
+  .grid { display: grid; gap: 16px; }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g2 { grid-template-columns: 1.35fr 1fr; }
+  @media (max-width: 1000px) { .g3, .g2 { grid-template-columns: 1fr; } }
+
+  /* source chip — the whole point: every fact clicks through */
+  .src {
+    display: inline-flex; align-items: center; gap: 4px; vertical-align: baseline;
+    font-size: 11px; line-height: 1.4; padding: 1px 6px; margin: 0 1px;
+    border: 1px solid var(--line-2); border-radius: 5px;
+    color: var(--muted); text-decoration: none; white-space: nowrap; cursor: pointer;
+  }
+  .src:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .src::before { content: "↗"; font-size: 9px; opacity: .7; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600;
+    padding: 2px 8px; border-radius: 999px; border: 1px solid transparent;
+  }
+  .p-red { background: var(--red-soft); color: var(--red); border-color: color-mix(in srgb, var(--red) 25%, transparent); }
+  .p-amber { background: var(--amber-soft); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 25%, transparent); }
+  .p-green { background: var(--green-soft); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, transparent); }
+  .p-gray { background: var(--bg); color: var(--muted); border-color: var(--line); }
+  .mut { color: var(--muted); }
+  .sm { font-size: 12.5px; }
+  .xs { font-size: 11.5px; }
+
+  /* ---- header card ---- */
+  .hdr { display: flex; gap: 18px; padding: 16px; align-items: flex-start; }
+  .photo {
+    width: 84px; height: 84px; flex: none; border-radius: 10px; border: 1px solid var(--line-2);
+    background:
+      radial-gradient(circle at 50% 38%, #c9a68a 0 26%, transparent 27%),
+      radial-gradient(ellipse at 50% 108%, #c9a68a 0 44%, transparent 45%),
+      linear-gradient(160deg, #e8e4df, #cfcac3);
+    position: relative; overflow: hidden;
+  }
+  .photo .cap {
+    position: absolute; left: 0; right: 0; bottom: 0; font-size: 9px; text-align: center;
+    background: rgba(0,0,0,.55); color: #fff; padding: 2px;
+  }
+  .hdr-main { flex: 1; min-width: 0; }
+  .hdr-name { font-size: 21px; font-weight: 640; letter-spacing: -.02em; }
+  .hdr-sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+    gap: 1px; background: var(--line); border-top: 1px solid var(--line);
+  }
+  .kpi { background: var(--panel); padding: 11px 16px; }
+  .kpi .k { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .kpi .v { font-size: 15px; font-weight: 600; margin-top: 3px; letter-spacing: -.01em; }
+  .kpi .v small { font-weight: 400; color: var(--muted); font-size: 11.5px; }
+
+  /* ---- story ---- */
+  .story { font-size: 15.5px; line-height: 1.72; color: var(--ink-2); }
+  .story b { color: var(--ink); font-weight: 600; }
+
+  /* ---- lists ---- */
+  .rows { display: flex; flex-direction: column; }
+  .row { padding: 11px 16px; border-top: 1px solid var(--line); }
+  .row:first-child { border-top: none; }
+  .row-t { display: flex; gap: 8px; align-items: baseline; }
+  .row-t .ttl { font-weight: 550; flex: 1; }
+  .row-m { color: var(--muted); font-size: 12px; margin-top: 3px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+  /* ---- blockers chain ---- */
+  .chain { display: flex; flex-direction: column; gap: 0; }
+  .link { display: flex; gap: 12px; }
+  .link .rail { width: 18px; display: flex; flex-direction: column; align-items: center; flex: none; }
+  .link .node { width: 9px; height: 9px; border-radius: 50%; background: var(--red); margin-top: 6px; flex: none; }
+  .link.l2 .node { background: var(--amber); }
+  .link.l3 .node { background: var(--muted); }
+  .link .wire { flex: 1; width: 1.5px; background: var(--line-2); margin: 3px 0; min-height: 14px; }
+  .link:last-child .wire { display: none; }
+  .link .body { padding-bottom: 14px; }
+  .link:last-child .body { padding-bottom: 0; }
+  .link .body .h { font-weight: 600; }
+
+  /* ---- waterfall ---- */
+  .wf { display: flex; flex-direction: column; gap: 7px; }
+  .wf-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+  .wf-bar { height: 7px; border-radius: 4px; background: var(--accent); opacity: .85; }
+  .wf-bar.neg { background: var(--red); opacity: .55; }
+  .wf-num { font-variant-numeric: tabular-nums; font-weight: 550; }
+  .wf-lbl { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 3px; }
+  .scn { border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px; }
+  .scn + .scn { margin-top: 9px; }
+  .scn .h { display: flex; gap: 8px; align-items: baseline; font-weight: 600; }
+  .scn .h .cap { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+  /* ---- conflicts ---- */
+  .cf { border-top: 1px solid var(--line); padding: 14px 16px; }
+  .cf-h { display: flex; gap: 9px; align-items: baseline; flex-wrap: wrap; }
+  .cf-h .t { font-weight: 600; flex: 1; min-width: 200px; }
+  .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  @media (max-width: 760px) { .sides { grid-template-columns: 1fr; } }
+  .side { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 11px; }
+  .side .lbl { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+  .side .q { font-size: 12.5px; color: var(--ink-2); }
+  .why { margin-top: 9px; font-size: 12.5px; color: var(--muted); }
+  .cf-act { margin-top: 10px; display: flex; gap: 7px; }
+
+  /* ---- injuries ---- */
+  .bp { display: flex; flex-direction: column; }
+  .bp-row { display: grid; grid-template-columns: 150px 1fr auto; gap: 10px; padding: 9px 16px; border-top: 1px solid var(--line); align-items: baseline; }
+  .bp-row:first-child { border-top: none; }
+  .bp-row .n { font-weight: 550; }
+  table.prov { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.prov th { text-align: left; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0 16px 8px; }
+  table.prov td { padding: 9px 16px; border-top: 1px solid var(--line); vertical-align: top; }
+  table.prov td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ---- timeline ---- */
+  .tl-row { display: grid; grid-template-columns: 84px 1fr auto; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--line); align-items: baseline; }
+  .tl-row .d { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12.5px; }
+  .tl-row .why { margin: 0; font-size: 11.5px; }
+  .more { padding: 11px 16px; border-top: 1px solid var(--line); color: var(--accent); font-weight: 550; font-size: 13px; cursor: pointer; }
+
+  .note {
+    margin: 22px 0 0; padding: 12px 14px; border: 1px dashed var(--line-2);
+    border-radius: 8px; color: var(--muted); font-size: 12.5px; background: var(--panel);
+  }
+  .sec-h { margin: 24px 0 10px; font-size: 13px; font-weight: 650; letter-spacing: .02em; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-inner">
+  <div class="brand">Ninety <span>· working name</span></div>
+  <span class="sep">/</span>
+  <div class="sm"><b>00001-Sapini</b> <span class="mut">Sapini v. Ferrara and Metro-North</span></div>
+  <div class="tabs" style="margin-left:18px">
+    <div class="tab on">Dashboard</div>
+    <div class="tab">Timeline</div>
+    <div class="tab">Documents</div>
+    <div class="tab">Provider shares</div>
+  </div>
+  <div class="sync">
+    <span class="dot"></span> Synced from Clio 2 min ago · 0 model calls
+    <button class="btn">Refresh</button>
+  </div>
+</div></div>
+
+<div class="wrap">
+
+<!-- ============ HEADER ============ -->
+<div class="card">
+  <div class="hdr">
+    <div class="photo"><span class="cap">face crop</span></div>
+    <div class="hdr-main">
+      <div class="hdr-name">Justin Sapini</div>
+      <div class="hdr-sub">
+        MVA — Cedar St at Garden St, New Rochelle, Westchester County NY
+        <a class="src" href="#">Custom field · Accident Location</a>
+      </div>
+      <div class="row-m" style="margin-top:8px">
+        <span class="pill p-gray">Personal Injury</span>
+        <span class="pill p-gray">Stage: Litigation</span>
+        <span class="pill p-gray">Open since 05/07/2023</span>
+        <span class="mut xs">Resp. attorney: Jose Ortiz</span>
+        <a class="src" href="#">Matter 1811206913</a>
+      </div>
+    </div>
+    <div style="text-align:right;flex:none">
+      <button class="btn btn-primary">Share with a provider</button>
+      <div class="xs mut" style="margin-top:6px">3 shares · 0 published</div>
+    </div>
+  </div>
+  <div class="kpis">
+    <div class="kpi">
+      <div class="k">Date of incident</div>
+      <div class="v">04/23/2023 <small>· 3y 5m ago</small></div>
+      <a class="src" href="#">Custom field</a>
+    </div>
+    <div class="kpi">
+      <div class="k">Last client contact</div>
+      <div class="v">09/27/2026 <small>· 5 days</small></div>
+      <a class="src" href="#">Phone call</a>
+    </div>
+    <div class="kpi">
+      <div class="k">Limitations</div>
+      <div class="v"><span class="pill p-amber">Needs attorney review</span></div>
+      <div class="xs mut" style="margin-top:4px">Clio: 04/22/2026, task complete</div>
+    </div>
+    <div class="kpi">
+      <div class="k">Coverage</div>
+      <div class="v"><span class="pill p-amber">2 scenarios</span></div>
+      <div class="xs mut" style="margin-top:4px">$100k policy vs. self-insured</div>
+    </div>
+    <div class="kpi">
+      <div class="k">Treatment</div>
+      <div class="v"><span class="pill p-amber">Disputed</span></div>
+      <div class="xs mut" style="margin-top:4px">Ongoing vs. IME plateau</div>
+    </div>
+    <div class="kpi">
+      <div class="k">Firm costs</div>
+      <div class="v">$1,410.00 <small>· 5</small></div>
+      <a class="src" href="#">Expenses</a>
+    </div>
+    <div class="kpi">
+      <div class="k">Open conflicts</div>
+      <div class="v" style="color:var(--red)">6 <small class="mut">· 5 to review</small></div>
+      <div class="xs mut" style="margin-top:4px">1 hygiene</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STORY + BLOCKERS ============ -->
+<div class="grid g2" style="margin-top:16px">
+  <div class="card">
+    <h2>90-second story <span class="count mut">· regenerated 2 facts ago</span></h2>
+    <div class="card-body story">
+      <b>Justin Sapini</b>, a 1099 financial advisor, was sideswiped on 04/23/2023 by a
+      Metro-North utility vehicle driven by Anthony Ferrara while it turned into a
+      Metro-North facility.<a class="src" href="#">Intake 05/07/23</a>
+      He drove himself home and presented to Montefiore Nyack ER the next morning; head and
+      cervical CT were both negative.<a class="src" href="#">Intake 05/07/23</a>
+      Imaging across ten studies found bilateral labral and infraspinatus tears, cervical and
+      lumbar bulges, a medial meniscus tear, and abnormal findings on brain MRI with
+      DTI.<a class="src" href="#">Imaging 09/20/23</a>
+      A left shoulder arthroscopy was performed 07/26/2023; a right shoulder arthroscopy has
+      been recommended since 05/27/2024 and still has no
+      date.<a class="src" href="#">Op report p.3</a><a class="src" href="#">Note 05/27/24</a>
+      Specials stand at <b>$118,400</b> with <b>$214,000</b> in claimed wage loss; the file
+      values the case at <b>$375,000</b> but recovery is capped by coverage and a $22,180
+      Medicaid lien.<a class="src" href="#">Eval 06/04/26</a>
+      The action is in discovery after both defence IMEs were served, and the case is held by
+      the undated second surgery and two unreconciled provider
+      ledgers.<a class="src" href="#">Note 09/18/26</a>
+      <div class="why" style="margin-top:14px">
+        6 sentences · 8 sources · every sentence cited. No sentence renders without a source.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Blockers <span class="count mut">· chain</span></h2>
+    <div class="card-body">
+      <div class="chain">
+        <div class="link">
+          <div class="rail"><div class="node"></div><div class="wire"></div></div>
+          <div class="body">
+            <div class="h">McCulloch Orthopaedic won't give a right shoulder surgical date</div>
+            <div class="row-m">5 approaches since 05/05/2026 · 1 reply 09/24/2026 · task overdue 38 days
+              <a class="src" href="#">Task</a><a class="src" href="#">6 emails</a></div>
+          </div>
+        </div>
+        <div class="link l2">
+          <div class="rail"><div class="node"></div><div class="wire"></div></div>
+          <div class="body">
+            <div class="h">→ holds up: treatment can't be called complete</div>
+            <div class="row-m">No MMI, no discharge, specials keep moving
+              <a class="src" href="#">Note 07/04/26</a></div>
+          </div>
+        </div>
+        <div class="link l2">
+          <div class="rail"><div class="node"></div><div class="wire"></div></div>
+          <div class="body">
+            <div class="h">→ holds up: the updated damages figure</div>
+            <div class="row-m">Chiro + PT ledgers unreconciled; 2 providers sent nothing
+              <a class="src" href="#">Note 09/25/26</a></div>
+          </div>
+        </div>
+        <div class="link l3">
+          <div class="rail"><div class="node"></div><div class="wire"></div></div>
+          <div class="body">
+            <div class="h">→ holds up: any counter to the adjuster</div>
+            <div class="row-m">Demand served 04/12/2024, negotiations opened, no counter since
+              <a class="src" href="#">Note 04/29/24</a></div>
+          </div>
+        </div>
+        <div class="link l3">
+          <div class="rail"><div class="node"></div><div class="wire"></div></div>
+          <div class="body">
+            <div class="h">Independent: scope of employment is uninvestigated</div>
+            <div class="row-m">Kyle Pullano identified 06/07/2023 as the one who can answer it
+              <a class="src" href="#">Note 06/07/23</a> <span class="pill p-red">conflict</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ NOW / NEXT / WAITING ============ -->
+<div class="grid g3" style="margin-top:16px">
+  <div class="card">
+    <h2>Now <span class="count" style="color:var(--red)">· 2 overdue</span></h2>
+    <div class="rows">
+      <div class="row">
+        <div class="row-t"><div class="ttl">Updated records and right shoulder surgical date</div>
+          <span class="pill p-red">38 days late</span></div>
+        <div class="row-m">Task due 08/25/2026 · McCulloch Orthopaedic
+          <a class="src" href="#">Task</a></div>
+      </div>
+      <div class="row">
+        <div class="row-t"><div class="ttl">Updated employment and commission records from client</div>
+          <span class="pill p-red">6 days late</span></div>
+        <div class="row-m">Task due 09/26/2026 · client promised them "soon" on 09/27
+          <a class="src" href="#">Task</a><a class="src" href="#">Note 09/27/26</a></div>
+      </div>
+      <div class="row">
+        <div class="row-t"><div class="ttl mut">Nothing else overdue</div></div>
+        <div class="row-m">9 of 14 tasks complete</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Next <span class="count mut">· 30 days</span></h2>
+    <div class="rows">
+      <div class="row">
+        <div class="row-t"><div class="ttl">Reconcile chiro and PT ledgers against CPT lines</div>
+          <span class="xs mut">Oct 5</span></div>
+        <div class="row-m">Task <a class="src" href="#">Task</a></div>
+      </div>
+      <div class="row">
+        <div class="row-t"><div class="ttl">Rockland Chiropractic: daily notes + itemised bill</div>
+          <span class="xs mut">Oct 7</span></div>
+        <div class="row-m">Task · requested 09/26 <a class="src" href="#">Task</a></div>
+      </div>
+      <div class="row">
+        <div class="row-t"><div class="ttl">Call McCulloch re right shoulder surgical date</div>
+          <span class="xs mut">Oct 10</span></div>
+        <div class="row-m">Calendar 10:30am · plus task to confirm with Dr. Capiola's office
+          <a class="src" href="#">Calendar</a></div>
+      </div>
+      <div class="row">
+        <div class="row-t"><div class="ttl">Follow-up call with client re treatment status</div>
+          <span class="xs mut">Oct 14</span></div>
+        <div class="row-m">Calendar 3:00pm <a class="src" href="#">Calendar</a></div>
+      </div>
+      <div class="row">
+        <div class="row-t"><div class="ttl">File review: compliance conference + second surgery</div>
+          <span class="xs mut">Oct 21</span></div>
+        <div class="row-m">Calendar 3:00pm <a class="src" href="#">Calendar</a></div>
+      </div>
+      <div class="row">
+        <div class="row-t"><div class="ttl mut">Client treatment: 3 appointments</div>
+          <span class="xs mut">Oct 9–17</span></div>
+        <div class="row-m">Chiropractic ×1, SportsCare PT ×2 · shared to provider portals</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Waiting on others <span class="count mut">· from the comms log</span></h2>
+    <div class="rows">
+      <div class="row">
+        <div class="row-t"><div class="ttl">SportsCare Physical Therapy</div>
+          <span class="pill p-red">1,048 days</span></div>
+        <div class="row-m">Last inbound 11/19/2023 · 4 requests since, latest 05/05/2026
+          <a class="src" href="#">6 emails</a></div>
+      </div>
+      <div class="row">
+        <div class="row-t"><div class="ttl">McCulloch Orthopaedic</div>
+          <span class="pill p-amber">8 days</span></div>
+        <div class="row-m">5 approaches since 05/05/2026 · one reply 09/24/2026
+          <a class="src" href="#">12 emails</a></div>
+      </div>
+      <div class="row">
+        <div class="row-t"><div class="ttl">Advanced Rockland Chiropractic</div>
+          <span class="pill p-amber">6 days</span></div>
+        <div class="row-m">Ledger requested 09/26/2026 <a class="src" href="#">Email</a></div>
+      </div>
+      <div class="row">
+        <div class="row-t"><div class="ttl">Kyle Pullano (Metro-North)</div>
+          <span class="pill p-red">never contacted?</span></div>
+        <div class="row-m">Note says nobody contacted him; a subpoena says otherwise
+          <span class="pill p-red">conflict</span></div>
+      </div>
+      <div class="row">
+        <div class="row-t"><div class="ttl mut">Claims Service Bureau</div>
+          <span class="pill p-green">responsive</span></div>
+        <div class="row-m">Last inbound 09/22/2026 · 18 communications</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONFLICTS ============ -->
+<div class="card" style="margin-top:16px">
+  <h2>Where the file disagrees with itself <span class="count mut">· 6 flagged, sorted by severity</span></h2>
+
+  <div class="cf">
+    <div class="cf-h">
+      <span class="pill p-red">Needs attorney review</span>
+      <span class="t">Limitations marked satisfied, limitations pleaded as a defense</span>
+      <span class="xs mut">Status vs. pleadings</span>
+    </div>
+    <div class="sides">
+      <div class="side"><div class="lbl">Side A — Clio</div>
+        <div class="q">Statute of limitations 2026-04-22; the "Limitations Date" task is marked
+          <b>complete</b>.</div>
+        <a class="src" href="#">Task</a><a class="src" href="#">Matter field</a></div>
+      <div class="side"><div class="lbl">Side B — document</div>
+        <div class="q">"…plaintiff failed to comply with Public Authorities Law §1276 and the action
+          is time-barred" — Verified Answer</div>
+        <a class="src" href="#">Answer, p.4</a></div>
+    </div>
+    <div class="why">Flagged because a satisfied limitations status is contradicted by a pleaded
+      limitations defense. The header shows amber, not green, until an attorney resolves it.</div>
+    <div class="cf-act"><button class="btn">Mark reviewed</button><button class="btn">Dismiss</button></div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-h">
+      <span class="pill p-red">Needs attorney review</span>
+      <span class="t">A note says nobody contacted the Metro-North witness; a subpoena says he was deposed</span>
+      <span class="xs mut">Negative claim vs. evidence</span>
+    </div>
+    <div class="sides">
+      <div class="side"><div class="lbl">Side A — note 09/15/2026</div>
+        <div class="q">"Kyle Pullano … has not been contacted." Repeated from the 06/07/2023 note on
+          scope of employment.</div>
+        <a class="src" href="#">Note 09/15/26</a></div>
+      <div class="side"><div class="lbl">Side B — document</div>
+        <div class="q">Subpoena filed 11/02/2025 setting his deposition for 12/08/2025.</div>
+        <a class="src" href="#">Subpoena, p.1</a></div>
+    </div>
+    <div class="why">Flagged because a note asserts an event never happened while a filed document
+      shows it did. Material: the whole liability theory sits on this witness.</div>
+    <div class="cf-act"><button class="btn">Mark reviewed</button><button class="btn">Dismiss</button></div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-h">
+      <span class="pill p-red">Needs attorney review</span>
+      <span class="t">Coverage has two incompatible values, both marked confirmed</span>
+      <span class="xs mut">Same fact, different values</span>
+    </div>
+    <div class="sides">
+      <div class="side"><div class="lbl">Side A — Policy Limits field</div>
+        <div class="q">Defendant liability $100,000 / $300,000. "Policy Limits Confirmed" = true.</div>
+        <a class="src" href="#">Custom field</a></div>
+      <div class="side"><div class="lbl">Side B — carrier field + notes</div>
+        <div class="q">"Metro-North Commuter Railroad, SELF-INSURED" with no stated ceiling; claims
+          administered by Claims Service Bureau.</div>
+        <a class="src" href="#">Custom field</a><a class="src" href="#">Note 05/14/23</a></div>
+    </div>
+    <div class="why">Flagged because a confirmed policy limit and a self-insured public authority
+      cannot both describe the same recovery ceiling. Value panel shows both as scenarios.</div>
+    <div class="cf-act"><button class="btn">Mark reviewed</button><button class="btn">Dismiss</button></div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-h">
+      <span class="pill p-amber">Review</span>
+      <span class="t">Treatment status: ongoing in Clio, plateaued in the defence IME</span>
+      <span class="xs mut">Same fact, different values</span>
+    </div>
+    <div class="sides">
+      <div class="side"><div class="lbl">Side A — Treatment Status field</div>
+        <div class="q">"Active and ongoing, over three years post-loss. Never discharged, no MMI
+          declared."</div>
+        <a class="src" href="#">Custom field</a></div>
+      <div class="side"><div class="lbl">Side B — IME 03/31/2026</div>
+        <div class="q">Examinee has "plateaued" and is "medically stationary."</div>
+        <a class="src" href="#">IME report, p.7</a></div>
+    </div>
+    <div class="why">Flagged on the same entity and attribute with opposed values. Header treatment
+      chip shows "Disputed."</div>
+    <div class="cf-act"><button class="btn">Mark reviewed</button><button class="btn">Dismiss</button></div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-h">
+      <span class="pill p-amber">Review</span>
+      <span class="t">A note characterises the IME as normal; the report records reduced ranges</span>
+      <span class="xs mut">Summary vs. source</span>
+    </div>
+    <div class="sides">
+      <div class="side"><div class="lbl">Side A — note 09/13/2026</div>
+        <div class="q">"The report records normal range of motion."</div>
+        <a class="src" href="#">Note 09/13/26</a></div>
+      <div class="side"><div class="lbl">Side B — cited pages</div>
+        <div class="q">Measured ranges are reduced across both shoulders; rotations are marked
+          <b>refused</b>, not normal.</div>
+        <a class="src" href="#">IME report, pp.5–6</a></div>
+    </div>
+    <div class="why">Flagged because the note's claim is not supported by the pages it describes.
+      Both quotes shown; no determination made.</div>
+    <div class="cf-act"><button class="btn">Mark reviewed</button><button class="btn">Dismiss</button></div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-h">
+      <span class="pill p-gray">Data hygiene</span>
+      <span class="t">Three Clio received dates precede the documents' own dates</span>
+      <span class="xs mut">Two clocks</span>
+    </div>
+    <div class="sides">
+      <div class="side"><div class="lbl">Side A — Clio received_at</div>
+        <div class="q">IME report 09/14/2026 · Summons 03/08/2024 · Subpoena 01/02/2025</div>
+        <a class="src" href="#">3 documents</a></div>
+      <div class="side"><div class="lbl">Side B — dates inside the files</div>
+        <div class="q">Exam 03/31/2026 · Summons stamped Oct 2024 · Subpoena filed 11/02/2025</div>
+        <a class="src" href="#">Stamp, p.1</a></div>
+    </div>
+    <div class="why">Flagged because a document cannot be received before it exists; timeline
+      ordering uses the document date where they disagree.</div>
+    <div class="cf-act"><button class="btn">Mark reviewed</button><button class="btn">Dismiss</button></div>
+  </div>
+</div>
+
+<!-- ============ VALUE + INJURIES ============ -->
+<div class="grid g2" style="margin-top:16px">
+  <div class="card">
+    <h2>Value and coverage <span class="count mut">· the file's own numbers, not a prediction</span></h2>
+    <div class="card-body">
+      <div class="wf">
+        <div>
+          <div class="wf-lbl"><span>Gross valuation <span class="mut xs">file estimate</span>
+            <a class="src" href="#">Eval 06/04/26</a></span><span class="wf-num">$375,000</span></div>
+          <div class="wf-bar" style="width:100%"></div>
+        </div>
+        <div>
+          <div class="wf-lbl"><span>Less unrecoverable no-fault <span class="mut xs">Ins. Law §5104(a)</span>
+            <a class="src" href="#">Note 01/08/24</a></span><span class="wf-num">−$50,000</span></div>
+          <div class="wf-bar neg" style="width:13.3%"></div>
+        </div>
+        <div>
+          <div class="wf-lbl"><span>Less Medicaid lien asserted
+            <a class="src" href="#">Custom field</a></span><span class="wf-num">−$22,180</span></div>
+          <div class="wf-bar neg" style="width:5.9%"></div>
+        </div>
+        <div>
+          <div class="wf-lbl"><span>Less firm costs to date
+            <a class="src" href="#">5 expenses</a></span><span class="wf-num">−$1,410</span></div>
+          <div class="wf-bar neg" style="width:0.4%"></div>
+        </div>
+        <div style="border-top:1px solid var(--line);padding-top:8px">
+          <div class="wf-lbl"><span><b>Net before fee</b> <span class="mut xs">fee % is an input</span></span>
+            <span class="wf-num"><b>$301,410</b></span></div>
+        </div>
+      </div>
+
+      <div class="sec-h">Coverage — sources conflict, so both are shown</div>
+      <div class="scn">
+        <div class="h">Scenario A · Ferrara personal policy <span class="cap">$100,000 / $300,000</span></div>
+        <div class="row-m">Marked confirmed in Clio. Caps recovery far below the valuation. Client
+          UM/UIM $25k/$50k sits under it and adds nothing.
+          <a class="src" href="#">Policy Limits</a></div>
+      </div>
+      <div class="scn">
+        <div class="h">Scenario B · Metro-North self-insured <span class="cap">no stated ceiling</span></div>
+        <div class="row-m">No declarations page exists to obtain. Depends on scope of employment,
+          which is uninvestigated.
+          <a class="src" href="#">Insurance Carrier</a><a class="src" href="#">Note 05/14/23</a></div>
+      </div>
+      <div class="why">Both scenarios are live because the two Clio fields disagree. Ninety does not
+        pick one.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Injuries and treatment <span class="count mut">· from the OCR'd bundles, page-cited</span></h2>
+    <div class="bp">
+      <div class="bp-row"><div class="n">Left shoulder</div>
+        <div class="sm">Posterior inferior labral tear 8–9 o'clock, infraspinatus interstitial tear ·
+          <b>arthroscopy 07/26/2023</b></div>
+        <a class="src" href="#">Op report p.3</a></div>
+      <div class="bp-row"><div class="n">Right shoulder</div>
+        <div class="sm">Intermediate interstitial infraspinatus tear, partial labral tear at 8 o'clock ·
+          <span class="pill p-red">surgery recommended, no date</span></div>
+        <a class="src" href="#">MRI p.1</a></div>
+      <div class="bp-row"><div class="n">Cervical / lumbar</div>
+        <div class="sm">C5-6 shallow bulge; L5-S1 bulge narrowing lateral recesses bilaterally</div>
+        <a class="src" href="#">MRI DOI+15</a></div>
+      <div class="bp-row"><div class="n">Both knees</div>
+        <div class="sm">Horizontal undersurface tear, posterior horn medial meniscus; left prepatellar oedema</div>
+        <a class="src" href="#">MRI DOI+71</a></div>
+      <div class="bp-row"><div class="n">Head / brain</div>
+        <div class="sm">MRI with DTI: 2 of 12 ROIs and 1 of 6 white matter tracts abnormal. Day-after CT was clean.</div>
+        <a class="src" href="#">MRI DOI+107</a></div>
+    </div>
+    <h2 style="border-top:1px solid var(--line)">Providers <span class="count mut">· records status</span></h2>
+    <table class="prov">
+      <thead><tr><th>Provider</th><th>Visits</th><th>Billed</th><th>Records</th></tr></thead>
+      <tbody>
+        <tr><td>Advanced Rockland Chiropractic</td><td class="num">96</td><td class="num">$17,400</td>
+          <td><span class="pill p-amber">ledger unreconciled</span></td></tr>
+        <tr><td>SportsCare Physical Therapy</td><td class="num">74</td><td class="num">$14,900</td>
+          <td><span class="pill p-red">stale since 11/2023</span></td></tr>
+        <tr><td>McCulloch Orthopaedic (Dr. Capiola)</td><td class="num">14</td><td class="num">$4,850</td>
+          <td><span class="pill p-amber">partial, awaiting update</span></td></tr>
+        <tr><td>New Horizon Surgical Center</td><td class="num">1</td><td class="num">$38,500</td>
+          <td><span class="pill p-green">complete</span></td></tr>
+        <tr><td>Montefiore Nyack ER</td><td class="num">1</td><td class="num">$9,087</td>
+          <td><span class="pill p-green">complete</span></td></tr>
+        <tr><td>Imaging + EMG/NCV, physiatry, neurology</td><td class="num">—</td><td class="num">$33,663</td>
+          <td><span class="pill p-amber">2 providers sent nothing</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============ TIMELINE ============ -->
+<div class="card" style="margin-top:16px">
+  <h2>Ranked timeline <span class="count mut">· top 10 of 162 entries</span></h2>
+  <div class="rows">
+    <div class="tl-row"><div class="d">09/27/2026</div>
+      <div><b>Client call: should he keep going to PT</b> — advised yes; confirms the right shoulder
+        surgery still has no date. <span class="xs mut">Last client contact.</span></div>
+      <div><span class="pill p-gray">recency</span><a class="src" href="#">Phone</a></div></div>
+    <div class="tl-row"><div class="d">09/24/2026</div>
+      <div><b>McCulloch replies to the fifth chaser</b> — still no surgical date offered.</div>
+      <div><span class="pill p-amber">blocker</span><a class="src" href="#">Email</a></div></div>
+    <div class="tl-row"><div class="d">09/20–22/2026</div>
+      <div><b>Defence serves neurology expert exchange and radiology review</b></div>
+      <div><span class="pill p-gray">open item</span><a class="src" href="#">2 emails</a></div></div>
+    <div class="tl-row"><div class="d">09/14/2026</div>
+      <div><b>Orthopaedic IME report served</b> — plateau and medically stationary findings.</div>
+      <div><span class="pill p-red">2 conflicts</span><a class="src" href="#">Document</a></div></div>
+    <div class="tl-row"><div class="d">09/02–07/2026</div>
+      <div><b>Both defence IMEs attended</b> — watchdog reports the orthopaedic exam ran under 15
+        minutes; client refused past medical history.</div>
+      <div><span class="pill p-gray">risk</span><a class="src" href="#">Note</a></div></div>
+    <div class="tl-row"><div class="d">05/05/2026</div>
+      <div><b>First request for a right shoulder surgical date</b> — start of the blocking chain.</div>
+      <div><span class="pill p-amber">blocker</span><a class="src" href="#">Email</a></div></div>
+    <div class="tl-row"><div class="d">04/22/2026</div>
+      <div><b>Limitations date</b> — task marked complete, defence pleads the opposite.</div>
+      <div><span class="pill p-red">conflict</span><a class="src" href="#">Task</a></div></div>
+    <div class="tl-row"><div class="d">05/27/2024</div>
+      <div><b>Second surgery recommended, right shoulder</b> — post-dates the demand and the
+        negotiations.</div>
+      <div><span class="pill p-amber">blocker</span><a class="src" href="#">Note</a></div></div>
+    <div class="tl-row"><div class="d">04/12/2024</div>
+      <div><b>Demand package served on Claims Service Bureau</b> — $118,400 specials, $214,000 wage
+        loss; ledgers named as subject to revision.</div>
+      <div><span class="pill p-gray">value</span><a class="src" href="#">Note</a></div></div>
+    <div class="tl-row"><div class="d">07/26/2023</div>
+      <div><b>Left shoulder arthroscopy performed</b> — labral repair, synovectomy, subacromial
+        decompression at DOI + 94.</div>
+      <div><span class="pill p-gray">anchor</span><a class="src" href="#">Op report p.3</a></div></div>
+    <div class="more">Show all 162 entries ↓</div>
+  </div>
+</div>
+
+<div class="note">
+  <b>Mockup.</b> Layout and copy only — every value here comes from the Sapini Clio records and the
+  PRD's acceptance test set, hand-placed. In the build, each <span class="src">chip</span> is a
+  deep link into the Clio record or the OCR'd document page, and nothing renders without one.
+</div>
+
+</div>
+</body>
+</html>
