@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Provider home · design mock</title>
+<style>
+  /* Design tokens. Same set as design/timeline.html and design/provider.html. */
+  :root {
+    --paper: #f5f1e4;
+    --paper-card: #fffef9;
+    --paper-line: #e3dcc6;
+    --paper-text: #10231f;
+    --paper-text-2: #4d5e58;
+    --paper-text-3: #86948e;
+
+    --ink: #0e3b35;
+    --ink-raised: #165048;
+    --ink-line: #22635a;
+    --ink-text: #f5f1e4;
+    --ink-text-2: #c2d8cf;
+    --ink-text-3: #8fb3a7;
+
+    --lane-firm-p: #12855d;
+    --lane-provider: #c4b5ff;
+    --lane-provider-p: #4a3aa7;
+
+    /* Status. Reserved; always shown with an icon or label. */
+    --contradiction: #fab219;
+    --critical: #d03b3b;
+    --accent: #0e6b57;
+
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--paper); color: var(--paper-text); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  a { color: inherit; text-decoration: none; }
+  :focus-visible { outline: 2px solid var(--contradiction); outline-offset: 2px; }
+  h1, h2, h3, p, dl, dd { margin: 0; }
+  .wrap { max-width: 1320px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+
+  /* ---------- Ink: the practice and its numbers ---------- */
+  .instrument { background: var(--ink); color: var(--ink-text); }
+  .topbar { display: flex; align-items: center; gap: 12px 24px; flex-wrap: wrap; padding-top: 18px; padding-bottom: 14px; }
+  .who { flex: 1 1 320px; min-width: 0; }
+  .who small { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .who h1 { font-family: var(--serif); font-weight: 600; font-size: 26px; letter-spacing: -0.01em; line-height: 1.2; overflow-wrap: anywhere; }
+  .who p { font-size: 13px; color: var(--ink-text-2); margin-top: 2px; }
+  .stamp { font-size: 12px; color: var(--ink-text-3); text-align: right; line-height: 1.4; }
+  .stamp b { display: block; color: var(--ink-text-2); font-weight: 600; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; padding-bottom: 22px; }
+  .kpi { text-align: left; background: var(--ink-raised); border: 1px solid var(--ink-line); border-top: 3px solid var(--ink-text-3); border-radius: 12px; padding: 12px 14px; min-width: 0; color: inherit; }
+  .kpi:hover, .kpi[aria-pressed="true"] { border-color: var(--ink-text-2); }
+  .kpi[aria-pressed="true"] { background: #1c5f55; }
+  .kpi.good { border-top-color: #6fe0b3; }
+  .kpi.late { border-top-color: var(--critical); }
+  .kpi.wait { border-top-color: var(--contradiction); }
+  .kpi span { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .kpi b { display: block; margin-top: 4px; font-family: var(--serif); font-size: 32px; line-height: 1.1; font-weight: 600; }
+  .kpi small { display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.35; color: var(--ink-text-2); }
+
+  /* ---------- Paper ---------- */
+  main { padding-top: 24px; padding-bottom: 40px; display: grid; gap: 28px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  .section-head h2 { font-family: var(--serif); font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .section-head > span { font-size: 13px; color: var(--paper-text-2); }
+  .face { flex: none; border-radius: 50%; overflow: hidden; background: var(--paper-line); }
+  .face svg { display: block; width: 100%; height: 100%; }
+  .flag { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 1px 9px; font-size: 12px; font-weight: 600; border: 1px solid var(--paper-text-3); color: var(--paper-text-2); white-space: nowrap; }
+  .flag.late { border-color: var(--critical); color: #a02020; background: #fdecec; }
+  .flag.soon { border-color: var(--contradiction); color: #5c3d00; background: #fff4d6; }
+  .flag.live { border-color: var(--lane-firm-p); color: #0b5c40; background: #e6f4ec; }
+  .flag.paid { border-color: var(--lane-provider-p); color: #3a2c8c; background: #eeebfb; }
+  .flag.quiet { border-style: dashed; }
+
+  /* Do these first */
+  .first { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; }
+  .todo { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 12px; align-items: start; background: var(--paper-card); border: 1px solid var(--paper-line);
+    border-left: 4px solid var(--contradiction); border-radius: 14px; padding: 14px 16px; box-shadow: 0 12px 32px -20px rgba(16,35,31,.3); }
+  .todo.late { border-left-color: var(--critical); }
+  .todo:hover { border-color: var(--paper-text-3); border-left-color: var(--accent); }
+  .todo .face { width: 48px; height: 48px; }
+  .todo b { display: block; font-size: 13px; font-weight: 600; color: var(--paper-text-2); }
+  .todo h3 { font-family: var(--serif); font-size: 18px; line-height: 1.25; font-weight: 600; margin: 1px 0 6px; overflow-wrap: anywhere; }
+  .todo p { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* Patient list */
+  .tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .search { flex: 1 1 220px; max-width: 320px; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--paper-card); border: 1px solid var(--paper-line); border-radius: 8px; padding: 6px 12px; color: var(--paper-text-3); }
+  .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--paper-text); font-size: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips button { border: 1px solid var(--paper-line); background: var(--paper-card); color: var(--paper-text-2); border-radius: 999px; padding: 4px 12px; font-size: 13px; }
+  .chips button i { font-style: normal; color: var(--paper-text-3); margin-left: 4px; font-variant-numeric: tabular-nums; }
+  .chips button:hover { border-color: var(--paper-text-3); color: var(--paper-text); }
+  .chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chips button[aria-pressed="true"] i { color: #cfe6d9; }
+
+  .list { background: var(--paper-card); border: 1px solid var(--paper-line); border-radius: 14px; overflow: hidden; box-shadow: 0 12px 32px -20px rgba(16,35,31,.3); }
+  .cols, .row { display: grid; grid-template-columns: 52px minmax(0, 1.5fr) minmax(0, 1.5fr) minmax(0, 1.15fr) minmax(0, 1.5fr) minmax(0, .9fr) minmax(0, .8fr); gap: 16px; align-items: center; padding: 12px 18px; }
+  .cols { padding-top: 10px; padding-bottom: 10px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--paper-text-3); border-bottom: 1px solid var(--paper-line); }
+  .cols span:last-child, .row .owed { text-align: right; }
+  .row { border-top: 1px solid var(--paper-line); position: relative; }
+  .row:first-of-type { border-top: 0; }
+  .row:hover { background: var(--paper); }
+  .row .face { width: 52px; height: 52px; }
+  .row.new .face { box-shadow: 0 0 0 2px var(--paper-card), 0 0 0 4px var(--accent); }
+  .name b { display: block; font-family: var(--serif); font-size: 18px; line-height: 1.2; font-weight: 600; overflow-wrap: anywhere; }
+  .name small { display: block; font-size: 12.5px; color: var(--paper-text-2); overflow-wrap: anywhere; }
+  .stage { display: flex; gap: 3px; margin-top: 7px; }
+  .stage i { flex: 1; height: 4px; border-radius: 2px; background: var(--paper-line); }
+  .stage i.on { background: var(--accent); }
+  .case small { display: block; font-size: 12.5px; color: var(--paper-text-2); margin-top: 4px; overflow-wrap: anywhere; }
+  .asks { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .asks b { font-family: var(--serif); font-size: 28px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .asks.none b { color: var(--paper-text-3); }
+  .asks div { min-width: 0; font-size: 12.5px; color: var(--paper-text-2); line-height: 1.3; }
+  .track { position: relative; height: 22px; margin: 0 6px; }
+  .track::before { content: ""; position: absolute; left: -6px; right: -6px; top: 10px; height: 2px; background: var(--paper-line); }
+  .track i { position: absolute; top: 5px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; box-shadow: 0 0 0 2px var(--paper-card); }
+  .track i.ask { background: var(--lane-firm-p); }
+  .track i.reply { background: var(--paper-card); border: 3px solid var(--lane-provider-p); }
+  .track i.today { left: 100%; top: 1px; width: 2px; height: 20px; margin-left: 5px; border-radius: 0; background: var(--paper-text); box-shadow: none; }
+  .pulse small { display: block; font-size: 12px; color: var(--paper-text-3); margin-top: 2px; overflow-wrap: anywhere; }
+  .visit b { display: block; font-weight: 600; font-size: 14px; }
+  .visit small, .owed small { display: block; font-size: 12px; color: var(--paper-text-3); }
+  .owed b { font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .empty { padding: 28px 18px; color: var(--paper-text-2); font-size: 14px; }
+  .key { display: flex; gap: 6px 16px; flex-wrap: wrap; font-size: 12px; color: var(--paper-text-3); margin-top: 10px; }
+  .key i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; border: 2px solid; }
+
+  @media (max-width: 1040px) {
+    .cols { display: none; }
+    .row { grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr); gap: 10px 14px; align-items: start; }
+    .row .case { grid-column: 2 / -1; }
+    .row .asks { grid-column: 2; }
+    .row .visit { grid-column: 3; }
+    .row .pulse { grid-column: 2 / -1; }
+    .row .owed { grid-column: 2 / -1; text-align: left; }
+    .row .name { grid-column: 2 / -1; }
+  }
+  @media (max-width: 860px) {
+    .wrap { padding-left: 16px; padding-right: 16px; }
+    .stamp { text-align: left; }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-bottom: 16px; }
+    .kpi b { font-size: 26px; }
+    .row { padding: 14px; }
+    .search { max-width: none; }
+  }
+</style>
+</head>
+<body>
+
+<section class="instrument" aria-label="Your practice">
+  <header class="topbar wrap">
+    <div class="who">
+      <small>Shared cases for</small>
+      <h1 id="providerName"></h1>
+      <p id="sub"></p>
+    </div>
+    <div class="stamp" id="stamp"></div>
+  </header>
+  <div class="kpis wrap" id="kpis" role="group" aria-label="At a glance. Each tile filters the patient list."></div>
+</section>
+
+<main class="wrap">
+  <section aria-label="Do these first" id="firstSection">
+    <div class="section-head"><h2>Do these first</h2><span id="firstNote"></span></div>
+    <div class="first" id="first"></div>
+  </section>
+
+  <section aria-label="Your patients">
+    <div class="section-head"><h2>Your patients</h2><span id="shown"></span></div>
+    <div class="tools">
+      <label class="search">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14" stroke-linecap="round"/></svg>
+        <input id="q" type="search" placeholder="Find a patient or a firm" aria-label="Find a patient or a firm">
+      </label>
+      <div class="chips" id="chips" role="group" aria-label="Filter patients"></div>
+    </div>
+    <div class="list">
+      <div class="cols" aria-hidden="true"><span></span><span>Patient</span><span>Case</span><span>Asked of you</span><span>Last 12 months</span><span>Next visit</span><span>Your balance</span></div>
+      <div id="rows"></div>
+    </div>
+    <div class="key">
+      <span><i style="background:var(--lane-firm-p);border-color:var(--lane-firm-p)"></i>A firm asked your office for something</span>
+      <span><i style="border-color:var(--lane-provider-p)"></i>Your office replied</span>
+      <span><i style="border-color:var(--accent);background:var(--paper-card)"></i>Ring around a face: the case moved since you last looked</span>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ------------------------------------------------------------------
+   Mock data. Invented patients and firms. At integration each row is
+   one attorney-approved share for this provider; nothing here is on
+   the default-deny list. "Your balance" is the provider's own billing.
+   ------------------------------------------------------------------ */
+const DAY = 864e5;
+const d = (s) => new Date(s + "T12:00:00").getTime();
+const TODAY = d("2026-10-02");
+const PROVIDER = { name: "Ridgeline Orthopedics", lastVisit: "2026-09-20" };
+const STAGES = ["Claim opened", "Treatment", "Lawsuit filed", "Discovery", "Resolution"];
+
+// request: [title, first asked, times asked, due or null, last reply or null]
+const PATIENTS = [
+  { name: "Dana Whitlock", firm: "Marlow & Finch LLP", stage: 3, status: "active", note: "In litigation, discovery ongoing",
+    reqs: [["A date for the second shoulder surgery", "2026-05-05", 4, null, "2026-09-24"], ["Office notes since March 2026", "2026-06-17", 2, "2026-08-25", null], ["Itemized bill to date", "2026-09-02", 1, null, null]],
+    visit: "2026-10-09", move: ["2026-09-27", "The firm spoke with the patient"], owed: 18450, look: ["#f0c4a4", "#3a2a22", "short", "#0e6b57"] },
+  { name: "Marcus Oyelaran", firm: "Marlow & Finch LLP", stage: 2, status: "active", note: "Lawsuit filed in June",
+    reqs: [["Narrative report on the knee injury", "2026-08-10", 2, "2026-09-20", null]],
+    visit: "2026-10-06", move: ["2026-09-30", "A deposition was scheduled"], owed: 9200, look: ["#8d5a3b", "#1c1512", "short", "#4a3aa7"] },
+  { name: "Elena Vasquez", firm: "Hartwell Injury Law", stage: 4, status: "settled", note: "Settled Aug 14 · lien payment pending",
+    reqs: [["Final lien statement", "2026-08-20", 3, "2026-09-05", null]],
+    visit: null, move: ["2026-08-14", "The case settled"], owed: 12300, look: ["#d9a27e", "#2b1b14", "long", "#c9457a"] },
+  { name: "Samuel Ortega-Reyes", firm: "Hartwell Injury Law", stage: 3, status: "active", note: "In litigation, discovery ongoing",
+    reqs: [["Written estimate for the recommended surgery", "2026-07-01", 3, "2026-09-15", "2026-07-20"]],
+    visit: null, move: ["2026-09-10", "A court conference was held"], owed: 31200, look: ["#c98f6b", "#5b5b5b", "bald", "#2a78d6"] },
+  { name: "Aisha Rahman", firm: "Kline & Soto", stage: 3, status: "active", note: "In litigation, discovery ongoing",
+    reqs: [["MRI films from the March study", "2026-09-12", 1, "2026-10-10", null]],
+    visit: "2026-10-14", move: ["2026-09-22", "The other side's medical exam was scheduled"], owed: 22780, look: ["#b97a56", "#17110e", "long", "#12855d"] },
+  { name: "Mei-Lin Zhou", firm: "Marlow & Finch LLP", stage: 1, status: "active", note: "Still in treatment",
+    reqs: [["Confirm whether the patient was discharged", "2026-09-25", 1, null, null]],
+    visit: "2026-10-08", move: ["2026-09-25", "The firm asked about discharge"], owed: 2950, look: ["#f2d0b1", "#14100e", "long", "#4a3aa7"] },
+  { name: "Priyanka Desai", firm: "Hartwell Injury Law", stage: 2, status: "active", note: "Lawsuit filed in August",
+    reqs: [["Billing ledger with procedure codes", "2026-09-18", 1, null, null]],
+    visit: "2026-10-20", move: ["2026-09-29", "The firm updated what it shares with you"], owed: 7480, look: ["#c58c66", "#1d1410", "curly", "#c9457a"] },
+  { name: "Jonah Feldman", firm: "Kline & Soto", stage: 3, status: "active", note: "Mediation set for November",
+    reqs: [], visit: "2026-10-07", move: ["2026-10-01", "A mediation date was set"], owed: 14900, look: ["#f0c4a4", "#8a5a2b", "curly", "#2a78d6"] },
+  { name: "Tomasz Brzezinski", firm: "Hartwell Injury Law", stage: 1, status: "active", note: "Still in treatment",
+    reqs: [], visit: "2026-10-05", move: ["2026-09-18", "Your records were received"], owed: 4100, look: ["#eebf9f", "#b9b2a6", "short", "#12855d"] },
+  { name: "Grace Nwosu", firm: "Kline & Soto", stage: 0, status: "active", note: "Claim opened last month",
+    reqs: [], visit: "2026-10-12", move: ["2026-09-15", "This case was shared with your office"], owed: 1150, look: ["#7a4a30", "#120d0b", "curly", "#0e6b57"] },
+  { name: "Robert Callahan", firm: "Kline & Soto", stage: 2, status: "quiet", note: "No movement in 7 months",
+    reqs: [], visit: null, move: ["2026-02-27", "The lawsuit was filed"], owed: 6640, look: ["#e8b594", "#d8d2c8", "bald", "#555a66"] },
+  { name: "William Hargrove", firm: "Marlow & Finch LLP", stage: 4, status: "closed", note: "Closed Jun 30 · paid in full",
+    reqs: [], visit: null, move: ["2026-06-30", "The case closed and your lien was paid"], owed: 0, look: ["#f0c4a4", "#6b5a4a", "short", "#555a66"] },
+];
+
+/* ------------------------------------------------------------------
+   Helpers
+   ------------------------------------------------------------------ */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (t, o = { month: "short", day: "numeric" }) => new Date(typeof t === "string" ? d(t) : t).toLocaleDateString("en-US", o);
+const days = (a, b) => Math.round((b - a) / DAY);
+const span = (a, b) => { const n = days(a, b), m = Math.round(n / 30.44); return n < 60 ? `${n} day${n === 1 ? "" : "s"}` : `${m} months`; };
+const money = (n) => "$" + n.toLocaleString("en-US");
+
+// Placeholder illustrations. The real portal shows the face cropped from each client's photo ID, if the attorney shares it.
+function portrait([skin, hair, style, shirt]) {
+  const back = style === "long" ? `<path d="M26 46c-3-21 7-34 22-34s25 13 22 34v28H26z" fill="${hair}"/>` : "";
+  const top = style === "bald" ? `<ellipse cx="30.5" cy="43" rx="3.5" ry="7" fill="${hair}"/><ellipse cx="65.5" cy="43" rx="3.5" ry="7" fill="${hair}"/>`
+    : style === "curly" ? [[33, 28, 9], [43, 21, 10], [55, 21, 10], [64, 29, 9], [29, 38, 6], [67, 39, 6]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${hair}"/>`).join("")
+    : `<path d="M29.5 44c-3-19 6-31 19-31s22 10 18.5 31c-2-9-6-15-12-17-8 4-17 5-22 6-2 3-3 6-3.5 11z" fill="${hair}"/>`;
+  return `<svg viewBox="0 0 96 96" aria-hidden="true"><rect width="96" height="96" fill="#dbe7dc"/>${back}
+    <path d="M10 96c1-19 15-27 38-27s37 8 38 27z" fill="${shirt}"/><path d="M39 70c3 6 15 6 18 0l-2-12H41z" fill="${skin}" opacity=".85"/>
+    <ellipse cx="48" cy="42" rx="17.5" ry="20.5" fill="${skin}"/>${top}
+    <circle cx="41" cy="44" r="1.8" fill="#2a1d18"/><circle cx="55" cy="44" r="1.8" fill="#2a1d18"/>
+    <path d="M42 53c3 3 9 3 12 0" fill="none" stroke="#2a1d18" stroke-opacity=".55" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+}
+
+// Derived per patient: what is open, what is late, and whether the case moved since the last look.
+for (const p of PATIENTS) {
+  p.open = p.reqs.map(([title, first, times, due, reply]) => ({ title, first: d(first), times, due: due && d(due), reply: reply && d(reply), late: !!due && d(due) < TODAY, soon: !!due && d(due) >= TODAY && d(due) - TODAY <= 14 * DAY }));
+  p.late = p.open.filter((r) => r.late).length;
+  p.moved = d(p.move[0]) > d(PROVIDER.lastVisit);
+  p.over = p.status === "settled" || p.status === "closed";
+  // Most urgent first: overdue, then open requests, then recent movement.
+  p.rank = p.late * 1000 + p.open.length * 100 + (p.moved ? 10 : 0) - (p.status === "closed" ? 50 : 0);
+}
+
+const FILTERS = [
+  ["all", "All", () => true],
+  ["asked", "Needs your answer", (p) => p.open.length > 0],
+  ["late", "Overdue", (p) => p.late > 0],
+  ["moved", "Moved since last visit", (p) => p.moved],
+  ["over", "Settled or closed", (p) => p.over],
+  ["quiet", "Gone quiet", (p) => p.status === "quiet"],
+];
+const state = { filter: "all", query: "" };
+
+/* ------------------------------------------------------------------
+   Rendering
+   ------------------------------------------------------------------ */
+function renderTop() {
+  const open = PATIENTS.flatMap((p) => p.open), late = open.filter((r) => r.late).length;
+  const active = PATIENTS.filter((p) => p.status === "active").length;
+  const moved = PATIENTS.filter((p) => p.moved).length;
+  const settled = PATIENTS.filter((p) => p.status === "settled");
+  const quiet = PATIENTS.filter((p) => p.status === "quiet").length;
+  $("providerName").textContent = PROVIDER.name;
+  $("sub").textContent = `${PATIENTS.length} patients on cases shared by ${new Set(PATIENTS.map((p) => p.firm)).size} law firms`;
+  $("stamp").innerHTML = `<b>${fmt(TODAY, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</b>You last looked on ${fmt(PROVIDER.lastVisit)}.`;
+  const tile = (key, cls, label, value, sub) => `<button class="kpi ${cls}" data-filter="${key}" aria-pressed="${state.filter === key}"><span>${label}</span><b>${value}</b><small>${sub}</small></button>`;
+  $("kpis").innerHTML =
+    tile("all", "good", "Patients", PATIENTS.length, `${active} active cases`) +
+    tile("asked", late ? "late" : "wait", "Open requests", open.length, late ? `${late} overdue, across ${PATIENTS.filter((p) => p.open.length).length} patients` : "none overdue") +
+    tile("moved", "good", "Cases that moved", moved, `since ${fmt(PROVIDER.lastVisit)}`) +
+    tile("over", "wait", "Settled, payment pending", settled.length, settled.length ? `${money(settled.reduce((n, p) => n + p.owed, 0))} of your billing` : "nothing waiting") +
+    tile("quiet", "", "Gone quiet", quiet, quiet ? "no movement in 6 months or more" : "every case has moved recently");
+}
+
+function renderFirst() {
+  const items = PATIENTS.flatMap((p) => p.open.map((r) => ({ p, r }))).filter((o) => o.r.late || o.r.soon)
+    .sort((a, b) => (b.r.late - a.r.late) || (a.r.due - b.r.due)).slice(0, 4);
+  $("firstSection").hidden = !items.length;
+  $("firstNote").textContent = "Overdue, or due within two weeks";
+  $("first").innerHTML = items.map(({ p, r }) => `<a class="todo ${r.late ? "late" : ""}" href="provider.html">
+    <div class="face">${portrait(p.look)}</div>
+    <div><b>${esc(p.name)} · ${esc(p.firm)}</b><h3>${esc(r.title)}</h3>
+      <p>${r.late ? `<span class="flag late">Overdue by ${span(r.due, TODAY)}</span>` : `<span class="flag soon">Due ${fmt(r.due)}</span>`}<span class="flag">Asked ${r.times} time${r.times === 1 ? "" : "s"}</span></p></div></a>`).join("");
+}
+
+// One year of asking and answering, on one line.
+function track(p) {
+  const t0 = TODAY - 365 * DAY, pts = [];
+  for (const r of p.open) {
+    const last = Math.max(r.first, TODAY - 21 * DAY);
+    for (let i = 0; i < r.times; i++) pts.push({ t: r.times === 1 ? r.first : r.first + (last - r.first) * i / (r.times - 1), ask: true });
+    if (r.reply) pts.push({ t: r.reply });
+  }
+  const dots = pts.filter((o) => o.t >= t0).sort((a, b) => a.t - b.t).map((o) => `<i class="${o.ask ? "ask" : "reply"}" style="left:${((o.t - t0) / (TODAY - t0) * 100).toFixed(1)}%"></i>`).join("");
+  const asks = pts.filter((o) => o.ask).length, replies = pts.length - asks;
+  return `<div class="track" role="img" aria-label="${asks ? `Asked ${asks} times, ${replies} repl${replies === 1 ? "y" : "ies"}, in the last 12 months` : "Nothing asked in the last 12 months"}">${dots}<i class="today"></i></div>`;
+}
+
+function statusFlag(p) {
+  return p.status === "settled" ? `<span class="flag soon">Settled</span>` : p.status === "closed" ? `<span class="flag paid">Closed</span>`
+    : p.status === "quiet" ? `<span class="flag quiet">Quiet</span>` : `<span class="flag live">Active</span>`;
+}
+
+function renderList() {
+  const f = FILTERS.find((o) => o[0] === state.filter)[2];
+  const q = state.query, hit = (p) => !q || (p.name + " " + p.firm).toLowerCase().includes(q);
+  const rows = PATIENTS.filter((p) => f(p) && hit(p)).sort((a, b) => b.rank - a.rank || d(b.move[0]) - d(a.move[0]));
+  $("chips").innerHTML = FILTERS.map(([key, label, test]) => `<button data-filter="${key}" aria-pressed="${state.filter === key}">${label}<i>${PATIENTS.filter(test).length}</i></button>`).join("");
+  $("shown").textContent = rows.length === PATIENTS.length ? "Most urgent first" : `${rows.length} of ${PATIENTS.length} shown`;
+  $("rows").innerHTML = rows.length ? rows.map((p) => {
+    const n = p.open.length, oldest = n ? Math.min(...p.open.map((r) => r.first)) : null;
+    const until = p.visit ? days(TODAY, d(p.visit)) : null;
+    return `<a class="row ${p.moved ? "new" : ""}" href="provider.html" aria-label="${esc(p.name)}, ${esc(p.note)}">
+      <div class="face">${portrait(p.look)}</div>
+      <div class="name"><b>${esc(p.name)}</b><small>${esc(p.firm)}</small></div>
+      <div class="case">${statusFlag(p)}
+        <div class="stage" role="img" aria-label="Stage ${p.stage + 1} of ${STAGES.length}: ${STAGES[p.stage]}">${STAGES.map((_, i) => `<i class="${i <= p.stage ? "on" : ""}"></i>`).join("")}</div>
+        <small>${esc(p.note)}</small></div>
+      <div class="asks ${n ? "" : "none"}"><b>${n}</b><div>${n ? `open request${n === 1 ? "" : "s"}<br>${p.late ? `<span class="flag late">${p.late} overdue</span>` : `oldest ${span(oldest, TODAY)}`}` : "nothing asked"}</div></div>
+      <div class="pulse">${track(p)}<small>${p.moved ? "<b style='color:var(--accent)'>New</b> · " : ""}${fmt(p.move[0])}: ${esc(p.move[1])}</small></div>
+      <div class="visit">${p.visit ? `<b>${fmt(p.visit, { weekday: "short", month: "short", day: "numeric" })}</b><small>${until === 0 ? "today" : `in ${until} day${until === 1 ? "" : "s"}`}</small>` : `<small>None scheduled</small>`}</div>
+      <div class="owed"><b>${p.owed ? money(p.owed) : "Paid"}</b><small>${p.status === "closed" ? "lien paid" : p.status === "settled" ? "awaiting payment" : "billed to date"}</small></div></a>`;
+  }).join("") : `<p class="empty">No patients match. Clear the search or choose another filter.</p>`;
+}
+
+function render() { renderTop(); renderFirst(); renderList(); }
+
+document.addEventListener("click", (ev) => {
+  const f = ev.target.closest("[data-filter]");
+  if (f) { state.filter = state.filter === f.dataset.filter ? "all" : f.dataset.filter; render(); }
+});
+$("q").addEventListener("input", (ev) => { state.query = ev.target.value.trim().toLowerCase(); renderList(); });
+
+render();
+</script>
+</body>
+</html>

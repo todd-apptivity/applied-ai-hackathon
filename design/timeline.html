@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Timeline · design mock</title>
+<style>
+  /* Design tokens. These port to src/app/globals.css (@theme) at integration. */
+  :root {
+    --paper: #f5f1e4;
+    --paper-card: #fffef9;
+    --paper-line: #e3dcc6;
+    --paper-text: #10231f;
+    --paper-text-2: #4d5e58;
+    --paper-text-3: #86948e;
+
+    --ink: #0e3b35;
+    --ink-raised: #165048;
+    --ink-line: #22635a;
+    --ink-text: #f5f1e4;
+    --ink-text-2: #c2d8cf;
+    --ink-text-3: #8fb3a7;
+
+    /* Lane identity, stepped for the ink strip. Order is fixed. */
+    --lane-client: #62aefc;
+    --lane-firm: #6fe0b3;
+    --lane-provider: #c4b5ff;
+    --lane-defense: #f0629a;
+    --lane-court: #f5f1e4;
+    --lane-file: #8fb3a7;
+
+    /* Same hues stepped for paper. */
+    --lane-client-p: #2a78d6;
+    --lane-firm-p: #12855d;
+    --lane-provider-p: #4a3aa7;
+    --lane-defense-p: #c9457a;
+    --lane-court-p: #10231f;
+    --lane-file-p: #86948e;
+
+    /* Status. Reserved; always shown with an icon or label. */
+    --contradiction: #fab219;
+    --critical: #d03b3b;
+
+    /* Brand accent: primary actions and links on paper. */
+    --accent: #0e6b57;
+
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --label-w: 208px;
+    --lane-h: 46px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--paper);
+    color: var(--paper-text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--contradiction); outline-offset: 2px; }
+
+  /* ---------- Ink: top bar and lane strip ---------- */
+  .instrument { background: var(--ink); color: var(--ink-text); }
+
+  .topbar {
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    padding: 14px 24px 12px;
+    border-bottom: 1px solid var(--ink-line);
+  }
+  .matter { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+  .matter h1 {
+    margin: 0; font-family: var(--serif); font-weight: 600; font-size: 22px;
+    letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .matter span { color: var(--ink-text-3); font-size: 13px; white-space: nowrap; }
+  .tools { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin-left: auto; }
+  .views { display: flex; gap: 2px; background: var(--ink-raised); padding: 3px; border-radius: 8px; }
+  .views button {
+    border: 0; background: none; color: var(--ink-text-2);
+    padding: 5px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+  }
+  .views button[aria-pressed="true"] { background: var(--ink-text); color: var(--ink); }
+
+  .controls {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 24px;
+  }
+  .search {
+    flex: 1 1 260px; min-width: 0; max-width: 460px;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--ink-raised); border: 1px solid var(--ink-line); border-radius: 8px;
+    padding: 6px 12px; color: var(--ink-text-3);
+  }
+  .search input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--ink-text); font-size: 14px; }
+  .search input::placeholder { color: var(--ink-text-3); }
+  .count { font-size: 12px; color: var(--ink-text-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .range { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+  .range button {
+    border: 1px solid transparent; background: none; color: var(--ink-text-2);
+    padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+  }
+  .range button:hover { background: var(--ink-raised); color: var(--ink-text); }
+  .range button[aria-pressed="true"] { color: var(--ink-text); border-color: var(--ink-text-3); }
+  .range .sep { width: 1px; height: 18px; background: var(--ink-line); margin: 0 6px; }
+
+  .strip { display: grid; grid-template-columns: var(--label-w) minmax(0, 1fr); }
+  .labels { border-right: 1px solid var(--ink-line); }
+  .lane-label {
+    height: var(--lane-h); display: flex; align-items: center; gap: 10px;
+    padding: 0 12px 0 24px; border-top: 1px solid var(--ink-line); min-width: 0;
+  }
+  .lane-label i { flex: none; width: 4px; height: 22px; border-radius: 2px; }
+  .lane-label b { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lane-label small { display: block; font-size: 11px; color: var(--ink-text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lane-label div { min-width: 0; line-height: 1.25; }
+  .lane-label.grp { padding-left: 4px; gap: 4px; }
+  .lane-label.grp > div { margin-left: 6px; }
+  .lane-label.head b { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .lane-label.child { padding-left: 36px; }
+  .bars { display: flex; gap: 2px; flex: none; }
+  .toggle { flex: none; width: 16px; height: 16px; padding: 0; border: 1px solid var(--ink-text-3); border-radius: 3px; background: none;
+    color: var(--ink-text-2); font-size: 13px; line-height: 1; display: grid; place-items: center; }
+  .toggle:hover { color: var(--ink-text); border-color: var(--ink-text); }
+  .axis-label { height: 30px; border-top: 1px solid var(--ink-line); }
+
+  .plot { position: relative; overflow: hidden; touch-action: pan-y; cursor: grab; }
+  .plot.dragging { cursor: grabbing; }
+  .plot svg { display: block; width: 100%; }
+  .plot text { font-family: var(--sans); }
+  .mark { cursor: pointer; }
+  .mark:focus { outline: none; }
+
+  .tip {
+    position: absolute; z-index: 5; pointer-events: none; display: none;
+    max-width: 280px; padding: 8px 10px; border-radius: 8px;
+    background: var(--paper-card); color: var(--paper-text);
+    box-shadow: 0 6px 24px rgba(0,0,0,.35); font-size: 12.5px; line-height: 1.35;
+  }
+  .tip b { display: block; font-weight: 600; }
+  .tip span { color: var(--paper-text-2); }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center;
+    padding: 10px 24px 14px; border-top: 1px solid var(--ink-line);
+    font-size: 12px; color: var(--ink-text-2);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .legend svg { flex: none; }
+
+  /* ---------- Paper: reading area ---------- */
+  .reading {
+    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 28px;
+    padding: 24px; max-width: 1400px; margin: 0 auto;
+  }
+  .pane-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .pane-head h2 { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--paper-text-3); }
+  .step { display: flex; gap: 6px; }
+  .step button {
+    border: 1px solid var(--paper-line); background: var(--paper-card); color: var(--paper-text-2);
+    border-radius: 6px; padding: 4px 10px; font-size: 13px;
+  }
+  .step button:hover { color: var(--paper-text); border-color: var(--paper-text-3); }
+
+  .thread { display: flex; flex-direction: column; gap: 10px; }
+  .bubble {
+    max-width: 88%; text-align: left; border: 1px solid var(--paper-line); background: var(--paper-card);
+    border-radius: 12px; padding: 10px 14px; border-left-width: 4px;
+  }
+  .bubble.out { align-self: flex-start; }
+  .bubble.in { align-self: flex-end; }
+  .bubble:hover { border-color: var(--paper-text-3); }
+  .bubble[aria-current="true"] { box-shadow: 0 0 0 2px var(--accent); }
+  article.record { border-top: 5px solid var(--tint, var(--paper-line)); }
+  .bubble .meta { display: flex; gap: 8px; align-items: baseline; font-size: 12px; color: var(--paper-text-3); }
+  .bubble .meta b { color: var(--paper-text); font-weight: 600; font-size: 13px; }
+  .bubble p { margin: 4px 0 0; font-size: 13.5px; color: var(--paper-text-2); overflow-wrap: anywhere;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .gap-note { align-self: center; font-size: 12px; color: var(--paper-text-3); padding: 2px 10px; border: 1px dashed var(--paper-line); border-radius: 999px; }
+
+  .record {
+    background: var(--paper-card); border: 1px solid var(--paper-line); border-radius: 14px;
+    padding: 22px 24px; box-shadow: 0 1px 0 rgba(16,35,31,.04), 0 12px 32px -18px rgba(16,35,31,.25);
+  }
+  .kind { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper-text-2); }
+  .kind i { width: 10px; height: 10px; border-radius: 50%; }
+  .record h3 { margin: 8px 0 6px; font-family: var(--serif); font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+  .facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 14px; margin: 0 0 14px; font-size: 13px; }
+  .facts dt { color: var(--paper-text-3); }
+  .facts dd { margin: 0; color: var(--paper-text); overflow-wrap: anywhere; }
+  .body { margin: 0; padding-top: 14px; border-top: 1px solid var(--paper-line); font-size: 15px; white-space: pre-line; overflow-wrap: anywhere; }
+  .flags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+  .flag { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 600; border: 1px solid; background: none; }
+  .flag.warn { border-color: var(--contradiction); background: #fff4d6; color: #5c3d00; }
+  .flag.late { border-color: var(--critical); color: #a02020; background: #fdecec; }
+  .flag.open { border-color: var(--paper-text-3); color: var(--paper-text-2); border-style: dashed; }
+  .source { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; font-size: 13px; color: var(--paper-text-2);
+    border: 1px solid var(--paper-line); border-radius: 6px; padding: 4px 10px; text-decoration: none; }
+  .source:hover { border-color: var(--accent); color: var(--accent); }
+
+  .ask { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--paper-line); }
+  .ask label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--paper-text-3); margin-bottom: 8px; }
+  .ask form { display: flex; gap: 8px; }
+  .ask input { flex: 1; min-width: 0; border: 1px solid var(--paper-line); background: var(--paper); border-radius: 8px; padding: 9px 12px; }
+  .ask input:focus { outline: 2px solid var(--paper-text); outline-offset: 0; }
+  .ask form button { border: 0; background: var(--accent); color: var(--paper); border-radius: 8px; padding: 0 16px; font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chips button { border: 1px solid var(--paper-line); background: none; color: var(--paper-text-2); border-radius: 999px; padding: 3px 12px; font-size: 13px; }
+  .chips button:hover { border-color: var(--accent); color: var(--accent); }
+  .answer { margin-top: 14px; padding: 12px 14px; background: var(--paper); border-radius: 10px; font-size: 14px; }
+  .answer em { display: block; font-style: normal; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--paper-text-3); margin-bottom: 4px; }
+  .cite { border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: 3px; font-size: 13px; text-align: left; }
+
+  .compare { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-top: 14px; }
+  .side { border: 1px solid var(--paper-line); border-radius: 10px; padding: 14px; background: var(--paper); }
+  .side h4 { margin: 0 0 6px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--paper-text-3); }
+  .side blockquote { margin: 0 0 10px; font-family: var(--serif); font-size: 17px; line-height: 1.35; overflow-wrap: anywhere; }
+  .side p { margin: 0 0 8px; font-size: 12.5px; color: var(--paper-text-2); }
+
+  @media (max-width: 860px) {
+    :root { --label-w: 112px; }
+    .topbar, .controls, .legend { padding-left: 16px; padding-right: 16px; }
+    .lane-label { padding-left: 16px; }
+    .lane-label.grp { padding-left: 0; gap: 3px; }
+    .lane-label.child { padding-left: 22px; }
+    .lane-label small { display: none; }
+    .matter span { display: none; }
+    .reading { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 20px; }
+    .record { padding: 18px 16px; }
+    .record h3 { font-size: 22px; }
+    .compare { grid-template-columns: minmax(0, 1fr); }
+    .range { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<section class="instrument" aria-label="Case timeline">
+  <header class="topbar">
+    <div class="matter">
+      <h1>Whitlock v. Harbor Transit</h1>
+      <span>Personal injury · Litigation · opened May 2023</span>
+    </div>
+    <div class="tools">
+      <div class="views" role="group" aria-label="View">
+        <button aria-pressed="false">Case state</button>
+        <button aria-pressed="true">Timeline</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <label class="search">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14" stroke-linecap="round"/></svg>
+      <input id="q" type="search" placeholder="Search everything in the file" aria-label="Search the file">
+    </label>
+    <span class="count" id="count"></span>
+    <div class="range" role="group" aria-label="Time range">
+      <button id="back" aria-label="Earlier">‹</button>
+      <button id="fwd" aria-label="Later">›</button>
+      <span class="sep"></span>
+      <button data-range="3">3M</button>
+      <button data-range="12">1Y</button>
+      <button data-range="all" aria-pressed="true">ALL</button>
+      <span class="sep"></span>
+      <button id="today">Today</button>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div class="labels" id="labels"></div>
+    <div class="plot" id="plot">
+      <svg id="svg" role="img" aria-label="Events by party over time"></svg>
+      <div class="tip" id="tip"></div>
+    </div>
+  </div>
+
+  <div class="legend" id="legend" aria-label="Legend"></div>
+</section>
+
+<main class="reading">
+  <section aria-label="Thread">
+    <div class="pane-head">
+      <h2 id="threadTitle">Thread</h2>
+      <div class="step">
+        <button id="prev">‹ Previous</button>
+        <button id="next">Next ›</button>
+      </div>
+    </div>
+    <div class="thread" id="thread"></div>
+  </section>
+  <section aria-label="Selected record" id="detail" aria-live="polite"></section>
+</main>
+
+<script>
+/* ------------------------------------------------------------------
+   Mock data. Invented matter; replaced by the Clio bundle at integration.
+   ------------------------------------------------------------------ */
+const DAY = 864e5;
+const d = (s) => new Date(s + "T12:00:00").getTime();
+const TODAY = d("2026-10-02");
+
+const LANES = [
+  { id: "client",  name: "Dana Whitlock",            role: "Client",                 ink: "--lane-client",   paper: "--lane-client-p" },
+  { id: "firm",    name: "Our firm",                 role: "Attorneys and staff",    ink: "--lane-firm",     paper: "--lane-firm-p" },
+  { id: "ortho",   name: "Ridgeline Orthopedics",    role: "Treating provider",      ink: "--lane-provider", paper: "--lane-provider-p" },
+  { id: "pt",      name: "Northside Physical Therapy", role: "Treating provider",    ink: "--lane-provider", paper: "--lane-provider-p" },
+  { id: "defense", name: "Harbor Transit",           role: "Defense and its counsel", ink: "--lane-defense",  paper: "--lane-defense-p" },
+  { id: "court",   name: "Court",                    role: "Orders and hearings",    ink: "--lane-court",    paper: "--lane-court-p" },
+  { id: "file",    name: "File",                     role: "When records were added", ink: "--lane-file",     paper: "--lane-file-p" },
+];
+const laneById = Object.fromEntries(LANES.map((l, i) => [l.id, { ...l, index: i }]));
+
+const KIND = { email: "Email", call: "Phone call", note: "Note", task: "Task", event: "Calendar entry", doc: "Document", expense: "Expense" };
+
+// Small seeded generator so the filler is the same on every load.
+let seed = 20261002;
+const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const pick = (a) => a[Math.floor(rnd() * a.length)];
+
+const events = [];
+const add = (e) => { e.id = "e" + events.length; events.push(e); return e.id; };
+
+function fill(from, to, n, make) {
+  const a = d(from), b = d(to);
+  for (let i = 0; i < n; i++) add({ t: Math.round((a + rnd() * (b - a)) / DAY) * DAY, ...make() });
+}
+
+fill("2023-05-10", "2026-09-20", 16, () => pick([
+  { lane: "client", kind: "email", party: "client", title: "Update on my treatment", body: "Quick update after this week's appointment. The shoulder is still stiff in the mornings and I am keeping every visit.\n\nLet me know if you need anything from me." },
+  { lane: "client", kind: "call",  party: "client", title: "Call from client about work", body: "Client called to say they are still unable to return to full duties. Asked whether the wage records had been requested yet." },
+  { lane: "client", kind: "email", party: "client", title: "Photos and paperwork", body: "Attaching the paperwork I was handed at the last visit, plus two more photos of the car." },
+]));
+fill("2023-05-08", "2026-09-28", 30, () => pick([
+  { lane: "firm", kind: "note",  title: "File review", body: "Reviewed the file ahead of the next conference. Outstanding: updated records from both treating providers and the wage documentation." },
+  { lane: "firm", kind: "email", party: "client",  title: "Checking in before the conference", body: "Dana, a short note to confirm we are on track. Please send any new bills you have received." },
+  { lane: "firm", kind: "email", party: "ortho",   title: "Request for updated records", body: "Please send the chart notes and billing for all visits since our last request. An authorization is enclosed." },
+  { lane: "firm", kind: "email", party: "defense", title: "Follow-up on outstanding discovery", body: "Counsel, we have not received responses to the demands served last quarter. Please advise when we can expect them." },
+  { lane: "firm", kind: "task",  title: "Calendar next compliance date", body: "Confirm the compliance conference date and diary the discovery deadlines that run from it.", done: true },
+]));
+fill("2023-05-20", "2026-03-30", 9, () => pick([
+  { lane: "ortho", kind: "email", party: "ortho", title: "Visit summary and billing", body: "Attached are the visit summary and the statement for this month's appointments." },
+  { lane: "ortho", kind: "call",  party: "ortho", title: "Front office returned call", body: "Front office confirmed the patient attended the follow-up and that the surgeon recommends a second procedure." },
+]));
+fill("2023-05-25", "2023-11-15", 6, () => pick([
+  { lane: "pt", kind: "email", party: "pt", title: "Attendance and progress notes", body: "Progress notes for the last four sessions are attached. Patient attended all scheduled visits." },
+  { lane: "pt", kind: "email", party: "pt", title: "Statement of account", body: "Current statement of account for services to date." },
+]));
+fill("2024-01-15", "2026-08-30", 11, () => pick([
+  { lane: "defense", kind: "email", party: "defense", title: "Response to discovery demands", body: "Enclosed please find defendant's responses and objections to plaintiff's demands." },
+  { lane: "defense", kind: "email", party: "defense", title: "Request to adjourn deposition", body: "We ask to adjourn the deposition by three weeks because of a scheduling conflict." },
+]));
+fill("2024-02-01", "2026-06-30", 6, () => pick([
+  { lane: "court", kind: "event", with: ["defense"], title: "Compliance conference", body: "Compliance conference held. Discovery deadlines extended; next conference set." },
+  { lane: "court", kind: "event", title: "Preliminary conference order", body: "Order entered setting the discovery schedule." },
+]));
+fill("2023-05-14", "2026-08-01", 12, () => pick([
+  { lane: "file", kind: "doc",     title: "Records bundle added", body: "Scanned records received from a treating provider and added to the medical records folder." },
+  { lane: "file", kind: "doc",     title: "Discovery response filed to folder", body: "Copy of the served response saved to the discovery folder." },
+  { lane: "file", kind: "expense", title: "Records reproduction fee", body: "Fee paid by the firm for reproduction of a provider chart." },
+]));
+
+/* Hand-written events that carry the story the design needs to show. */
+// A provider that went silent, and the requests that went unanswered.
+const ptAsk = ["2024-03-12", "2024-11-06", "2025-07-22", "2026-05-05"].map((day, i) => add({
+  t: d(day), lane: "firm", kind: "email", party: "pt", open: true,
+  title: `Records request to physical therapy (${["first", "second", "third", "fourth"][i]})`,
+  body: "We represent your patient and are still missing treatment notes and billing after November 2023. Please send them, or tell us if treatment ended.",
+}));
+
+// The surgeon who has not scheduled the surgery.
+["2026-05-05", "2026-06-17", "2026-07-29", "2026-09-02"].forEach((day, i) => add({
+  t: d(day), lane: "firm", kind: i % 2 ? "call" : "email", party: "ortho", open: true,
+  title: "Asked for a date for the second shoulder surgery",
+  body: "The second procedure has been recommended but not scheduled. We cannot value the case or certify readiness until we have a date. Please confirm one.",
+}));
+add({ t: d("2026-09-24"), lane: "ortho", kind: "email", party: "ortho", title: "Re: surgery date", body: "The surgeon's calendar for the fall is not final. We will be in touch once the schedule opens." });
+const lateTask = add({ t: d("2026-08-25"), lane: "firm", kind: "task", overdue: true, title: "Obtain updated orthopedic records", body: "Due 25 August 2026. Still open: the provider has not sent records since the spring request." });
+
+// Contradiction 1: a note says nobody contacted the witness; a subpoena says otherwise.
+const subpoena = add({ t: d("2025-11-02"), lane: "court", kind: "doc", title: "Subpoena served on eyewitness", body: "Subpoena filed and served on the eyewitness, setting a deposition for 8 December 2025." });
+const witnessNote = add({ t: d("2026-09-15"), lane: "firm", kind: "note", title: "Witness status", body: "Checked the file for the eyewitness. Nobody has contacted him since the accident. We should reach out before the next conference." });
+
+// Contradiction 2: limitations marked satisfied; the answer pleads it as a defense.
+const answer = add({ t: d("2024-12-18"), lane: "defense", kind: "doc", title: "Verified answer with affirmative defenses", body: "Defendant's verified answer. Among the affirmative defenses: the action is barred by the applicable statute of limitations, and plaintiff failed to wear a seat belt." });
+const solTask = add({ t: d("2026-04-22"), lane: "firm", kind: "task", done: true, title: "Limitations date", body: "Marked complete. Limitations satisfied: notice of claim served and suit commenced within time." });
+
+// Contradiction 3 and a long file connector: a report filed months after the exam it describes.
+const exam = add({ t: d("2026-03-31"), lane: "defense", kind: "event", with: ["client"], title: "Defense medical examination", body: "Orthopedic examination of the plaintiff by the defense's examining physician." });
+const report = add({ t: d("2026-09-14"), lane: "file", kind: "doc", describes: exam, title: "Defense examination report added", body: "Report of the 31 March 2026 examination. Records reduced range of motion in the right shoulder; rotation testing marked as refused. Concludes the patient has plateaued." });
+const reportNote = add({ t: d("2026-09-13"), lane: "firm", kind: "note", title: "Summary of defense examination", body: "Read the defense examiner's report. He records normal range of motion and no restrictions. Helpful to them on damages." });
+
+// Last client contact, and what is coming.
+add({ t: d("2026-09-27"), lane: "client", kind: "call", party: "client", title: "Call with client", body: "Spoke with Dana for twenty minutes. Still in pain at night, still attending every appointment, anxious about the surgery date." });
+add({ t: d("2026-10-20"), lane: "firm", kind: "task", title: "Prepare client for deposition", body: "Due 20 October 2026. Preparation session ahead of the continued deposition." });
+add({ t: d("2026-11-12"), lane: "court", kind: "event", with: ["firm", "defense"], title: "Compliance conference", body: "Scheduled for 12 November 2026. The court expects a report on outstanding discovery." });
+add({ t: d("2026-12-08"), lane: "defense", kind: "event", with: ["client", "firm"], title: "Continued deposition of plaintiff", body: "Scheduled for 8 December 2026 at defense counsel's office." });
+
+const CONFLICTS = [
+  { id: "c0", a: witnessNote, b: subpoena, why: "A note says the witness was never contacted, but a subpoena was served on him ten months earlier.",
+    qa: "Nobody has contacted him since the accident.", qb: "Subpoena filed and served on the eyewitness, setting a deposition for 8 December 2025." },
+  { id: "c1", a: solTask, b: answer, why: "The limitations task is marked satisfied, but the defense pleaded limitations as a defense.",
+    qa: "Limitations satisfied: notice of claim served and suit commenced within time.", qb: "The action is barred by the applicable statute of limitations." },
+  { id: "c2", a: reportNote, b: report, why: "The note's summary of the report does not match what the report says.",
+    qa: "He records normal range of motion and no restrictions.", qb: "Records reduced range of motion in the right shoulder; rotation testing marked as refused." },
+];
+
+events.sort((a, b) => a.t - b.t);
+const byId = Object.fromEntries(events.map((e) => [e.id, e]));
+const conflictsOf = (id) => CONFLICTS.filter((c) => c.a === id || c.b === id);
+
+/* ------------------------------------------------------------------
+   Lane strip
+   ------------------------------------------------------------------ */
+const css = getComputedStyle(document.documentElement);
+const tok = (name) => css.getPropertyValue(name).trim();
+const LANE_H = parseInt(tok("--lane-h"), 10), HEAD_H = 26, AXIS_H = 30, R = 9;
+const FIRST = events[0].t - 20 * DAY, LAST = events[events.length - 1].t + 30 * DAY;
+
+// Lanes that fold into one row until opened.
+const GROUPS = [
+  { id: "client",  lanes: ["client"] },
+  { id: "firm",    lanes: ["firm"] },
+  { id: "medical", lanes: ["ortho", "pt"],      fold: true, name: "Medical providers" },
+  { id: "legal",   lanes: ["defense", "court"], fold: true, name: "Defense and court" },
+  { id: "file",    lanes: ["file"] },
+];
+
+const svg = document.getElementById("svg"), plot = document.getElementById("plot"), tip = document.getElementById("tip");
+const state = { v0: FIRST, v1: LAST, selected: null, hover: null, conflict: null, query: "", open: { medical: false, legal: false } };
+
+const fmt = (t, o = { month: "short", day: "numeric", year: "numeric" }) => new Date(t).toLocaleDateString("en-US", o);
+const span = (a, b) => { const m = Math.round((b - a) / (30.44 * DAY)); return m < 1 ? `${Math.round((b - a) / DAY)} days` : m < 12 ? `${m} mo` : `${Math.floor(m / 12)} yr ${m % 12} mo`; };
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const matches = (e) => !state.query || (e.title + " " + e.body + " " + laneById[e.lane].name).toLowerCase().includes(state.query);
+
+// When an outside party was last heard from, if that was long enough ago to matter.
+function silentSince(laneId) {
+  if (["firm", "court", "file"].includes(laneId)) return null;
+  const heard = events.filter((e) => e.lane === laneId && e.t <= TODAY);
+  if (!heard.length) return null;
+  const last = heard[heard.length - 1].t;
+  return TODAY - last >= 120 * DAY ? last : null;
+}
+
+function rows() {
+  const out = []; let top = 0;
+  const push = (r) => { r.top = top; r.mid = top + r.h / 2; top += r.h; out.push(r); };
+  for (const g of GROUPS) {
+    if (!g.fold) push({ lanes: g.lanes, h: LANE_H, lane: laneById[g.lanes[0]] });
+    else if (!state.open[g.id]) push({ lanes: g.lanes, h: LANE_H, group: g });
+    else {
+      push({ lanes: [], h: HEAD_H, group: g, head: true });
+      g.lanes.forEach((id) => push({ lanes: [id], h: LANE_H, lane: laneById[id], child: true }));
+    }
+  }
+  return out;
+}
+
+function renderLabels(rs) {
+  document.getElementById("labels").innerHTML = rs.map((r) => {
+    if (!r.group) return `<div class="lane-label ${r.child ? "child" : ""}" style="height:${r.h}px"><i style="background:var(${r.lane.ink})"></i><div><b>${r.lane.name}</b><small>${r.lane.role}</small></div></div>`;
+    const g = r.group, open = state.open[g.id], quiet = g.lanes.filter(silentSince).length;
+    const bars = g.lanes.map((id) => `<i style="background:var(${laneById[id].ink})"></i>`).join("");
+    return `<div class="lane-label grp ${r.head ? "head" : ""}" style="height:${r.h}px">
+      <button class="toggle" data-toggle="${g.id}" aria-expanded="${open}" aria-label="${open ? "Collapse" : "Expand"} ${g.name}">${open ? "−" : "+"}</button>
+      ${r.head ? "" : `<span class="bars">${bars}</span>`}
+      <div><b>${g.name}</b>${r.head ? "" : `<small>${g.lanes.length} parties${quiet ? ` · ${quiet} gone quiet` : ""}</small>`}</div></div>`;
+  }).join("") + `<div class="axis-label"></div>`;
+}
+
+// Every record is a disc with a glyph for its type.
+const ICON = {
+  email:   `<rect x="-4.5" y="-3.2" width="9" height="6.4" rx="1"/><path d="M-4.5 -2.4 0 1 4.5 -2.4"/>`,
+  call:    `<path d="M-3.9 -4.2h2.3l1 2.6-1.4 1c.6 1.3 1.6 2.3 2.9 2.9l1-1.4 2.6 1v2.3c-4.6.3-8.7-3.8-8.4-8.4z" fill="currentColor" stroke="none"/>`,
+  note:    `<path d="M-3.6 -3h7.2M-3.6 0h7.2M-3.6 3h4.4"/>`,
+  task:    `<path d="M-4 .2-1.3 2.9 4-2.9"/>`,
+  event:   `<rect x="-4.2" y="-3.4" width="8.4" height="7.6" rx="1"/><path d="M-4.2 -.9h8.4M-2 -5v2.2M2 -5v2.2"/>`,
+  doc:     `<path d="M-3.2 -4.6h3.9l2.5 2.5v6.7h-6.4zM.7 -4.6v2.5h2.5"/>`,
+  expense: `<path d="M2.4 -2.4c-.5-.9-1.4-1.3-2.4-1.3-1.4 0-2.4.7-2.4 1.8 0 2.6 4.9 1.1 4.9 3.7 0 1.1-1 1.9-2.5 1.9-1.1 0-2.1-.5-2.6-1.4M0 -5v10"/>`,
+};
+function disc(x, y, color, hollow, opacity = 1) {
+  const ink = tok("--ink");
+  return `<circle cx="${x}" cy="${y}" r="${R}" fill="${hollow ? ink : color}" stroke="${hollow ? color : ink}" stroke-width="2" ${opacity < 1 ? `fill-opacity="${opacity}"` : ""}/>`;
+}
+function glyph(kind, x, y, color, hollow) {
+  return disc(x, y, color, hollow) +
+    `<g transform="translate(${x} ${y})" color="${hollow ? color : tok("--ink")}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ICON[kind]}</g>`;
+}
+
+// Where each record draws. A record with several parties appears on each of their lanes;
+// a message to someone echoes on their lane while it is unanswered, hovered or selected.
+function placements(active) {
+  const out = [];
+  for (const e of events) {
+    out.push({ e, lane: e.lane });
+    for (const l of e.with || []) out.push({ e, lane: l });
+    if (e.party && e.party !== e.lane && (e.open || active.has(e.id))) out.push({ e, lane: e.party, echo: true });
+  }
+  return out;
+}
+
+function render() {
+  const rs = rows(); renderLabels(rs);
+  const rowOf = {}; rs.forEach((r) => r.lanes.forEach((id) => { rowOf[id] = r; }));
+  const W = plot.clientWidth, lanesH = rs.reduce((a, r) => a + r.h, 0), H = lanesH + AXIS_H;
+  const x = (t) => (t - state.v0) / (state.v1 - state.v0) * W;
+  const y = (lane) => rowOf[lane].mid;
+  const line = tok("--ink-line"), t3 = tok("--ink-text-3"), t1 = tok("--ink-text"), ink = tok("--ink");
+  const active = new Set([state.selected, state.hover].filter(Boolean));
+  let s = "";
+
+  // Lane rules, and the future shaded to the right of today.
+  rs.forEach((r) => { s += `<line x1="0" x2="${W}" y1="${r.top + .5}" y2="${r.top + .5}" stroke="${line}"/>`; });
+  s += `<line x1="0" x2="${W}" y1="${lanesH + .5}" y2="${lanesH + .5}" stroke="${line}"/>`;
+  const xt = x(TODAY);
+  if (xt < W) s += `<rect x="${Math.max(0, xt)}" y="0" width="${W - Math.max(0, xt)}" height="${lanesH}" fill="${tok("--ink-raised")}"/>`;
+
+  // Axis ticks: months, quarters or half-years depending on zoom.
+  const months = (state.v1 - state.v0) / (30.44 * DAY);
+  const step = months <= 7 ? 1 : months <= 20 ? 3 : 6;
+  const tickPx = W / months * step;
+  const c = new Date(state.v0); c.setDate(1); c.setHours(12, 0, 0, 0); c.setMonth(Math.floor(c.getMonth() / step) * step);
+  for (; c.getTime() <= state.v1; c.setMonth(c.getMonth() + step)) {
+    const tx = x(c.getTime()); if (tx < -40) continue;
+    const jan = c.getMonth() === 0;
+    s += `<line x1="${tx}" x2="${tx}" y1="0" y2="${lanesH + 5}" stroke="${line}" ${jan ? "" : 'stroke-dasharray="2 5"'}/>`;
+    // Drop labels that would collide: minor ticks when crowded, and anything under the TODAY label.
+    if ((!jan && tickPx < 64) || (jan && tickPx * (12 / step) < 70 && c.getFullYear() % 2) || Math.abs(tx - xt) < 62 || tx < 0) continue;
+    s += `<text x="${tx + 5}" y="${lanesH + 20}" font-size="11" fill="${jan ? t1 : t3}" font-weight="${jan ? 600 : 400}">${jan || step === 1 && tx < 40 ? fmt(c, { month: "short", year: "numeric" }) : fmt(c, { month: "short" })}</text>`;
+  }
+
+  // Silence, on lanes that are open to view on their own.
+  for (const r of rs) {
+    if (!r.lane) continue;
+    const last = silentSince(r.lane.id); if (!last) continue;
+    const a = x(last) + R + 6, b = x(TODAY) - 6;
+    if (b - a < 30) continue;
+    s += `<line x1="${a}" x2="${b}" y1="${r.mid}" y2="${r.mid}" stroke="${tok(r.lane.ink)}" stroke-opacity=".45" stroke-dasharray="1 6" stroke-linecap="round" stroke-width="2"/>`;
+    if (b - a > 150) s += `<text x="${Math.max(a, 8) + 8}" y="${r.mid - 11}" font-size="11" fill="${t3}">silent for ${span(last, TODAY)}</text>`;
+  }
+
+  // Bands: one record that sits on several lanes gets a soft column joining them.
+  for (const e of events) {
+    const on = active.has(e.id);
+    const lanes = [e.lane, ...(e.with || []), ...(e.party && (on || e.open) ? [e.party] : [])];
+    if (!(e.with || on)) continue;
+    const mids = [...new Set(lanes.map(y))]; if (mids.length < 2) continue;
+    const px = x(e.t); if (px < -20 || px > W + 20) continue;
+    const top = Math.min(...mids), pad = R + 5;
+    s += `<rect x="${px - pad}" y="${top - pad}" width="${pad * 2}" height="${Math.max(...mids) - top + pad * 2}" rx="${pad}" fill="${tok(laneById[e.lane].ink)}" fill-opacity="${on ? .3 : .14}"/>`;
+  }
+
+  // Connectors: a document on the file lane, joined to the dated event it describes.
+  for (const e of events) {
+    if (!e.describes) continue;
+    const o = byId[e.describes], x1 = x(e.t), y1 = y(e.lane), x2 = x(o.t), y2 = y(o.lane), my = (y1 + y2) / 2;
+    s += `<path d="M${x1} ${y1} C${x1} ${my} ${x2} ${my} ${x2} ${y2}" fill="none" stroke="${tok("--lane-file")}" stroke-width="1.25" stroke-dasharray="3 4"/>`;
+  }
+
+  // Contradiction arcs.
+  for (const k of CONFLICTS) {
+    const a = byId[k.a], b = byId[k.b], x1 = x(a.t), y1 = y(a.lane), x2 = x(b.t), y2 = y(b.lane), mx = (x1 + x2) / 2;
+    const on = state.conflict === k.id, amber = tok("--contradiction");
+    s += `<g class="mark" data-conflict="${k.id}" tabindex="0" role="button" aria-label="Contradiction: ${esc(k.why)}">
+      <path d="M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}" fill="none" stroke="${amber}" stroke-width="${on ? 2.5 : 1.5}" stroke-opacity="${on ? 1 : .8}"/>
+      <path d="M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}" fill="none" stroke="transparent" stroke-width="14"/>
+      <circle cx="${mx}" cy="${(y1 + y2) / 2}" r="${on ? 10 : 8.5}" fill="${amber}" stroke="${ink}" stroke-width="2"/>
+      <text x="${mx}" y="${(y1 + y2) / 2 + 4}" text-anchor="middle" font-size="12" font-weight="700" fill="${ink}">!</text></g>`;
+  }
+
+  // Today.
+  if (xt > 0 && xt < W) {
+    s += `<line x1="${xt}" x2="${xt}" y1="0" y2="${lanesH + 5}" stroke="${t1}" stroke-width="1.5"/>`;
+    s += `<text x="${xt + (W - xt < 60 ? -6 : 6)}" y="${lanesH + 20}" text-anchor="${W - xt < 60 ? "end" : "start"}" font-size="11" font-weight="700" fill="${t1}" letter-spacing=".06em">TODAY</text>`;
+  }
+
+  // Marks. Records that would overlap on a row are stacked into one mark with a shadow behind it.
+  const perRow = new Map(), inView = new Set();
+  for (const p of placements(active)) {
+    const px = x(p.e.t); if (px < -R || px > W + R) continue;
+    if (!p.echo) inView.add(p.e.id);
+    const row = rowOf[p.lane];
+    if (!perRow.has(row)) perRow.set(row, []);
+    perRow.get(row).push({ ...p, px });
+  }
+  for (const [row, items] of perRow) {
+    items.sort((a, b) => a.px - b.px);
+    const stacks = [], seen = new Set();
+    for (const it of items) {
+      if (seen.has(it.e.id)) continue; seen.add(it.e.id);
+      const cur = stacks[stacks.length - 1];
+      if (cur && it.px - cur[0].px < R * 2 - 2) cur.push(it); else stacks.push([it]);
+    }
+    for (const st of stacks) {
+      const lead = st.find((i) => !i.echo) || st[0], n = st.length, ids = st.map((i) => i.e.id);
+      const cx = st.reduce((a, i) => a + i.px, 0) / n, cy = row.mid, color = tok(laneById[lead.lane].ink);
+      const hollow = !!lead.echo, hit = st.some((i) => matches(i.e)), sel = ids.includes(state.selected);
+      const late = st.some((i) => i.e.overdue), clash = st.some((i) => conflictsOf(i.e.id).length);
+      const label = n > 1 ? `${n} records around ${fmt(lead.e.t)}` : `${KIND[lead.e.kind]}, ${fmt(lead.e.t)}: ${lead.e.title}`;
+      s += `<g class="mark" data-ids="${ids.join(",")}" tabindex="${hollow ? -1 : 0}" role="button" aria-label="${esc(label)}" opacity="${hit ? (st.every((i) => i.e.done) ? .55 : 1) : .12}">`;
+      if (sel) s += `<line x1="${cx}" x2="${cx}" y1="0" y2="${lanesH}" stroke="${t1}" stroke-opacity=".35"/><circle cx="${cx}" cy="${cy}" r="${R + 6.5}" fill="none" stroke="${t1}" stroke-width="1.5"/>`;
+      if (late) s += `<circle cx="${cx}" cy="${cy}" r="${R + 3.5}" fill="none" stroke="${tok("--critical")}" stroke-width="2"/>`;
+      else if (clash && !sel) s += `<circle cx="${cx}" cy="${cy}" r="${R + 3.5}" fill="none" stroke="${tok("--contradiction")}" stroke-width="1.5"/>`;
+      s += `<circle cx="${cx}" cy="${cy}" r="${R + 5}" fill="transparent"/>`;
+      for (let k = Math.min(n - 1, 2); k >= 1; k--) s += disc(cx + 4 * k, cy - 3 * k, color, hollow, .7 / k);
+      s += glyph(lead.e.kind, cx, cy, color, hollow);
+      if (n > 2) s += `<circle cx="${cx + 13}" cy="${cy - 11}" r="6.5" fill="${t1}" stroke="${ink}" stroke-width="1.5"/><text x="${cx + 13}" y="${cy - 7.5}" text-anchor="middle" font-size="9" font-weight="700" fill="${ink}">${n}</text>`;
+      s += `</g>`;
+    }
+  }
+
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("height", H);
+  svg.innerHTML = s;
+  document.getElementById("count").textContent = state.query
+    ? `${events.filter(matches).length} of ${events.length} records match`
+    : `${inView.size} of ${events.length} records in view`;
+}
+
+// Legend, drawn with the same glyphs as the strip.
+function renderLegend() {
+  const g = tok("--ink-text-2"), key = (inner, text, w = 24) => `<span><svg width="${w}" height="24" viewBox="-12 -12 ${w} 24">${inner}</svg>${text}</span>`;
+  document.getElementById("legend").innerHTML =
+    [["email", "Email"], ["call", "Call"], ["note", "Note"], ["task", "Task or deadline"], ["event", "Hearing or appointment"], ["doc", "Document"], ["expense", "Expense"]]
+      .map(([k, t]) => key(glyph(k, 0, 0, g, false), t)).join("") +
+    key(glyph("email", 0, 0, g, true), "Sent, no reply yet") +
+    key(disc(8, -6, g, false, .35) + disc(4, -3, g, false, .7) + glyph("email", 0, 0, g, false), "Several close together", 34) +
+    key(`<rect x="-10" y="-11" width="20" height="22" rx="10" fill="${g}" fill-opacity=".3"/>` + glyph("event", 0, 0, g, false), "Same record on several lanes") +
+    key(`<circle r="8.5" fill="${tok("--contradiction")}"/><text y="4" text-anchor="middle" font-size="12" font-weight="700" fill="${tok("--ink")}">!</text>`, "Contradiction") +
+    key(`<circle r="10.5" fill="none" stroke="${tok("--critical")}" stroke-width="2"/>` + `<g transform="scale(.75)">${glyph("task", 0, 0, g, false)}</g>`, "Overdue");
+}
+renderLegend();
+
+/* ------------------------------------------------------------------
+   Reading area
+   ------------------------------------------------------------------ */
+const partyOf = (e) => e.party || e.lane;
+const whoFrom = (e) => e.lane === "firm" ? "Our firm" : laneById[e.lane].name;
+const whoTo = (e) => e.lane === "firm" ? (e.party ? laneById[e.party].name : null) : (e.party ? "Our firm" : null);
+
+function renderThread(e) {
+  const key = partyOf(e), lane = laneById[key];
+  const all = events.filter((o) => partyOf(o) === key);
+  const i = all.indexOf(e), from = Math.max(0, Math.min(i - 2, all.length - 5)), slice = all.slice(from, from + 5);
+  document.getElementById("threadTitle").textContent = key === "firm" ? "Firm's own notes and tasks" : `With ${lane.name}`;
+  let html = "", prev = null;
+  for (const o of slice) {
+    if (prev && o.t - prev.t > 150 * DAY) html += `<span class="gap-note">${span(prev.t, o.t)} with nothing on this thread</span>`;
+    html += `<button class="bubble ${o.lane === "firm" ? "out" : "in"}" data-id="${o.id}" aria-current="${o === e}" style="border-left-color:var(${laneById[o.lane].paper});background:color-mix(in srgb, var(${laneById[o.lane].paper}) 7%, var(--paper-card))">
+      <span class="meta"><b>${esc(whoFrom(o))}</b><span>${KIND[o.kind]} · ${fmt(o.t)}</span></span>
+      <p><b style="color:var(--paper-text)">${esc(o.title)}.</b> ${esc(o.body)}</p></button>`;
+    prev = o;
+  }
+  document.getElementById("thread").innerHTML = html;
+}
+
+function renderDetail(e) {
+  const lane = laneById[e.lane], to = whoTo(e), flags = [];
+  for (const k of conflictsOf(e.id)) flags.push(`<button class="flag warn" data-conflict="${k.id}">⚠ Contradicted elsewhere in the file</button>`);
+  if (e.overdue) flags.push(`<span class="flag late">Overdue by ${span(e.t, TODAY)}</span>`);
+  if (e.open) flags.push(`<span class="flag open">No reply since</span>`);
+  if (e.t > TODAY) flags.push(`<span class="flag open">In ${span(TODAY, e.t)}</span>`);
+  const described = e.describes ? byId[e.describes] : null;
+  const asks = e.open ? ["Did they ever reply?", "How many times have we asked?"] : e.kind === "doc" ? ["What does this document say?", "What in the file relies on it?"] : ["What happened next?", "Is this consistent with the rest of the file?"];
+  document.getElementById("detail").innerHTML = `<article class="record" style="--tint:var(${lane.paper})">
+    <span class="kind"><i style="background:var(${lane.paper})"></i>${KIND[e.kind]} · ${esc(lane.name)}</span>
+    <h3>${esc(e.title)}</h3>
+    ${flags.length ? `<div class="flags">${flags.join("")}</div>` : ""}
+    <dl class="facts">
+      <dt>Date</dt><dd>${fmt(e.t, { weekday: "short", month: "long", day: "numeric", year: "numeric" })}</dd>
+      <dt>From</dt><dd>${esc(whoFrom(e))}</dd>
+      ${to ? `<dt>To</dt><dd>${esc(to)}</dd>` : ""}
+      ${e.with ? `<dt>Also on</dt><dd>${e.with.map((l) => esc(laneById[l].name)).join(", ")}</dd>` : ""}
+      ${described ? `<dt>Describes</dt><dd><button class="cite" data-id="${described.id}">${esc(described.title)}, ${fmt(described.t)}</button> (${span(described.t, e.t)} before it reached the file)</dd>` : ""}
+    </dl>
+    <p class="body">${esc(e.body)}</p>
+    <a class="source" href="#" onclick="return false">↗ Open this ${KIND[e.kind].toLowerCase()} in Clio</a>
+    <div class="ask">
+      <label for="askInput">Ask about this record</label>
+      <form id="askForm"><input id="askInput" autocomplete="off" placeholder="e.g. ${asks[0]}"><button>Ask</button></form>
+      <div class="chips">${asks.map((a) => `<button type="button" data-ask="${esc(a)}">${a}</button>`).join("")}</div>
+      <div id="answer"></div>
+    </div></article>`;
+}
+
+function renderConflict(k) {
+  const a = byId[k.a], b = byId[k.b];
+  const side = (e, q, label) => `<div class="side"><h4>${label}</h4><blockquote>“${esc(q)}”</blockquote>
+    <p>${KIND[e.kind]} · ${esc(laneById[e.lane].name)} · ${fmt(e.t)}</p><button class="cite" data-id="${e.id}">Open “${esc(e.title)}”</button></div>`;
+  document.getElementById("threadTitle").textContent = "Both sides of the contradiction";
+  document.getElementById("thread").innerHTML = [a, b].sort((p, q) => p.t - q.t).map((o) =>
+    `<button class="bubble ${o.lane === "firm" ? "out" : "in"}" data-id="${o.id}" style="border-left-color:var(${laneById[o.lane].paper});background:color-mix(in srgb, var(${laneById[o.lane].paper}) 7%, var(--paper-card))">
+      <span class="meta"><b>${esc(whoFrom(o))}</b><span>${KIND[o.kind]} · ${fmt(o.t)}</span></span><p><b style="color:var(--paper-text)">${esc(o.title)}.</b> ${esc(o.body)}</p></button>`).join("");
+  document.getElementById("detail").innerHTML = `<article class="record" style="--tint:var(--contradiction)">
+    <span class="kind"><i style="background:var(--contradiction)"></i>Contradiction · needs attorney review</span>
+    <h3>${esc(k.why)}</h3>
+    <dl class="facts"><dt>Apart</dt><dd>${span(Math.min(a.t, b.t), Math.max(a.t, b.t))}</dd></dl>
+    <div class="compare">${side(a, k.qa, "The file says")}${side(b, k.qb, "But this shows")}</div>
+    <p class="body" style="font-size:13px;color:var(--paper-text-2)">Both sources are shown as written. Which one is right is the attorney's call.</p></article>`;
+}
+
+/* ------------------------------------------------------------------
+   Interaction
+   ------------------------------------------------------------------ */
+function select(id) {
+  state.selected = id; state.conflict = null;
+  const e = byId[id];
+  if (e.t < state.v0 || e.t > state.v1) { const w = state.v1 - state.v0; setView(e.t - w / 2, e.t + w / 2, false); }
+  render(); renderThread(e); renderDetail(e);
+}
+function selectConflict(id) {
+  state.conflict = id; state.selected = null;
+  render(); renderConflict(CONFLICTS.find((k) => k.id === id));
+}
+function setView(v0, v1, draw = true) {
+  const w = Math.min(v1 - v0, LAST - FIRST);
+  v0 = Math.max(FIRST, Math.min(v0, LAST - w));
+  state.v0 = v0; state.v1 = v0 + w;
+  if (draw) render();
+}
+function preset(m) {
+  document.querySelectorAll("[data-range]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.range === String(m)));
+  if (m === "all") return setView(FIRST, LAST);
+  const w = m * 30.44 * DAY, anchor = state.selected ? byId[state.selected].t : TODAY;
+  setView(anchor - w * 0.75, anchor + w * 0.25);
+}
+function stepSel(dir) {
+  const list = events.filter(matches); if (!list.length) return;
+  const i = list.findIndex((e) => e.id === state.selected);
+  select(list[Math.max(0, Math.min(list.length - 1, (i < 0 ? 0 : i + dir)))].id);
+}
+
+document.querySelectorAll("[data-range]").forEach((b) => b.onclick = () => preset(b.dataset.range === "all" ? "all" : +b.dataset.range));
+document.getElementById("today").onclick = () => { const w = state.v1 - state.v0; setView(TODAY - w * 0.75, TODAY + w * 0.25); };
+document.getElementById("back").onclick = () => { const w = state.v1 - state.v0; setView(state.v0 - w / 2, state.v1 - w / 2); };
+document.getElementById("fwd").onclick = () => { const w = state.v1 - state.v0; setView(state.v0 + w / 2, state.v1 + w / 2); };
+document.getElementById("prev").onclick = () => stepSel(-1);
+document.getElementById("next").onclick = () => stepSel(1);
+document.getElementById("q").oninput = (ev) => { state.query = ev.target.value.trim().toLowerCase(); render(); };
+
+// Clicks anywhere a record or contradiction is referenced.
+document.addEventListener("click", (ev) => {
+  const c = ev.target.closest("[data-conflict]"); if (c) return selectConflict(c.dataset.conflict);
+  const m = ev.target.closest("[data-ids]");
+  if (m) { if (dragged) return; const ids = m.dataset.ids.split(","); return select(ids[(ids.indexOf(state.selected) + 1) % ids.length]); }
+  const t = ev.target.closest("[data-toggle]"); if (t) { state.open[t.dataset.toggle] = !state.open[t.dataset.toggle]; return render(); }
+  const one = ev.target.closest("[data-id]"); if (one) return select(one.dataset.id);
+  const a = ev.target.closest("[data-ask]"); if (a) { document.getElementById("askInput").value = a.dataset.ask; ask(a.dataset.ask); }
+});
+document.addEventListener("submit", (ev) => { if (ev.target.id === "askForm") { ev.preventDefault(); ask(document.getElementById("askInput").value); } });
+document.addEventListener("keydown", (ev) => {
+  if (ev.target.matches("input")) return;
+  if (ev.key === "ArrowLeft") { stepSel(-1); ev.preventDefault(); }
+  if (ev.key === "ArrowRight") { stepSel(1); ev.preventDefault(); }
+  if ((ev.key === "Enter" || ev.key === " ") && ev.target.closest(".mark")) { ev.target.closest(".mark").dispatchEvent(new MouseEvent("click", { bubbles: true })); ev.preventDefault(); }
+});
+
+// Placeholder answer. The real one comes from the case-file search and cites records.
+function ask(q) {
+  if (!q.trim() || !state.selected) return;
+  const e = byId[state.selected], box = document.getElementById("answer");
+  const thread = events.filter((o) => partyOf(o) === partyOf(e));
+  const later = thread.filter((o) => o.t > e.t && o.lane !== e.lane).slice(0, 2);
+  box.innerHTML = `<div class="answer"><em>Looking through the file…</em></div>`;
+  setTimeout(() => {
+    box.innerHTML = `<div class="answer"><em>Sample answer · design mock</em>
+      ${later.length ? `After this, the file shows ${later.length === 1 ? "one related record" : "two related records"} from the other side:` : "Nothing from the other side follows this record in the file."}
+      <div style="margin-top:6px;display:grid;gap:4px">${later.map((o) => `<button class="cite" data-id="${o.id}">${esc(o.title)}, ${fmt(o.t)}</button>`).join("")}</div></div>`;
+  }, 500);
+}
+
+// Hover: tooltip, and the band joining the lanes a record sits on.
+function setHover(id) { if (id !== state.hover) { state.hover = id; render(); } }
+svg.addEventListener("pointermove", (ev) => {
+  const g = ev.target.closest(".mark"); if (!g || drag) { tip.style.display = "none"; if (!drag) setHover(null); return; }
+  const k = g.dataset.conflict && CONFLICTS.find((c) => c.id === g.dataset.conflict);
+  const list = k ? [] : g.dataset.ids.split(",").map((id) => byId[id]), e = list[0];
+  const row = (o) => `<b>${esc(o.title)}</b><span>${KIND[o.kind]} · ${fmt(o.t)}${o.open ? " · no reply" : ""}${o.overdue ? " · overdue" : ""}</span>`;
+  tip.innerHTML = k ? `<b>Contradiction</b><span>${esc(k.why)}</span>`
+    : list.length === 1 ? row(e)
+    : `<span>${list.length} records close together. Click to step through.</span>` + list.slice(0, 4).map((o) => `<b>${esc(o.title)}</b>`).join("") + (list.length > 4 ? `<span>and ${list.length - 4} more</span>` : "");
+  tip.style.display = "block";
+  const r = plot.getBoundingClientRect(), tx = ev.clientX - r.left, ty = ev.clientY - r.top;
+  tip.style.left = Math.max(4, Math.min(tx + 14, r.width - tip.offsetWidth - 4)) + "px";
+  tip.style.top = (ty > r.height / 2 ? ty - tip.offsetHeight - 12 : ty + 16) + "px";
+  setHover(e ? e.id : null);
+});
+svg.addEventListener("pointerleave", () => { tip.style.display = "none"; setHover(null); });
+
+// Drag to pan.
+let drag = null, dragged = false;
+plot.addEventListener("pointerdown", (ev) => { drag = { x: ev.clientX, v0: state.v0, v1: state.v1 }; dragged = false; });
+window.addEventListener("pointermove", (ev) => {
+  if (!drag) return;
+  const dx = ev.clientX - drag.x; if (Math.abs(dx) < 4 && !dragged) return;
+  dragged = true; plot.classList.add("dragging");
+  const dt = dx / plot.clientWidth * (drag.v1 - drag.v0);
+  setView(drag.v0 - dt, drag.v1 - dt);
+});
+window.addEventListener("pointerup", () => { drag = null; plot.classList.remove("dragging"); setTimeout(() => { dragged = false; }, 0); });
+window.addEventListener("resize", render);
+
+// timeline.html#open starts with every group expanded.
+const opts = location.hash.slice(1).split(",");
+if (opts.includes("open")) GROUPS.forEach((g) => { if (g.fold) state.open[g.id] = true; });
+
+// Open on the most recent thing that happened.
+select(events.filter((e) => e.t <= TODAY).pop().id);
+</script>
+</body>
+</html>
