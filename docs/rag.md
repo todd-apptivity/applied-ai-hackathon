@@ -6,7 +6,7 @@ The index covers everything in the Clio matter: matter fields, custom fields, co
 
 ## How it works
 
-1. **Read from Clio.** `src/lib/clio/` pulls the matter with GET requests only. The client has no method that can write to Clio, and a test fails if a write method appears in that folder.
+1. **Read from Clio.** `src/lib/clio/snapshot.ts` pulls the matter through the shared read-only Clio client (`resources.ts`), which sends GET requests only. A test fails if anything in `src/lib/clio/` other than the OAuth token calls uses another HTTP method.
 2. **Normalize.** Each record becomes a `CaseRecord` with a source type, Clio id, title, local date, and plain text (`src/lib/rag/records.ts`). Each document page becomes its own record, so search results can point at a page.
 3. **Extract page text.** PDFs are read with their own text layer. Pages without one are skipped, or transcribed by Claude when you pass `--ocr`. Page text is cached by document version, so each page is parsed or OCR'd once (`documents.ts`, `ocr.ts`).
 4. **Chunk.** Long text is split at paragraph and sentence boundaries into chunks of about 1,200 characters, with a short overlap. Every chunk carries a header line with the record type, date, title, and page, so it still makes sense when read alone (`chunking.ts`).
@@ -22,11 +22,12 @@ npm install
 
 | Variable | Needed for |
 | --- | --- |
-| `CLIO_ACCESS_TOKEN` | Reading a matter from Clio. Use an OAuth app with read scopes only. |
-| `CLIO_BASE_URL` | Clio region. Defaults to `https://app.clio.com` (US). |
+| `CLIO_CLIENT_ID`, `CLIO_CLIENT_SECRET` | Connecting to Clio. See "Clio Manage connection" in the README. |
 | `VOYAGE_API_KEY` | Embeddings. Without it, search falls back to keywords only. |
 | `ANTHROPIC_API_KEY` | OCR of scanned pages (`--ocr`). |
 | `RAG_API_TOKEN` | Bearer token for `POST /api/rag/search`. Required in production. |
+
+Before indexing from Clio, connect once: run `npm run dev`, open `/clio`, and click **Connect to Clio**. The tokens are saved in `.clio/tokens.json`, and the ingest command reuses them.
 
 ## Commands
 
@@ -96,7 +97,7 @@ Each result comes back as a `<passage>` with `source_type`, `source_id`, `date`,
 
 - **Firm-side only.** The index holds everything in the file, including dates of birth and attorney notes. Don't use it to build the provider portal.
 - **The index file is client data.** `data/` is gitignored. Don't commit it or upload it anywhere public.
-- **Not yet tested against a live Clio account.** The Clio requests follow the v4 API docs but were built without network access to Clio. The `fields` lists are all in `CLIO_FIELDS` in `src/lib/clio/snapshot.ts`. If Clio rejects a field, its error message is printed and the fix goes there.
+- **Not yet tested against a live Clio account.** If Clio rejects a request, its error message is printed. The `fields` lists for each resource are in `src/lib/clio/resources.ts`.
 - **OCR cost.** OCR sends four pages per request to Claude. The model is set by `RAG_OCR_MODEL`. OCR'd text is cached, so you pay once per page. The OCR prompt tells Claude to replace government ID numbers (license, passport, SSN) with a placeholder. That is an instruction, not a guarantee, so spot-check ID documents.
 - **Deploying to Vercel.** The serverless file system is read-only and temporary. Run ingestion locally or on a worker and deploy the finished `.sqlite` file with the app, or move the store to a hosted SQLite such as Turso.
 - **Changing embedding models** rebuilds the vector table on the next ingest. A query embedder that doesn't match the index fails with a clear error instead of returning bad results.

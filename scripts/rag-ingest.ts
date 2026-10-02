@@ -1,7 +1,7 @@
 /**
  * Builds or refreshes the RAG index for one matter.
  *
- *   From Clio (read-only):
+ *   From Clio (read-only). Connect first: `npm run dev`, then open /clio.
  *     npm run rag:ingest -- --clio-matter <matter id> [--ocr]
  *
  *   From a Clio setup export (offline development):
@@ -15,7 +15,6 @@
  */
 import { parseArgs } from "node:util";
 import { fetchMatterSnapshot } from "../src/lib/clio/snapshot";
-import { ClioClient } from "../src/lib/clio/client";
 import { openRagDb } from "../src/lib/rag/db";
 import { createEmbedder } from "../src/lib/rag/embeddings";
 import { ingestMatter, type MatterSnapshot } from "../src/lib/rag/ingest";
@@ -40,8 +39,10 @@ const { values } = parseArgs({
 async function main() {
   let snapshot: MatterSnapshot;
   if (values["clio-matter"]) {
-    console.log(`Reading matter ${values["clio-matter"]} from Clio...`);
-    snapshot = await fetchMatterSnapshot(new ClioClient(), values["clio-matter"]);
+    const matterId = Number(values["clio-matter"]);
+    if (!Number.isInteger(matterId) || matterId <= 0) throw new Error("--clio-matter must be a numeric Clio matter id");
+    console.log(`Reading matter ${matterId} from Clio...`);
+    snapshot = await fetchMatterSnapshot(matterId);
   } else if (values.export && values["matter-id"]) {
     snapshot = loadClioExport({
       file: values.export,
