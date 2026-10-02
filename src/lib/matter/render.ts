@@ -36,13 +36,17 @@ export function embedJson(value: unknown): string {
     .replace(/\u2029/g, "\\u2029");
 }
 
-export function fillTemplate(template: string, view: MatterView): string {
+export function fillTemplate(template: string, view: unknown): string {
   if (!template.includes(DATA_SLOT)) throw new Error("View template has no data slot.");
   // A function replacement, so `$` sequences in record text are not interpreted.
   return template.replace(DATA_SLOT, () => embedJson(view));
 }
 
-export async function renderLawyerView(kind: LawyerViewKind, view: MatterView): Promise<string> {
-  const file = path.join(process.cwd(), "src", "views", TEMPLATES[kind]);
-  return fillTemplate(await readFile(file, "utf8"), view);
+/** Fill one of the documents in `src/views/` with its data. */
+export async function renderTemplate(file: string, data: unknown): Promise<string> {
+  return fillTemplate(await readFile(path.join(process.cwd(), "src", "views", file), "utf8"), data);
+}
+
+export function renderLawyerView(kind: LawyerViewKind, view: MatterView): Promise<string> {
+  return renderTemplate(TEMPLATES[kind], view);
 }

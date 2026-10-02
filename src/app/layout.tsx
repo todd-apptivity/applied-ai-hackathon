@@ -40,6 +40,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Link href="/matters" className="hover:text-ink-foreground">
             Cases
           </Link>
+          <Link href="/providers" className="hover:text-ink-foreground">
+            Providers
+          </Link>
           <Link href="/chat" className="hover:text-ink-foreground">
             Case chat
           </Link>

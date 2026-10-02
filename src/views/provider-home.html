@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your patients</title>
+<style>
+  /* Design tokens. Same set as design/timeline.html and design/provider.html. */
+  :root {
+    --paper: #f5f1e4;
+    --paper-card: #fffef9;
+    --paper-line: #e3dcc6;
+    --paper-text: #10231f;
+    --paper-text-2: #4d5e58;
+    --paper-text-3: #86948e;
+
+    --ink: #0e3b35;
+    --ink-raised: #165048;
+    --ink-line: #22635a;
+    --ink-text: #f5f1e4;
+    --ink-text-2: #c2d8cf;
+    --ink-text-3: #8fb3a7;
+
+    --lane-firm-p: #12855d;
+    --lane-provider: #c4b5ff;
+    --lane-provider-p: #4a3aa7;
+
+    /* Status. Reserved; always shown with an icon or label. */
+    --contradiction: #fab219;
+    --critical: #d03b3b;
+    --accent: #0e6b57;
+
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--paper); color: var(--paper-text); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  a { color: inherit; text-decoration: none; }
+  :focus-visible { outline: 2px solid var(--contradiction); outline-offset: 2px; }
+  h1, h2, h3, p, dl, dd { margin: 0; }
+  .wrap { max-width: 1320px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+
+  /* ---------- Ink: the practice and its numbers ---------- */
+  .instrument { background: var(--ink); color: var(--ink-text); }
+  .topbar { display: flex; align-items: center; gap: 12px 24px; flex-wrap: wrap; padding-top: 18px; padding-bottom: 14px; }
+  .who { flex: 1 1 320px; min-width: 0; }
+  .who small { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .who h1 { font-family: var(--serif); font-weight: 600; font-size: 26px; letter-spacing: -0.01em; line-height: 1.2; overflow-wrap: anywhere; }
+  .who p { font-size: 13px; color: var(--ink-text-2); margin-top: 2px; }
+  .stamp { font-size: 12px; color: var(--ink-text-3); text-align: right; line-height: 1.4; }
+  .stamp b { display: block; color: var(--ink-text-2); font-weight: 600; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; padding-bottom: 22px; }
+  .kpi { text-align: left; background: var(--ink-raised); border: 1px solid var(--ink-line); border-top: 3px solid var(--ink-text-3); border-radius: 12px; padding: 12px 14px; min-width: 0; color: inherit; }
+  .kpi:hover, .kpi[aria-pressed="true"] { border-color: var(--ink-text-2); }
+  .kpi[aria-pressed="true"] { background: #1c5f55; }
+  .kpi.good { border-top-color: #6fe0b3; }
+  .kpi.late { border-top-color: var(--critical); }
+  .kpi.wait { border-top-color: var(--contradiction); }
+  .kpi span { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .kpi b { display: block; margin-top: 4px; font-family: var(--serif); font-size: 32px; line-height: 1.1; font-weight: 600; }
+  .kpi small { display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.35; color: var(--ink-text-2); }
+
+  /* ---------- Paper ---------- */
+  main { padding-top: 24px; padding-bottom: 40px; display: grid; gap: 28px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  .section-head h2 { font-family: var(--serif); font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .section-head > span { font-size: 13px; color: var(--paper-text-2); }
+  .face { flex: none; border-radius: 50%; overflow: hidden; background: var(--paper-line); }
+  .face svg { display: block; width: 100%; height: 100%; }
+  .flag { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 1px 9px; font-size: 12px; font-weight: 600; border: 1px solid var(--paper-text-3); color: var(--paper-text-2); white-space: nowrap; }
+  .flag.late { border-color: var(--critical); color: #a02020; background: #fdecec; }
+  .flag.soon { border-color: var(--contradiction); color: #5c3d00; background: #fff4d6; }
+  .flag.live { border-color: var(--lane-firm-p); color: #0b5c40; background: #e6f4ec; }
+  .flag.paid { border-color: var(--lane-provider-p); color: #3a2c8c; background: #eeebfb; }
+  .flag.quiet { border-style: dashed; }
+
+  /* Do these first */
+  .first { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; }
+  .todo { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 12px; align-items: start; background: var(--paper-card); border: 1px solid var(--paper-line);
+    border-left: 4px solid var(--contradiction); border-radius: 14px; padding: 14px 16px; box-shadow: 0 12px 32px -20px rgba(16,35,31,.3); }
+  .todo.late { border-left-color: var(--critical); }
+  .todo:hover { border-color: var(--paper-text-3); border-left-color: var(--accent); }
+  .todo .face { width: 48px; height: 48px; }
+  .todo b { display: block; font-size: 13px; font-weight: 600; color: var(--paper-text-2); }
+  .todo h3 { font-family: var(--serif); font-size: 18px; line-height: 1.25; font-weight: 600; margin: 1px 0 6px; overflow-wrap: anywhere; }
+  .todo p { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* Patient list */
+  .tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .search { flex: 1 1 220px; max-width: 320px; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--paper-card); border: 1px solid var(--paper-line); border-radius: 8px; padding: 6px 12px; color: var(--paper-text-3); }
+  .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--paper-text); font-size: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips button { border: 1px solid var(--paper-line); background: var(--paper-card); color: var(--paper-text-2); border-radius: 999px; padding: 4px 12px; font-size: 13px; }
+  .chips button i { font-style: normal; color: var(--paper-text-3); margin-left: 4px; font-variant-numeric: tabular-nums; }
+  .chips button:hover { border-color: var(--paper-text-3); color: var(--paper-text); }
+  .chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chips button[aria-pressed="true"] i { color: #cfe6d9; }
+
+  .list { background: var(--paper-card); border: 1px solid var(--paper-line); border-radius: 14px; overflow: hidden; box-shadow: 0 12px 32px -20px rgba(16,35,31,.3); }
+  .cols, .row { display: grid; grid-template-columns: 52px minmax(0, 1.5fr) minmax(0, 1.5fr) minmax(0, 1.15fr) minmax(0, 1.5fr) minmax(0, .9fr) minmax(0, .8fr); gap: 16px; align-items: center; padding: 12px 18px; }
+  .cols { padding-top: 10px; padding-bottom: 10px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--paper-text-3); border-bottom: 1px solid var(--paper-line); }
+  .cols span:last-child, .row .owed { text-align: right; }
+  .row { border-top: 1px solid var(--paper-line); position: relative; }
+  .row:first-of-type { border-top: 0; }
+  .row:hover { background: var(--paper); }
+  .row .face { width: 52px; height: 52px; }
+  .row.new .face { box-shadow: 0 0 0 2px var(--paper-card), 0 0 0 4px var(--accent); }
+  .name b { display: block; font-family: var(--serif); font-size: 18px; line-height: 1.2; font-weight: 600; overflow-wrap: anywhere; }
+  .name small { display: block; font-size: 12.5px; color: var(--paper-text-2); overflow-wrap: anywhere; }
+  .stage { display: flex; gap: 3px; margin-top: 7px; }
+  .stage i { flex: 1; height: 4px; border-radius: 2px; background: var(--paper-line); }
+  .stage i.on { background: var(--accent); }
+  .case small { display: block; font-size: 12.5px; color: var(--paper-text-2); margin-top: 4px; overflow-wrap: anywhere; }
+  .asks { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .asks b { font-family: var(--serif); font-size: 28px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .asks.none b { color: var(--paper-text-3); }
+  .asks div { min-width: 0; font-size: 12.5px; color: var(--paper-text-2); line-height: 1.3; }
+  .track { position: relative; height: 22px; margin: 0 6px; }
+  .track::before { content: ""; position: absolute; left: -6px; right: -6px; top: 10px; height: 2px; background: var(--paper-line); }
+  .track i { position: absolute; top: 5px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; box-shadow: 0 0 0 2px var(--paper-card); }
+  .track i.ask { background: var(--lane-firm-p); }
+  .track i.reply { background: var(--paper-card); border: 3px solid var(--lane-provider-p); }
+  .track i.today { left: 100%; top: 1px; width: 2px; height: 20px; margin-left: 5px; border-radius: 0; background: var(--paper-text); box-shadow: none; }
+  .pulse small { display: block; font-size: 12px; color: var(--paper-text-3); margin-top: 2px; overflow-wrap: anywhere; }
+  .visit b { display: block; font-weight: 600; font-size: 14px; }
+  .visit small, .owed small { display: block; font-size: 12px; color: var(--paper-text-3); }
+  .owed b { font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .empty { padding: 28px 18px; color: var(--paper-text-2); font-size: 14px; }
+  .key { display: flex; gap: 6px 16px; flex-wrap: wrap; font-size: 12px; color: var(--paper-text-3); margin-top: 10px; }
+  .key i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; border: 2px solid; }
+
+  @media (max-width: 1040px) {
+    .cols { display: none; }
+    .row { grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr); gap: 10px 14px; align-items: start; }
+    .row .case { grid-column: 2 / -1; }
+    .row .asks { grid-column: 2; }
+    .row .visit { grid-column: 3; }
+    .row .pulse { grid-column: 2 / -1; }
+    .row .owed { grid-column: 2 / -1; text-align: left; }
+    .row .name { grid-column: 2 / -1; }
+  }
+  @media (max-width: 860px) {
+    .wrap { padding-left: 16px; padding-right: 16px; }
+    .stamp { text-align: left; }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-bottom: 16px; }
+    .kpi b { font-size: 26px; }
+    .row { padding: 14px; }
+    .search { max-width: none; }
+  }
+  .face { display: grid; place-items: center; font-family: var(--serif); font-weight: 600; color: var(--paper-text); background: #dbe7dc; }
+  .row .face { font-size: 18px; } .todo .face { font-size: 16px; }
+  .cols, .row { grid-template-columns: 52px minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.6fr) minmax(0, 1fr); }
+</style>
+</head>
+<body>
+
+<section class="instrument" aria-label="Your practice">
+  <header class="topbar wrap">
+    <div class="who"><small>Shared cases for</small><h1 id="providerName"></h1><p id="sub"></p></div>
+    <div class="stamp" id="stamp"></div>
+  </header>
+  <div class="kpis wrap" id="kpis" role="group" aria-label="At a glance. Each tile filters the patient list."></div>
+</section>
+
+<main class="wrap">
+  <section aria-label="Do these first" id="firstSection">
+    <div class="section-head"><h2>Do these first</h2><span>Overdue, or due within two weeks</span></div>
+    <div class="first" id="first"></div>
+  </section>
+  <section aria-label="Your patients">
+    <div class="section-head"><h2>Your patients</h2><span id="shown"></span></div>
+    <div class="tools">
+      <label class="search">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14" stroke-linecap="round"/></svg>
+        <input id="q" type="search" placeholder="Find a patient" aria-label="Find a patient">
+      </label>
+      <div class="chips" id="chips" role="group" aria-label="Filter patients"></div>
+    </div>
+    <div class="list">
+      <div class="cols" aria-hidden="true"><span></span><span>Patient</span><span>Case</span><span>Asked of you</span><span>Messages, last 12 months</span><span>Next visit</span></div>
+      <div id="rows"></div>
+    </div>
+    <div class="key">
+      <span><i style="background:var(--lane-firm-p);border-color:var(--lane-firm-p)"></i>From the firm</span>
+      <span><i style="border-color:var(--lane-provider-p)"></i>From your office</span>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ------------------------------------------------------------------
+   Data. The server fills this slot with one entry per case shared with
+   this provider (src/lib/matter/provider.ts). Nothing else reaches the page.
+   ------------------------------------------------------------------ */
+const DATA = /*__VIEW_DATA__*/null;
+const DAY = 864e5, TODAY = DATA.today;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (t, o = { month: "short", day: "numeric", year: "numeric" }) => new Date(t).toLocaleDateString("en-US", o);
+const days = (a, b) => Math.round((b - a) / DAY);
+const span = (a, b) => { const n = days(a, b), m = Math.round(n / 30.44); return n < 60 ? `${n} day${n === 1 ? "" : "s"}` : m < 24 ? `${m} months` : `${Math.floor(m / 12)} yr ${m % 12} mo`; };
+const initials = (name) => String(name || "?").split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+
+const PATIENTS = DATA.cases.map((c) => {
+  const unanswered = c.messages.filter((m) => m.unanswered), late = c.requests.filter((r) => r.overdue).length;
+  return { ...c, unanswered, late, open: c.requests.length + unanswered.length, nextVisit: c.visits.find((v) => !v.past) || null,
+    rank: late * 1000 + (c.requests.length + unanswered.length) * 100 };
+});
+const FILTERS = [["all", "All", () => true], ["asked", "Needs your answer", (p) => p.open > 0], ["late", "Overdue", (p) => p.late > 0]];
+const state = { filter: "all", query: "" };
+const href = (p) => `/provider/${encodeURIComponent(DATA.provider.id)}/cases/${p.matterId}`;
+
+function renderTop() {
+  const requests = PATIENTS.reduce((n, p) => n + p.requests.length, 0), late = PATIENTS.reduce((n, p) => n + p.late, 0);
+  const waiting = PATIENTS.reduce((n, p) => n + p.unanswered.length, 0);
+  const soon = PATIENTS.filter((p) => p.nextVisit && p.nextVisit.t - TODAY <= 14 * DAY).length;
+  document.title = `${DATA.provider.name} · Your patients`;
+  $("providerName").textContent = DATA.provider.name;
+  $("sub").textContent = `${PATIENTS.length} patient${PATIENTS.length === 1 ? "" : "s"} on shared cases`;
+  $("stamp").innerHTML = `<b>${fmt(TODAY, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</b>Read from the firm's file just now.`;
+  const tile = (key, cls, label, value, sub) => `<button class="kpi ${cls}" data-filter="${key}" aria-pressed="${state.filter === key}"><span>${label}</span><b>${value}</b><small>${sub}</small></button>`;
+  $("kpis").innerHTML =
+    tile("all", "good", "Patients", PATIENTS.length, "on cases shared with you") +
+    tile("late", late ? "late" : requests ? "wait" : "good", "Open requests", requests, late ? `${late} overdue` : "none overdue") +
+    tile("asked", waiting ? "wait" : "good", "Awaiting your reply", waiting, waiting ? "messages from the firm" : "every message answered") +
+    tile("all", "", "Visits in two weeks", soon, "on the firm's calendar");
+}
+
+function renderFirst() {
+  const items = PATIENTS.flatMap((p) => p.requests.map((r) => ({ p, r }))).filter((o) => o.r.overdue || (o.r.due && o.r.due - TODAY <= 14 * DAY))
+    .sort((a, b) => (a.r.due || 0) - (b.r.due || 0)).slice(0, 4);
+  $("firstSection").hidden = !items.length;
+  $("first").innerHTML = items.map(({ p, r }) => `<a class="todo ${r.overdue ? "late" : ""}" href="${href(p)}"><div class="face">${initials(p.patient.name)}</div>
+    <div><b>${esc(p.patient.name || "Patient")}</b><h3>${esc(r.title)}</h3><p>${r.overdue ? `<span class="flag late">Overdue by ${span(r.due, TODAY)}</span>` : `<span class="flag soon">Due ${fmt(r.due, { month: "short", day: "numeric" })}</span>`}</p></div></a>`).join("");
+}
+
+function track(p) {
+  const t0 = TODAY - 365 * DAY, pts = p.messages.filter((m) => m.t >= t0 && m.t <= TODAY);
+  return `<div class="track" role="img" aria-label="${pts.filter((m) => m.fromFirm).length} messages from the firm and ${pts.filter((m) => !m.fromFirm).length} from your office in the last 12 months">${pts.map((m) =>
+    `<i class="${m.fromFirm ? "ask" : "reply"}" style="left:${((m.t - t0) / (TODAY - t0) * 100).toFixed(1)}%"></i>`).join("")}<i class="today"></i></div>`;
+}
+
+function renderList() {
+  const f = FILTERS.find((o) => o[0] === state.filter)[2], q = state.query;
+  const rows = PATIENTS.filter((p) => f(p) && (!q || String(p.patient.name).toLowerCase().includes(q))).sort((a, b) => b.rank - a.rank);
+  $("chips").innerHTML = FILTERS.map(([key, label, test]) => `<button data-filter="${key}" aria-pressed="${state.filter === key}">${label}<i>${PATIENTS.filter(test).length}</i></button>`).join("");
+  $("shown").textContent = rows.length === PATIENTS.length ? "Most urgent first" : `${rows.length} of ${PATIENTS.length} shown`;
+  $("rows").innerHTML = rows.length ? rows.map((p) => {
+    const until = p.nextVisit ? days(TODAY, p.nextVisit.t) : null;
+    return `<a class="row" href="${href(p)}" aria-label="${esc(p.patient.name || "Patient")}">
+      <div class="face">${initials(p.patient.name)}</div>
+      <div class="name"><b>${esc(p.patient.name || "Patient")}</b><small>${p.case.lastActivity ? `Last activity ${fmt(p.case.lastActivity, { month: "short", day: "numeric" })}` : ""}</small></div>
+      <div class="case"><span class="flag live">${esc(p.case.status || "Open")}</span><small>${p.case.stage ? esc(p.case.stage) + " stage" : "Stage not recorded"} · ${p.case.coverageOnFile ? "insurance on file" : "no insurance recorded"}</small></div>
+      <div class="asks ${p.open ? "" : "none"}"><b>${p.open}</b><div>${p.open ? `${p.requests.length} request${p.requests.length === 1 ? "" : "s"}, ${p.unanswered.length} unanswered<br>${p.late ? `<span class="flag late">${p.late} overdue</span>` : ""}` : "nothing asked"}</div></div>
+      <div class="pulse">${track(p)}</div>
+      <div class="visit">${p.nextVisit ? `<b>${fmt(p.nextVisit.t, { weekday: "short", month: "short", day: "numeric" })}</b><small>${until === 0 ? "today" : `in ${until} day${until === 1 ? "" : "s"}`}</small>` : `<small>None scheduled</small>`}</div></a>`;
+  }).join("") : `<p class="empty">No patients match.</p>`;
+}
+
+function render() { renderTop(); renderFirst(); renderList(); }
+document.addEventListener("click", (ev) => { const f = ev.target.closest("[data-filter]"); if (f) { state.filter = state.filter === f.dataset.filter ? "all" : f.dataset.filter; render(); } });
+$("q").addEventListener("input", (ev) => { state.query = ev.target.value.trim().toLowerCase(); renderList(); });
+render();
+</script>
+</body>
+</html>

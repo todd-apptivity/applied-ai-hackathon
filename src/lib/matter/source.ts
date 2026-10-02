@@ -11,6 +11,8 @@
 import { getMatterBundle } from "@/lib/clio/resources";
 import { bundleToSources, type SourceRecord } from "@/lib/rag/sources";
 
+import { retryOnNetworkFailure } from "./retry";
+
 export interface MatterSource {
   readonly name: string;
   /** Every record of one matter. Read-only; never writes to Clio. */
@@ -22,7 +24,7 @@ export class ClioLiveSource implements MatterSource {
   readonly name = "clio";
 
   async load(matterId: number, options: { signal?: AbortSignal } = {}): Promise<SourceRecord[]> {
-    const bundle = await getMatterBundle(matterId, { signal: options.signal });
+    const bundle = await retryOnNetworkFailure(() => getMatterBundle(matterId, { signal: options.signal }));
     return bundleToSources(bundle);
   }
 }

@@ -14,6 +14,11 @@ The Case state and Timeline views now render a real Clio matter, on a desk and o
 | `/matters/<id>` | The change digest ("what changed since I last reviewed"), reachable by URL. |
 | `POST /api/matters/<id>/ask` | `{ question, record? }` in, `{ answer, citations }` out. Used by the Ask field on a record and the phone view's Ask tab. |
 
+| `/providers` | Firm-side list of treating providers on open cases, with links to the pages they would see. |
+| `/provider/<contactId>` | A provider's own page: every case shared with their office. No firm navigation. |
+| `/provider/<contactId>/cases/<matterId>` | One patient's case as that provider may see it. |
+| `POST /api/speech` | `{ text }` in, WAV audio out. Speaks one line of the brief. |
+
 The floating chat is the existing grounded chat (`CaseChatPanel`). It is hidden on a phone-width window, where the phone view has its own Ask tab.
 
 The dev server runs on port 3123 (`npm run dev`).
@@ -38,6 +43,26 @@ route handler  ->  loadMatterView()  ->  matterSource().load()   (adapter: live 
 | `src/views/lawyer-desktop.html`, `lawyer-phone.html` | The design mocks with their sample data removed. Each is one self-contained document, so it renders exactly as designed and shares no styles with the rest of the app. |
 | `src/app/api/matters/[matterId]/ask/route.ts` | Reuses the chat agent, its `search_case_file` tool and its permission checks, as a single response. |
 | `tests/matter-derive.test.ts` | Lanes, grouping, unanswered messages, overdue tasks, costs, and safe embedding, on an invented matter. |
+
+### Case state on a desk
+
+Two columns. Left, on the dark panel: the client's initials, name, phone and email, the Listen button, "Read the brief instead" and Need to know. Right: the brief (when opened), six tiles, now/next/waiting, activity by party, and the matter fields folded away.
+
+### The brief and its audio
+
+`src/lib/matter/brief.ts` builds the brief on the server from the records and the matter's fields: who, what happened (the summary field, if the matter has one), what to watch, who the firm is waiting on, and what is next. No line is written by a model.
+
+The Listen button plays it. `src/lib/speech/engine.ts` synthesizes each line on this machine with a locally installed speech program (Flite by default, eSpeak NG as an alternative, chosen with `SPEECH_ENGINE`), so case text is not sent to a voice service. If the server has no speech program the views fall back to the browser's own voice, and if there is no voice at all the written brief opens.
+
+### Provider pages
+
+`src/lib/matter/provider.ts` builds a provider's view as an allow-list. From the whole matter it takes only: the subject and date of messages exchanged with that office, the name and due date of open tasks that name it, the title and time of calendar entries that name it, the names of documents that name it, the case stage, the date of the last activity, and whether an insurance carrier is recorded (never the amount). Notes, custom field values, expenses, other contacts, task descriptions and message bodies are never copied. `tests/matter-provider.test.ts` plants forbidden text in a fixture and asserts none of it appears.
+
+These pages are a preview on live data. There is no login, no attorney approval step and no frozen snapshot yet, and providers cannot reply through them.
+
+### Reading Clio live
+
+A dropped connection to Clio is retried twice (`src/lib/matter/retry.ts`). If the read still fails, the view shows a page with a "Try again" button.
 
 ### What is computed (no model)
 

@@ -342,7 +342,59 @@
   .body-list b { font-weight: 600; }
   .body-list span { color: var(--paper-text-2); }
 
-  @media (max-width: 1040px) { .state { grid-template-columns: minmax(0, 1fr); } }
+  /* Case state on a desk: the client and what needs attention on the left, the detail on the right. */
+  .state { grid-template-columns: 360px minmax(0, 1fr); gap: 28px; }
+  .profile { position: sticky; top: 16px; align-self: start; background: var(--ink); color: var(--ink-text); border-radius: 20px; padding: 30px 24px 24px; text-align: center; display: block !important; }
+  .profile .face { width: 88px; height: 88px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center; background: var(--ink-raised); font-family: var(--serif); font-size: 30px; font-weight: 600; box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--lane-client); }
+  .profile h2 { margin: 16px 0 0; font-family: var(--serif); font-size: 26px; font-weight: 600; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+  .profile .kicker { margin: 6px 0 0; font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-text-3); }
+  .profile .headline { margin: 10px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--ink-text-2); overflow-wrap: anywhere; }
+  .contacts { margin-top: 12px; display: grid; gap: 2px; font-size: 14px; }
+  .contacts a { color: var(--ink-text); text-decoration: underline; text-decoration-color: var(--ink-text-3); text-underline-offset: 3px; overflow-wrap: anywhere; }
+  .listen { margin-top: 22px; width: 100%; min-height: 54px; border: 0; border-radius: 14px; background: var(--lane-firm); color: var(--ink); display: flex; align-items: center; gap: 12px; padding: 8px 16px 8px 10px; text-align: left; }
+  .listen:disabled { background: var(--ink-raised); color: var(--ink-text-3); }
+  .listen .play { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--ink); color: var(--lane-firm); display: grid; place-items: center; }
+  .listen b { display: block; font-size: 16px; line-height: 1.2; }
+  .listen small { display: block; font-size: 12.5px; opacity: .8; }
+  .caption { margin-top: 16px; min-height: 96px; }
+  .caption small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--lane-firm); }
+  .caption p { margin-top: 6px; font-size: 18px; line-height: 1.4; overflow-wrap: anywhere; }
+  .dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+  .dots i { width: 22px; height: 4px; border-radius: 2px; background: var(--ink-line); }
+  .dots i.on { background: var(--lane-firm); } .dots i.done { background: var(--ink-text-3); }
+  .readit { margin-top: 6px; min-height: 44px; border: 0; background: none; color: var(--ink-text-2); font-size: 14px; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--ink-text-3); }
+  .brief { margin-top: 4px; display: grid; gap: 6px; text-align: left; }
+  .brief button { display: grid; grid-template-columns: 4px minmax(0, 1fr); gap: 10px; text-align: left; border: 0; background: none; color: var(--ink-text-2); padding: 7px 8px 7px 0; border-radius: 8px; }
+  .brief button::before { content: ""; border-radius: 2px; background: var(--ink-line); }
+  .brief small { display: block; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-text-3); }
+  .brief span { display: block; font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
+  .brief button.on { background: var(--ink-raised); color: var(--ink-text); }
+  .brief button.on::before { background: var(--lane-firm); }
+  .brief button.done span { color: var(--ink-text-3); }
+  .need { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--ink-line); text-align: left; }
+  .need h3 { margin: 0 0 10px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-text-3); }
+  .profile .alert { border-top-color: var(--ink-line); color: var(--ink-text); }
+  .profile .alert b { font-size: 14px; }
+  .profile .alert span { color: var(--ink-text-2); font-size: 12.5px; }
+  .profile button.alert:hover b { color: var(--lane-firm); }
+  .detail .brief { margin-top: 0; }
+  .detail .brief button { color: var(--paper-text-2); width: 100%; }
+  .detail .brief button::before { background: var(--paper-line); }
+  .detail .brief small { color: var(--paper-text-3); }
+  .detail .brief span { font-family: var(--serif); font-size: 17px; }
+  .detail .brief button.on { background: var(--paper); color: var(--paper-text); }
+  .detail .brief button.on::before { background: var(--accent); }
+  .detail .brief button.done span { color: var(--paper-text-3); }
+  .detail .tiles { padding: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .detail .tile { background: var(--paper-card); border-color: var(--paper-line); border-top-color: var(--paper-text-3); color: var(--paper-text); box-shadow: 0 12px 32px -22px rgba(16,35,31,.3); }
+  .detail .tile.good { border-top-color: var(--accent); } .detail .tile.late { border-top-color: var(--critical); } .detail .tile.warn { border-top-color: var(--contradiction); }
+  .detail button.tile:hover { border-color: var(--accent); }
+  .detail .tile span { color: var(--paper-text-3); } .detail .tile small { color: var(--paper-text-2); }
+  details.more summary { cursor: pointer; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); display: flex; justify-content: space-between; gap: 12px; }
+  details.more summary em { font-style: normal; letter-spacing: 0; text-transform: none; font-weight: 400; }
+  details.more[open] summary { margin-bottom: 14px; }
+  .pending { margin: 0; font-size: 13px; color: var(--paper-text-3); }
+  @media (max-width: 1040px) { .state { grid-template-columns: minmax(0, 1fr); } .profile { position: static; } }
   @media (max-width: 860px) {
     .hero { padding: 16px 16px 14px; gap: 14px; }
     .hero .face { width: 64px; height: 64px; }
@@ -395,14 +447,7 @@
     </div>
   </header>
 
-  <div id="stateTop">
-    <div class="hero">
-      <div class="face" id="face"></div>
-      <div><small id="heroKicker"></small><p id="headline"></p></div>
-    </div>
-    <div class="phases" id="phases" aria-label="Stage of the matter"></div>
-    <div class="tiles" id="tiles"></div>
-  </div>
+  <div id="stateTop" hidden></div>
 
   <div id="timelineTop">
   <div class="controls">
@@ -436,14 +481,24 @@
 </section>
 
 <main class="state" id="stateMain">
-  <div>
-    <section class="panel"><h2>Need to know <em>worked out from dates and records</em></h2><div id="alerts"></div></section>
+  <aside class="profile" aria-label="The client and what needs attention">
+    <div class="face" id="face"></div>
+    <h2 id="clientName"></h2>
+    <p class="kicker" id="heroKicker"></p>
+    <p class="headline" id="headline"></p>
+    <div class="contacts" id="contacts"></div>
+    <button class="listen" id="listen" aria-pressed="false"><span class="play" id="playIcon"></span><span><b id="listenLabel"></b><small id="listenSub"></small></span></button>
+    <div class="caption" id="caption" aria-live="polite" hidden></div>
+    <button class="readit" id="readit" aria-expanded="false" aria-controls="briefPanel"></button>
+    <div class="need"><h3>Need to know</h3><div id="alerts"></div></div>
+  </aside>
+  <div class="detail">
+    <section class="panel" id="briefPanel" hidden><h2>The brief <em>every line comes from the records</em></h2><div class="brief" id="brief"></div></section>
+    <div class="tiles" id="tiles"></div>
     <section class="panel"><h2>Now, next, waiting</h2><div class="nnw" id="nnw"></div></section>
-    <section class="panel"><h2>Not yet analysed</h2><p class="none">The story, the blocker chain and the contradiction check are composed from the file by a model. That step is not built yet, so nothing is shown here in its place.</p></section>
-  </div>
-  <div>
-    <section class="panel"><h2>Matter fields <em>as entered in Clio</em></h2><dl class="what" id="fields"></dl></section>
     <section class="panel"><h2>Who we have heard from <em>activity by quarter</em></h2><div class="pulse" id="pulse"></div></section>
+    <details class="panel more"><summary>Matter fields <em id="fieldCount"></em></summary><dl class="what" id="fields"></dl></details>
+    <p class="pending">The story, the blocker chain and the contradiction check are composed from the file by a model. That step is not built yet, so nothing is shown in its place.</p>
   </div>
 </main>
 
@@ -470,6 +525,7 @@ const DATA = /*__VIEW_DATA__*/null;
 
 const DAY = 864e5;
 const TODAY = DATA.today;
+const $ = (id) => document.getElementById(id);
 const LANE_TOKENS = { client: "client", firm: "firm", medical: "provider", defense: "defense", court: "court", other: "court", file: "file" };
 const LANES = DATA.lanes.map((l) => ({ ...l, ink: `--lane-${LANE_TOKENS[l.cls]}`, paper: `--lane-${LANE_TOKENS[l.cls]}-p` }));
 const laneById = Object.fromEntries(LANES.map((l, i) => [l.id, { ...l, index: i }]));
@@ -801,9 +857,11 @@ function renderState() {
   const name = CASE.clientName || DATA.title;
 
   el("face").textContent = name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-  el("heroKicker").textContent = [CASE.clientName, CASE.stage, CASE.status].filter(Boolean).join(" · ");
+  el("clientName").textContent = name;
+  el("heroKicker").textContent = [CASE.stage, CASE.status].filter(Boolean).join(" · ");
   el("headline").textContent = CASE.description || DATA.title;
-  el("phases").hidden = true;
+  el("contacts").innerHTML = [CASE.clientPhone ? `<a href="tel:${esc(CASE.clientPhone)}">${esc(CASE.clientPhone)}</a>` : "", CASE.clientEmail ? `<a href="mailto:${esc(CASE.clientEmail)}">${esc(CASE.clientEmail)}</a>` : ""].join("");
+  el("fieldCount").textContent = `${CASE.fields.length} as entered in Clio`;
 
   // Limitations, as Clio records it: the matter's limitations task, its due date and whether it is marked complete.
   const st = CASE.statute, left = st && st.date ? Math.round((st.date - TODAY) / DAY) : null, marked = st && /complete/i.test(st.status || "");
@@ -834,10 +892,10 @@ function renderState() {
   const alert = (cls, attr, title, text) => alerts.push(`<${attr ? "button" : "div"} class="alert ${cls}" ${attr}><i>${cls === "ok" ? "✓" : "!"}</i><div><b>${title}</b><span>${text}</span></div></${attr ? "button" : "div"}>`);
   if (st && st.date != null && !marked && left <= 90) alert("crit", "", left < 0 ? "The limitations date has passed and its task is not marked complete" : `${left} days to the limitations date`, `Due ${fmt(st.date)}.`);
   for (const e of overdue) alert("crit", `data-id="${e.id}"`, `Overdue: ${esc(e.title)}`, `${span(e.t, TODAY)} late.`);
-  if (soon.length) alert("warn", `data-id="${soon[0].id}"`, `${soon.length} date${soon.length === 1 ? "" : "s"} inside the next 90 days`, soon.slice(0, 6).map((e) => `${esc(e.title)} (${fmt(e.t, { month: "short", day: "numeric" })}, ${Math.round((e.t - TODAY) / DAY)} days)`).join(" · "));
+  if (soon.length) alert("warn", `data-id="${soon[0].id}"`, `${soon.length} date${soon.length === 1 ? "" : "s"} inside the next 90 days`, `First: ${esc(soon[0].title)}, ${fmt(soon[0].t, { month: "short", day: "numeric" })}.`);
   for (const w of waitingOn.slice(0, 4)) alert("warn", `data-id="${w.asks[w.asks.length - 1].id}"`, `${esc(w.lane.name)} has not replied`, `${w.asks.length} message${w.asks.length === 1 ? "" : "s"} unanswered since ${fmt(w.asks[0].t)}${w.heard ? `; last heard ${fmt(w.heard.t)}` : "; never heard from"}.`);
   if (call && sinceClient > 30) alert("warn", `data-id="${call.id}"`, `No contact with the client in ${sinceClient} days`, `Last was a ${KIND[call.kind].toLowerCase()} on ${fmt(call.t)}.`);
-  el("alerts").innerHTML = alerts.join("") || `<div class="alert ok"><i>✓</i><div><b>Nothing urgent</b><span>No deadline inside 90 days, nothing overdue, no unanswered messages.</span></div></div>`;
+  el("alerts").innerHTML = alerts.slice(0, 5).join("") || `<div class="alert ok"><i>✓</i><div><b>Nothing urgent</b><span>No deadline inside 90 days, nothing overdue, no unanswered messages.</span></div></div>`;
 
   const col = (title, n, body) => `<div><h3>${title} <i>${n}</i></h3>${body || `<p class="none">Nothing here.</p>`}</div>`;
   el("nnw").innerHTML =
@@ -861,7 +919,77 @@ function renderState() {
   }).join("");
 }
 
+/* ------------------------------------------------------------------
+   The brief, and its narration.
+   The lines come from the server (src/lib/matter/brief.ts). The server also
+   speaks them (POST /api/speech); if that is unavailable, the browser's own
+   voice reads them, and if there is no voice at all the text opens instead.
+   ------------------------------------------------------------------ */
+const BRIEF = (DATA.brief || []).map((l) => [l.label, l.text]);
+const briefSeconds = Math.round(BRIEF.reduce((n, l) => n + l[1].split(/\s+/).length, 0) / 2.7 / 5) * 5;
+const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+const player = new Audio();
+// null: not asked for yet. An array: one clip per line. false: the server cannot speak.
+let clips = null, loading = false, speaking = -1, readOpen = false;
+
+async function loadClips() {
+  return Promise.all(BRIEF.map(async ([, text]) => {
+    const res = await fetch("/api/speech", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
+    if (!res.ok) throw new Error("speech unavailable");
+    return URL.createObjectURL(await res.blob());
+  }));
+}
+
+function renderBrief() {
+  const on = speaking >= 0, voiceless = clips === false && !canSpeak, panel = $("briefPanel");
+  $("brief").innerHTML = BRIEF.map(([label, text], i) => `<button data-line="${i}" class="${i === speaking ? "on" : on && i < speaking ? "done" : ""}"${i === speaking ? ' aria-current="true"' : ""}><div><small>${label}</small><span>${esc(text)}</span></div></button>`).join("");
+  // While it plays, the line being spoken is shown as a caption.
+  $("caption").hidden = !on;
+  $("caption").innerHTML = on ? `<small>${BRIEF[speaking][0]}</small><p>${esc(BRIEF[speaking][1])}</p><div class="dots">${BRIEF.map((_, i) => `<i class="${i === speaking ? "on" : i < speaking ? "done" : ""}"></i>`).join("")}</div>` : "";
+  // On the desk the full text opens in its own panel and stays open; on a phone it gives way to the caption.
+  if (panel) panel.hidden = !readOpen; else $("brief").hidden = !readOpen || on;
+  $("readit").hidden = on && !panel;
+  $("readit").textContent = readOpen ? "Hide the brief" : "Read the brief instead";
+  $("readit").setAttribute("aria-expanded", readOpen);
+  $("listen").disabled = voiceless || loading || !BRIEF.length;
+  $("listen").setAttribute("aria-pressed", on);
+  $("playIcon").innerHTML = on ? `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="2" fill="currentColor"/></svg>` : `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3.5 1.5v11l9-5.5z" fill="currentColor"/></svg>`;
+  $("listenLabel").textContent = voiceless ? "No voice is available here" : loading ? "Preparing the audio…" : on ? "Stop" : "Listen to the brief";
+  $("listenSub").textContent = voiceless ? "The brief is written out instead." : on ? `Part ${speaking + 1} of ${BRIEF.length}: ${BRIEF[speaking][0].toLowerCase()}` : `About ${briefSeconds} seconds`;
+}
+
+function stopBrief() {
+  if (speaking < 0) return;
+  speaking = -1; player.pause();
+  if (canSpeak) speechSynthesis.cancel();
+  renderBrief();
+}
+
+async function speakFrom(i) {
+  if (i >= BRIEF.length) return stopBrief();
+  if (clips === null) {
+    loading = true; renderBrief();
+    try { clips = await loadClips(); } catch { clips = false; }
+    loading = false;
+  }
+  if (clips) {
+    speaking = i; renderBrief();
+    player.onended = () => { if (speaking === i) speakFrom(i + 1); };
+    player.onerror = () => { if (speaking === i) stopBrief(); };
+    player.src = clips[i];
+    try { await player.play(); } catch { if (speaking === i) stopBrief(); }
+    return;
+  }
+  if (!canSpeak) { readOpen = true; return renderBrief(); }
+  speechSynthesis.cancel(); speaking = i; renderBrief();
+  const u = new SpeechSynthesisUtterance(BRIEF[i][1]); u.rate = 1.05; u.lang = "en-US";
+  u.onend = () => { if (speaking === i) speakFrom(i + 1); };
+  u.onerror = () => { if (speaking === i) stopBrief(); };
+  speechSynthesis.speak(u);
+}
+
 function setView(name) {
+  stopBrief();
   state.view = name;
   const onState = name === "state";
   document.getElementById("stateTop").hidden = !onState;
@@ -916,6 +1044,9 @@ document.getElementById("q").oninput = (ev) => { state.query = ev.target.value.t
 
 // Clicks anywhere a record or contradiction is referenced.
 document.addEventListener("click", (ev) => {
+  if (ev.target.closest("#listen")) return speaking >= 0 ? stopBrief() : speakFrom(0);
+  if (ev.target.closest("#readit")) { readOpen = !readOpen; return renderBrief(); }
+  const ln = ev.target.closest("[data-line]"); if (ln) return speakFrom(+ln.dataset.line);
   const vw = ev.target.closest("[data-view]"); if (vw) return setView(vw.dataset.view);
   const c = ev.target.closest("[data-conflict]"); if (c) return selectConflict(c.dataset.conflict);
   const m = ev.target.closest("[data-ids]");
@@ -996,7 +1127,8 @@ if (latest) select(latest.id);
 preset(3);
 
 // The case state is the landing view; timeline.html#timeline opens on the timeline instead.
-renderState();
+renderState(); renderBrief();
+window.addEventListener("pagehide", stopBrief);
 setView(opts.includes("timeline") ? "timeline" : "state");
 </script>
 </body>

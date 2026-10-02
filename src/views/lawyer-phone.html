@@ -314,7 +314,6 @@ const waitingOn = LANES.map((l) => {
 }).filter(Boolean).sort((a, b) => a.asks[0].t - b.asks[0].t);
 // Limitations, as Clio records it: the matter's limitations task.
 const st = CASE.statute, stLeft = st && st.date != null ? Math.round((st.date - TODAY) / DAY) : null, stMarked = !!st && /complete/i.test(st.status || "");
-const field = (pattern) => (CASE.fields.find((f) => pattern.test(f.name)) || {}).value || null;
 
 /* ------------------------------------------------------------------
    Case
@@ -360,43 +359,67 @@ function renderCase() {
 }
 
 /* ------------------------------------------------------------------
-   The 30-second brief, and its narration.
-   Spoken with the browser's built-in voice.
+   The brief, and its narration.
+   The lines come from the server (src/lib/matter/brief.ts). The server also
+   speaks them (POST /api/speech); if that is unavailable, the browser's own
+   voice reads them, and if there is no voice at all the text opens instead.
    ------------------------------------------------------------------ */
-// Each line is filled in from the records and the Clio fields; none is written by hand or by a model.
-const say = (n, one, many) => `${n === 0 ? "No" : n} ${n === 1 ? one : many}`;
-const summary = field(/summary/i), firstUp = upcoming[0], topWait = waitingOn[0];
-const BRIEF = [
-  ["Who", `${CASE.clientName || DATA.title}. ${[CASE.stage ? `${CASE.stage} stage` : null, CASE.opened ? `open for ${span(CASE.opened, TODAY).replace(" yr", " years").replace(" mo", " months")}` : null].filter(Boolean).join(", ")}.`],
-  summary ? ["What happened", summary] : null,
-  ["Watch out", `${say(overdue.length, "task is", "tasks are")} overdue${overdue.length ? `: ${overdue[0].title}` : ""}. ${!st || st.date == null ? "No limitations date is recorded." : stMarked ? "The limitations task is marked complete." : stLeft < 0 ? "The limitations date has passed and is not marked complete." : `${stLeft} days remain to the limitations date.`}`],
-  topWait ? ["Waiting on", `${topWait.lane.name} has not replied to ${say(topWait.asks.length, "message", "messages").toLowerCase()} since ${fmt(topWait.asks[0].t, { month: "long", year: "numeric" })}.`] : null,
-  ["Next", `${clientCall ? `The client was last contacted ${sinceClient} days ago.` : "There is no client contact on file."} ${firstUp ? `Next up: ${firstUp.title}, on ${fmt(firstUp.t, { month: "long", day: "numeric" })}.` : "Nothing is scheduled."}`],
-].filter(Boolean);
+const BRIEF = (DATA.brief || []).map((l) => [l.label, l.text]);
 const briefSeconds = Math.round(BRIEF.reduce((n, l) => n + l[1].split(/\s+/).length, 0) / 2.7 / 5) * 5;
 const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
-let speaking = -1, readOpen = false;
+const player = new Audio();
+// null: not asked for yet. An array: one clip per line. false: the server cannot speak.
+let clips = null, loading = false, speaking = -1, readOpen = false;
+
+async function loadClips() {
+  return Promise.all(BRIEF.map(async ([, text]) => {
+    const res = await fetch("/api/speech", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
+    if (!res.ok) throw new Error("speech unavailable");
+    return URL.createObjectURL(await res.blob());
+  }));
+}
 
 function renderBrief() {
-  const on = speaking >= 0;
+  const on = speaking >= 0, voiceless = clips === false && !canSpeak, panel = $("briefPanel");
   $("brief").innerHTML = BRIEF.map(([label, text], i) => `<button data-line="${i}" class="${i === speaking ? "on" : on && i < speaking ? "done" : ""}"${i === speaking ? ' aria-current="true"' : ""}><div><small>${label}</small><span>${esc(text)}</span></div></button>`).join("");
-  // While it plays, only the line being spoken is on screen. The full text is behind "Read the brief".
+  // While it plays, the line being spoken is shown as a caption.
   $("caption").hidden = !on;
   $("caption").innerHTML = on ? `<small>${BRIEF[speaking][0]}</small><p>${esc(BRIEF[speaking][1])}</p><div class="dots">${BRIEF.map((_, i) => `<i class="${i === speaking ? "on" : i < speaking ? "done" : ""}"></i>`).join("")}</div>` : "";
-  $("brief").hidden = !readOpen || on;
-  $("readit").hidden = on;
+  // On the desk the full text opens in its own panel and stays open; on a phone it gives way to the caption.
+  if (panel) panel.hidden = !readOpen; else $("brief").hidden = !readOpen || on;
+  $("readit").hidden = on && !panel;
   $("readit").textContent = readOpen ? "Hide the brief" : "Read the brief instead";
   $("readit").setAttribute("aria-expanded", readOpen);
-  $("listen").disabled = !canSpeak;
+  $("listen").disabled = voiceless || loading || !BRIEF.length;
   $("listen").setAttribute("aria-pressed", on);
   $("playIcon").innerHTML = on ? `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="2" width="10" height="10" rx="2" fill="currentColor"/></svg>` : `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3.5 1.5v11l9-5.5z" fill="currentColor"/></svg>`;
-  $("listenLabel").textContent = !canSpeak ? "Voice is not available in this browser" : on ? "Stop" : "Listen to the brief";
-  $("listenSub").textContent = !canSpeak ? "The brief is written out below." : on ? `Part ${speaking + 1} of ${BRIEF.length}: ${BRIEF[speaking][0].toLowerCase()}` : `About ${briefSeconds} seconds`;
+  $("listenLabel").textContent = voiceless ? "No voice is available here" : loading ? "Preparing the audio…" : on ? "Stop" : "Listen to the brief";
+  $("listenSub").textContent = voiceless ? "The brief is written out instead." : on ? `Part ${speaking + 1} of ${BRIEF.length}: ${BRIEF[speaking][0].toLowerCase()}` : `About ${briefSeconds} seconds`;
 }
-function stopBrief() { if (speaking < 0) return; speaking = -1; if (canSpeak) speechSynthesis.cancel(); renderBrief(); }
-function speakFrom(i) {
-  if (!canSpeak) return;
+
+function stopBrief() {
+  if (speaking < 0) return;
+  speaking = -1; player.pause();
+  if (canSpeak) speechSynthesis.cancel();
+  renderBrief();
+}
+
+async function speakFrom(i) {
   if (i >= BRIEF.length) return stopBrief();
+  if (clips === null) {
+    loading = true; renderBrief();
+    try { clips = await loadClips(); } catch { clips = false; }
+    loading = false;
+  }
+  if (clips) {
+    speaking = i; renderBrief();
+    player.onended = () => { if (speaking === i) speakFrom(i + 1); };
+    player.onerror = () => { if (speaking === i) stopBrief(); };
+    player.src = clips[i];
+    try { await player.play(); } catch { if (speaking === i) stopBrief(); }
+    return;
+  }
+  if (!canSpeak) { readOpen = true; return renderBrief(); }
   speechSynthesis.cancel(); speaking = i; renderBrief();
   const u = new SpeechSynthesisUtterance(BRIEF[i][1]); u.rate = 1.05; u.lang = "en-US";
   u.onend = () => { if (speaking === i) speakFrom(i + 1); };
@@ -543,7 +566,6 @@ window.addEventListener("scroll", syncStrip, { passive: true });
 window.addEventListener("resize", syncStrip);
 
 $("sugg").innerHTML = SUGGESTED.map((q) => `<button data-q="${esc(q)}">${esc(q)}</button>`).join("");
-readOpen = !canSpeak;
 renderCase(); renderBrief();
 window.addEventListener("pagehide", stopBrief);
 // mobile.html#timeline or #ask opens on that tab; #record opens a record sheet, for reviewing the design.

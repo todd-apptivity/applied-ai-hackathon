@@ -11,6 +11,8 @@
 
 import type { SourceRecord } from "@/lib/rag/sources";
 
+import { briefLines, type BriefLine } from "./brief";
+
 export type LaneClass = "client" | "firm" | "medical" | "defense" | "court" | "other" | "file";
 export type EventKind = "email" | "call" | "note" | "task" | "event" | "doc" | "expense";
 
@@ -62,8 +64,13 @@ export interface MatterView {
   lanes: ViewLane[];
   groups: ViewGroup[];
   events: ViewEvent[];
+  /** The short brief, read aloud or shown as text. */
+  brief: BriefLine[];
   case: {
     clientName: string | null;
+    /** How to reach the client, from their Clio contact record. */
+    clientPhone: string | null;
+    clientEmail: string | null;
     description: string | null;
     stage: string | null;
     status: string | null;
@@ -258,7 +265,8 @@ export function deriveView(records: SourceRecord[], options: DeriveOptions): Mat
   const stage = typeof meta.stage === "string" ? meta.stage : null;
   const practice = typeof meta.practiceArea === "string" ? meta.practiceArea : null;
 
-  return {
+  const text = (value: unknown) => (typeof value === "string" && value.trim() ? value.trim() : null);
+  const view = {
     matterId: matter?.matterId ?? records[0]?.matterId ?? 0,
     title: display,
     subtitle: [practice, stage, typeof meta.status === "string" ? meta.status : null].filter(Boolean).join(" · "),
@@ -268,6 +276,8 @@ export function deriveView(records: SourceRecord[], options: DeriveOptions): Mat
     events,
     case: {
       clientName: client?.title ?? (typeof meta.clientName === "string" ? meta.clientName : null),
+      clientPhone: text(client?.metadata.phone),
+      clientEmail: text(client?.metadata.email),
       description: descriptionOf(matter),
       stage,
       status: typeof meta.status === "string" ? meta.status : null,
@@ -278,6 +288,8 @@ export function deriveView(records: SourceRecord[], options: DeriveOptions): Mat
       fields,
     },
   };
+
+  return { ...view, brief: briefLines(view) };
 }
 
 /** The matter description is a labelled line inside the matter record's text. */

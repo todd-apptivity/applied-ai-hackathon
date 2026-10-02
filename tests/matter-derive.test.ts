@@ -145,6 +145,29 @@ describe("deriveView: case facts", () => {
   });
 });
 
+describe("deriveView: the brief", () => {
+  const line = (label: string) => view.brief.find((l) => l.label === label)?.text;
+
+  it("says who, what to watch, who is silent and what is next, from the records", () => {
+    assert.deepEqual(view.brief.map((l) => l.label), ["Who", "Watch out", "Waiting on", "Next"]);
+    assert.equal(line("Who"), "Pat Example. Litigation stage, open for 2 years 9 months.");
+    assert.equal(line("Watch out"), "1 task is overdue: task 30. 91 days remain to the limitations date.".replace("91", String(Math.round((toMillis("2027-01-05")! - NOW.getTime()) / 864e5))));
+    assert.equal(line("Waiting on"), "Hilltop Clinic has not replied to 2 messages since March 2026.");
+    assert.equal(line("Next"), "The client was last contacted 5 days ago. Next up: calendar_entry 40, on November 12.");
+  });
+
+  it("includes what happened only when the matter has a summary field", () => {
+    const withSummary = deriveView([...RECORDS, record("custom_field", "s", { title: "Case Summary", text: "Case Summary: Rear-ended at a light.", metadata: { value: "Rear-ended at a light." } })], { now: NOW });
+    assert.equal(withSummary.brief.find((l) => l.label === "What happened")?.text, "Rear-ended at a light.");
+  });
+
+  it("carries the client's contact details for the case header", () => {
+    const withContact = deriveView(RECORDS.map((r) => (r.clioId === "1" && r.kind === "contact" ? { ...r, metadata: { ...r.metadata, phone: "555-0100", email: "pat@example.test" } } : r)), { now: NOW });
+    assert.deepEqual([withContact.case.clientPhone, withContact.case.clientEmail], ["555-0100", "pat@example.test"]);
+    assert.equal(view.case.clientPhone, null);
+  });
+});
+
 describe("embedding the view in a page", () => {
   it("cannot be closed or commented out by record text", () => {
     const json = embedJson({ body: "</script><!-- & \u2028" });
