@@ -101,6 +101,14 @@ export function listIndexedMatters(options: {
   }));
 }
 
+/** The client on a matter, or null when the matter is not indexed. */
+export function matterClientName(matterId: number): string | null {
+  const row = getDb()
+    .prepare("SELECT client_name FROM matters WHERE matter_id = ?")
+    .get(matterId) as { client_name?: string | null } | undefined;
+  return row?.client_name ?? null;
+}
+
 /** A readable name for a matter, preferring Clio's own display number. */
 export function listingLabel(matter: MatterListing): string {
   return matter.displayNumber ?? matter.description ?? `Matter ${matter.matterId}`;

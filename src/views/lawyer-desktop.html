@@ -279,6 +279,44 @@
   .src:hover { border-color: var(--accent); color: var(--accent); }
   .src i { width: 7px; height: 7px; border-radius: 50%; }
 
+  /* ---------- Body map ----------
+     Two silhouettes and a ranked list. The heat is drawn as soft blobs clipped
+     to the body, so it reads as a region and never as a pinpoint the records
+     cannot actually support. */
+  .bodymap { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .bodies-wrap { position: relative; }  /* the tooltip positions against this */
+  .bodies { display: flex; gap: 10px; }
+  /* A fixed width that overflows the narrow bodies column on purpose: an
+     absolutely positioned tip otherwise wraps to whatever space is left beside
+     the dot, which at this column width is a few words per line. */
+  .bodies-wrap .tip { width: 250px; max-width: none; }
+  .bodies-wrap .tip b + span { margin-top: 3px; display: block; }
+  .body { position: relative; flex: 1; min-width: 0; }
+  .body svg { display: block; width: 100%; height: auto; }
+  .body figcaption, .bodies figcaption { margin-top: 2px; text-align: center; font-size: 11px; color: var(--paper-text-3); }
+  .body button {
+    position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; padding: 0;
+    border: 0; border-radius: 50%; background: none; cursor: pointer;
+  }
+  .body button:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+  .hurt { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; min-width: 0; }
+  .hurt > li > button {
+    display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px;
+    border: 1px solid var(--paper-line); border-radius: 10px; background: var(--paper);
+    font: inherit; font-size: 13.5px; color: inherit; text-align: left; cursor: pointer;
+  }
+  .hurt > li > button.on { border-color: var(--critical); background: #fdf1f1; }
+  .hurt i { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+  .hurt b { flex: 1; min-width: 0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hurt em { font-style: normal; font-size: 11px; color: #8a6400; background: #fdf3d6; border-radius: 5px; padding: 1px 6px; }
+  .hurt small { color: var(--paper-text-3); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .hurt .rest { font-size: 12px; color: var(--paper-text-3); }
+  .hurt .rest > summary { cursor: pointer; padding: 4px 2px; }
+  .scale { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 11.5px; color: var(--paper-text-3); }
+  .scale i { width: 90px; height: 7px; border-radius: 999px; background: linear-gradient(to right, hsl(41 88% 52%), hsl(20 88% 52%), hsl(0 88% 52%)); }
+
+  @media (max-width: 1100px) { .bodymap { grid-template-columns: 1fr; } .bodies { max-width: 240px; } }
+
   .chain { display: flex; align-items: stretch; gap: 0; }
   .link { flex: 1; min-width: 0; position: relative; background: var(--paper); border-radius: 10px; padding: 12px 14px; margin-right: 26px; }
   .link:last-child { margin-right: 0; }
@@ -495,6 +533,7 @@
   <div class="detail">
     <section class="panel" id="briefPanel" hidden><h2>The brief <em>every line comes from the records</em></h2><div class="brief" id="brief"></div></section>
     <div class="tiles" id="tiles"></div>
+    <section class="panel" id="injuryPanel" hidden><h2>Where the client is hurt <em id="injuryNote"></em></h2><div class="bodymap" id="bodymap"></div></section>
     <section class="panel"><h2>Now, next, waiting</h2><div class="nnw" id="nnw"></div></section>
     <section class="panel"><h2>Who we have heard from <em>activity by quarter</em></h2><div class="pulse" id="pulse"></div></section>
     <details class="panel more"><summary>Matter fields <em id="fieldCount"></em></summary><dl class="what" id="fields"></dl></details>
@@ -917,7 +956,117 @@ function renderState() {
     const bars = counts.map((n, i) => `<rect x="${(i * bw + 1).toFixed(1)}" y="${n ? 22 - Math.max(3, n / max * 20) : 21}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${n ? Math.max(3, n / max * 20) : 1}" rx="1" fill="${n ? `var(${l.paper})` : "var(--paper-line)"}"/>`).join("");
     return `<b><i style="background:var(${l.paper})"></i>${esc(l.name)}</b><svg width="120" height="22" role="img" aria-label="${mine.length} records">${bars}</svg><span class="${quiet ? "quiet" : ""}">${heard ? (quiet ? `silent for ${span(heard.t, TODAY)}` : `last ${fmt(heard.t, { month: "short", day: "numeric" })}`) : "nothing on file"}</span>`;
   }).join("");
+
+  renderInjuries();
 }
+
+/* ------------------------------------------------------------------
+   The body map.
+
+   Where the file says the client is hurt, drawn rather than read. Heat is how
+   heavily a region is documented across the records, not how badly it is
+   injured — the scan (src/lib/matters/injury-scan.ts) counts mentions and
+   weights them by the strongest finding word nearby, which is a proxy for
+   significance and not a diagnosis.
+
+   The silhouette paths and every blob's position come from the server with the
+   data. Nothing about the body is written here, so this view and the dashboard
+   map cannot drift apart.
+   ------------------------------------------------------------------ */
+const INJURIES = DATA.injuries || [];
+const BODY = DATA.body || { w: 220, h: 530, paths: [] };
+const TIERS = { severe: "Heavily documented", moderate: "Documented", mild: "Mentioned" };
+const VIEWS = [["anterior", "Front"], ["posterior", "Back"]];
+
+/** Amber through to red as the file gets louder about a region. */
+const heat = (i) => `hsl(${Math.round(45 - 45 * Math.max(0, Math.min(1, i)))} 88% 52%)`;
+const clip = (s, n) => (s.length <= n ? s : `${s.slice(0, n).replace(/\s+\S*$/, "")}…`);
+
+function renderInjuries() {
+  const panel = document.getElementById("injuryPanel");
+  if (!INJURIES.length) return;
+  panel.hidden = false;
+
+  const loud = INJURIES.filter((s) => s.tier !== "mild");
+  const rest = INJURIES.filter((s) => s.tier === "mild");
+  document.getElementById("injuryNote").textContent =
+    `${INJURIES.length} regions named across the records`;
+
+  // Filter and clip ids are per view: two <svg>s in one document cannot share.
+  const bodies = VIEWS.map(([view, label], n) => {
+    const marks = INJURIES.flatMap((s) => (s.marks || []).filter((m) => m.view === view).map((m) => [s, m]));
+    const blobs = marks.map(([s, m]) =>
+      `<circle cx="${m.x}" cy="${m.y}" r="${m.r.toFixed(1)}" fill="${heat(s.intensity)}" opacity="${(0.3 + 0.6 * s.intensity).toFixed(2)}"/>`).join("");
+    const dots = marks.map(([s, m]) =>
+      `<circle data-dot="${esc(s.regionId)}" cx="${m.x}" cy="${m.y}" r="${s.tier === "mild" ? 1.8 : 3.2}" fill="var(--critical)" stroke="var(--paper-card)" stroke-width="${s.tier === "mild" ? 0.8 : 1.2}" opacity="${s.tier === "mild" ? 0.55 : 1}"/>`).join("");
+    // Hit targets are real buttons in HTML, so the map answers to a keyboard.
+    const hits = marks.map(([s, m]) =>
+      `<button type="button" data-hit="${esc(s.regionId)}" aria-label="${esc(s.label)} — ${TIERS[s.tier]}" style="left:${(m.x / BODY.w * 100).toFixed(2)}%;top:${(m.y / BODY.h * 100).toFixed(2)}%"></button>`).join("");
+
+    return `<figure class="body"><svg viewBox="0 0 ${BODY.w} ${BODY.h}" role="img" aria-label="${label} view, documented regions highlighted">
+      <defs>
+        <clipPath id="bodyClip${n}">${BODY.paths.map((d) => `<path d="${d}"/>`).join("")}</clipPath>
+        <filter id="bodyBlur${n}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="8"/></filter>
+      </defs>
+      <g fill="var(--paper-text-3)" opacity=".4">${BODY.paths.map((d) => `<path d="${d}"/>`).join("")}</g>
+      <g clip-path="url(#bodyClip${n})" filter="url(#bodyBlur${n})">${blobs}</g>
+      <g>${dots}</g>
+    </svg>${hits}<figcaption>${label}</figcaption></figure>`;
+  }).join("");
+
+  const row = (s) =>
+    `<li><button type="button" data-region="${esc(s.regionId)}"><i style="background:${heat(s.intensity)}"></i><b>${esc(s.label)}</b>${s.disputed ? "<em>disputed</em>" : ""}<small>${s.mentions}</small></button></li>`;
+
+  document.getElementById("bodymap").innerHTML =
+    `<div class="bodies-wrap"><div class="bodies">${bodies}</div><div class="tip" id="bodyTip"></div></div>
+     <div><ul class="hurt">${loud.map(row).join("")}
+       ${rest.length ? `<li><details class="rest"><summary>${rest.length} more region${rest.length === 1 ? "" : "s"} mentioned in passing</summary><ul class="hurt">${rest.map(row).join("")}</ul></details></li>` : ""}
+     </ul><div class="scale">Mentioned<i></i>Heavily documented</div></div>`;
+}
+
+/** Light a region everywhere it is drawn, and show its passage. */
+function hoverRegion(id, origin) {
+  const site = INJURIES.find((s) => s.regionId === id);
+  const map = document.getElementById("bodymap");
+  const bodyTip = document.getElementById("bodyTip");
+
+  for (const dot of map.querySelectorAll("[data-dot]")) {
+    const mine = dot.dataset.dot === id;
+    dot.setAttribute("r", mine ? 5 : dot.dataset.dot && INJURIES.find((s) => s.regionId === dot.dataset.dot).tier === "mild" ? 1.8 : 3.2);
+  }
+  for (const button of map.querySelectorAll("[data-region]")) {
+    button.classList.toggle("on", button.dataset.region === id);
+  }
+
+  if (!site || !origin) { bodyTip.style.display = "none"; return; }
+
+  const top = site.evidence[0];
+  bodyTip.innerHTML =
+    `<b>${esc(site.label)}</b><span>${TIERS[site.tier]} · ${site.mentions} record${site.mentions === 1 ? "" : "s"}${site.findings.length ? ` · ${esc(site.findings.join(", "))}` : ""}</span>` +
+    (site.disputed ? `<span>Some passages read as prior, denied or degenerative — check before relying on this.</span>` : "") +
+    (top ? `<span><b>${esc(top.title)}${top.date ? ` · ${top.date}` : ""}</b>${esc(clip(top.excerpt, 150))}</span>` : "");
+
+  // Shown before it is measured: `.tip` is display:none at rest, and a hidden
+  // element has no offsetParent and no size to position against.
+  bodyTip.style.display = "block";
+  const box = origin.getBoundingClientRect();
+  const frame = (bodyTip.offsetParent ?? bodyTip.parentElement).getBoundingClientRect();
+  // Beside the dot rather than over it. The silhouette is what the reader is
+  // pointing at; a bubble centred above it hides the thing being described.
+  bodyTip.style.left = `${box.right - frame.left + 12}px`;
+  bodyTip.style.top = `${Math.max(0, box.top - frame.top + box.height / 2 - bodyTip.offsetHeight / 2)}px`;
+}
+
+document.getElementById("bodymap").addEventListener("pointerover", (e) => {
+  const hit = e.target.closest("[data-hit]"), row = e.target.closest("[data-region]");
+  if (hit) hoverRegion(hit.dataset.hit, hit);
+  else if (row) hoverRegion(row.dataset.region, row);
+});
+document.getElementById("bodymap").addEventListener("pointerleave", () => hoverRegion(null, null));
+document.getElementById("bodymap").addEventListener("focusin", (e) => {
+  const hit = e.target.closest("[data-hit]"), row = e.target.closest("[data-region]");
+  if (hit || row) hoverRegion((hit || row).dataset.hit || (hit || row).dataset.region, hit || row);
+});
 
 /* ------------------------------------------------------------------
    The brief, and its narration.

@@ -9,6 +9,8 @@
  * generic words in their Clio relationship description.
  */
 
+import { BODY_PATHS, BODY_VIEWBOX } from "@/lib/matters/body-regions";
+import { scanInjuries, type InjurySite } from "@/lib/matters/injury-scan";
 import type { SourceRecord } from "@/lib/rag/sources";
 
 import { briefLines, type BriefLine } from "./brief";
@@ -66,6 +68,17 @@ export interface MatterView {
   events: ViewEvent[];
   /** The short brief, read aloud or shown as text. */
   brief: BriefLine[];
+  /**
+   * The body map: the regions the records name, heaviest first, each carrying
+   * the blobs to draw and the passages that put it there.
+   */
+  injuries: InjurySite[];
+  /**
+   * The silhouette those blobs sit on. Shipped with the data because the view
+   * is a standalone document: it has no import of its own to reach for, and a
+   * second copy of these paths would drift from the one the dashboard draws.
+   */
+  body: { w: number; h: number; paths: string[] };
   case: {
     clientName: string | null;
     /** How to reach the client, from their Clio contact record. */
@@ -287,6 +300,8 @@ export function deriveView(records: SourceRecord[], options: DeriveOptions): Mat
       statute: sol ? { date: toMillis(sol.due_at), status: sol.status ?? null, name: sol.name ?? null } : null,
       fields,
     },
+    injuries: scanInjuries(records, { link }),
+    body: { w: BODY_VIEWBOX.width, h: BODY_VIEWBOX.height, paths: [...BODY_PATHS] },
   };
 
   return { ...view, brief: briefLines(view) };

@@ -89,6 +89,28 @@
 
   .block { padding: 22px 16px 6px; }
   .more { border: 0; background: none; color: var(--accent); font-size: 14px; font-weight: 600; min-height: 44px; padding: 0; }
+
+  /* ---------- Body map ----------
+     There is no hover on a phone, so a dot opens the region's row rather than
+     floating a tooltip over the body. */
+  .bodies { display: flex; gap: 10px; justify-content: center; margin-bottom: 12px; }
+  .body { position: relative; flex: 0 1 116px; }
+  .body svg { display: block; width: 100%; height: auto; }
+  .body figcaption { margin-top: 2px; text-align: center; font-size: 11px; color: var(--paper-text-3); }
+  .body button { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; padding: 0; border: 0; border-radius: 50%; background: none; }
+  .hurt { margin: 0; padding: 0; list-style: none; }
+  .hurt > li { border-top: 1px solid var(--paper-line); }
+  .hurt > li:first-child { border-top: 0; }
+  .hurt summary { display: flex; align-items: center; gap: 8px; padding: 11px 0; min-height: 44px; font-size: 15px; }
+  .hurt i { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+  .hurt b { flex: 1; min-width: 0; font-weight: 500; }
+  .hurt em { font-style: normal; font-size: 11px; color: #8a6400; background: #fdf3d6; border-radius: 5px; padding: 1px 6px; }
+  .hurt small { color: var(--paper-text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .hurt .in { padding: 0 0 12px; font-size: 13px; color: var(--paper-text-2); }
+  .hurt .in p { margin: 0 0 8px; }
+  .hurt .in strong { display: block; font-weight: 600; color: var(--paper-text); }
+  .scale { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 11.5px; color: var(--paper-text-3); }
+  .scale i { flex: 1; height: 7px; border-radius: 999px; background: linear-gradient(to right, hsl(41 88% 52%), hsl(20 88% 52%), hsl(0 88% 52%)); }
   .block > h2 { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-text-3); margin-bottom: 8px; }
   .alert { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; width: 100%; text-align: left; border: 0; background: none; padding: 10px 0; border-top: 1px solid var(--paper-line); min-height: 44px; }
   .alert:first-of-type { border-top: 0; padding-top: 2px; }
@@ -220,6 +242,7 @@
       <div class="tiles" id="tiles"></div>
     </section>
     <section class="block"><h2>Need to know</h2><div id="alerts"></div></section>
+    <section class="block" id="injuryBlock" hidden><h2>Where the client is hurt</h2><div id="bodymap"></div></section>
     <div id="folds"></div>
   </main>
 
@@ -356,7 +379,66 @@ function renderCase() {
     fold("Matter fields", "As entered in Clio", `${CASE.fields.length}`, `<dl class="what">${CASE.fields.map((f) => `<dt>${esc(f.name)}</dt><dd>${esc(f.value)}</dd>`).join("")}</dl>`) +
     fold("Costs and age", `${money(CASE.costs)} spent · ${CASE.opened ? "open " + span(CASE.opened, TODAY) : "no open date"}`, "", `<dl class="fall"><dt>Firm costs to date</dt><dd>${money(CASE.costs)}</dd><dt>Expenses counted</dt><dd>${CASE.expenses}</dd>${CASE.opened ? `<dt>Opened</dt><dd>${fmt(CASE.opened)}</dd>` : ""}</dl>`) +
     fold("Not yet analysed", "Story, blockers and contradictions", "", `<p class="note">These are composed from the file by a model. That step is not built yet, so nothing is shown in its place.</p>`);
+
+  renderInjuries();
 }
+
+/* ------------------------------------------------------------------
+   The body map.
+
+   Where the file says the client is hurt. Heat is how heavily a region is
+   documented across the records, not how badly it is injured: the scan
+   (src/lib/matters/injury-scan.ts) counts mentions and weights them by the
+   strongest finding word nearby. The silhouette and every blob's position
+   arrive with the data, so this view and the desktop one cannot drift.
+   ------------------------------------------------------------------ */
+const INJURIES = DATA.injuries || [];
+const BODY = DATA.body || { w: 220, h: 530, paths: [] };
+const TIERS = { severe: "Heavily documented", moderate: "Documented", mild: "Mentioned" };
+const heat = (i) => `hsl(${Math.round(45 - 45 * Math.max(0, Math.min(1, i)))} 88% 52%)`;
+
+function renderInjuries() {
+  if (!INJURIES.length) return;
+  $("injuryBlock").hidden = false;
+
+  const shown = INJURIES.filter((s) => s.tier !== "mild");
+  const list = shown.length ? shown : INJURIES;
+
+  const bodies = [["anterior", "Front"], ["posterior", "Back"]].map(([view, label], n) => {
+    const marks = INJURIES.flatMap((s) => (s.marks || []).filter((m) => m.view === view).map((m) => [s, m]));
+    return `<figure class="body"><svg viewBox="0 0 ${BODY.w} ${BODY.h}" role="img" aria-label="${label} view, documented regions highlighted">
+      <defs>
+        <clipPath id="bodyClip${n}">${BODY.paths.map((d) => `<path d="${d}"/>`).join("")}</clipPath>
+        <filter id="bodyBlur${n}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="8"/></filter>
+      </defs>
+      <g fill="var(--paper-text-3)" opacity=".4">${BODY.paths.map((d) => `<path d="${d}"/>`).join("")}</g>
+      <g clip-path="url(#bodyClip${n})" filter="url(#bodyBlur${n})">${marks.map(([s, m]) =>
+        `<circle cx="${m.x}" cy="${m.y}" r="${m.r.toFixed(1)}" fill="${heat(s.intensity)}" opacity="${(0.3 + 0.6 * s.intensity).toFixed(2)}"/>`).join("")}</g>
+      <g>${marks.map(([s, m]) =>
+        `<circle cx="${m.x}" cy="${m.y}" r="${s.tier === "mild" ? 1.8 : 3.2}" fill="var(--critical)" stroke="var(--paper-card)" stroke-width="${s.tier === "mild" ? 0.8 : 1.2}" opacity="${s.tier === "mild" ? 0.55 : 1}"/>`).join("")}</g>
+    </svg>${marks.map(([s, m]) =>
+      `<button type="button" data-region="${esc(s.regionId)}" aria-label="${esc(s.label)} — ${TIERS[s.tier]}" style="left:${(m.x / BODY.w * 100).toFixed(2)}%;top:${(m.y / BODY.h * 100).toFixed(2)}%"></button>`).join("")}<figcaption>${label}</figcaption></figure>`;
+  }).join("");
+
+  $("bodymap").innerHTML = `<div class="bodies">${bodies}</div><ul class="hurt">${list.map((s) => `
+    <li><details id="hurt-${esc(s.regionId)}">
+      <summary><i style="background:${heat(s.intensity)}"></i><b>${esc(s.label)}</b>${s.disputed ? "<em>disputed</em>" : ""}<small>${s.mentions}</small></summary>
+      <div class="in"><p>${TIERS[s.tier]}${s.findings.length ? ` · ${esc(s.findings.join(", "))}` : ""}</p>
+        ${s.evidence.map((e) => `<p><strong>${esc(e.title)}${e.date ? ` · ${e.date}` : ""}</strong>${esc(e.excerpt)}</p>`).join("")}</div>
+    </details></li>`).join("")}</ul>
+    <div class="scale">Mentioned<i></i>Heavily documented</div>`;
+}
+
+// A dot opens its row and brings it into view — the phone stand-in for hover.
+// Bound to the container, not the dots, so a re-render does not stack handlers.
+$("bodymap").addEventListener("click", (ev) => {
+  const hit = ev.target.closest("[data-region]");
+  if (!hit) return;
+  const row = document.getElementById(`hurt-${hit.dataset.region}`);
+  if (!row) return;
+  row.open = true;
+  row.scrollIntoView({ behavior: "smooth", block: "center" });
+});
 
 /* ------------------------------------------------------------------
    The brief, and its narration.

@@ -3,6 +3,7 @@ import { Suspense } from "react";
 
 import { ChangesPanel, ChangesPanelFallback } from "./changes-panel";
 import { CaseChatPanel } from "./case-chat-panel";
+import { InjuryPanel, InjuryPanelFallback } from "./injury-panel";
 import { parseWindowChoice } from "./window";
 import { ViewerSwitcher } from "@/components/changes/viewer-switcher";
 import { isMatterIndexed, matterLabel } from "@/lib/changes/digest";
@@ -113,6 +114,12 @@ export default async function MatterPage({
               window so switching shows the fallback rather than stale prose. */}
           <Suspense key={choice} fallback={<ChangesPanelFallback choice={choice} />}>
             <ChangesPanel matterId={id} windowParam={choice} />
+          </Suspense>
+
+          {/* Its own boundary: the scan reads every indexed record for the
+              matter, and the change panel above should not wait on it. */}
+          <Suspense fallback={<InjuryPanelFallback />}>
+            <InjuryPanel matterId={id} />
           </Suspense>
 
           <section className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
