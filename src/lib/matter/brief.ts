@@ -81,7 +81,10 @@ export function briefLines(view: Omit<MatterView, "brief">): BriefLine[] {
   }
 
   const contact = lastClient
-    ? `The client was last contacted ${Math.round((today - lastClient.t) / DAY)} days ago.`
+    ? (() => {
+        const days = Math.round((today - lastClient.t) / DAY);
+        return `The client was last contacted ${days} ${days === 1 ? "day" : "days"} ago.`;
+      })()
     : "There is no client contact on file.";
   const next = upcoming[0] ? `Next up: ${upcoming[0].title}, on ${longDate(upcoming[0].t)}.` : "Nothing is scheduled.";
   lines.push({ label: "Next", text: `${contact} ${next}` });
